@@ -1,10 +1,176 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#080b11"><meta name="description" content="ERA RIVALS PRO — Four sports. One career universe. Original cinematic 3D browser sports gameplay."><title>ERA RIVALS | PRO</title><link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="pro.css"></head><body>
-<header class="top"><a class="logo" href="index.html"><span class="sig">ER<span>✦</span></span><span>ERA<em>RIVALS</em><small>PRO SERIES · 2026</small></span></a><nav id="nav"><button class="active" data-view="home">HOME</button><button data-view="game">PLAY NOW</button><button data-view="player">MYPLAYER</button><button data-view="career">MYCAREER</button><button data-view="franchise">FRANCHISE</button><a href="classic.html">CLASSIC MODES ↗</a></nav><div class="headerRight"><span class="liveDot"></span><span>SINGLE PLAYER</span><button id="soundBtn" title="Toggle crowd effects">◖))</button></div></header>
-<main>
-<div id="home" class="view active"><section class="hero"><div class="heroStage"><canvas id="hero3d" aria-label="Rotating three-dimensional basketball player in an arena"></canvas><div class="stageFloor"></div></div><div class="heroVeil"></div><div class="heroContent"><span class="eyebrow">FOUR SPORTS. ONE LEGACY.</span><h1>EVERY ERA.<br><i>ONE CHAMPION.</i></h1><p>Build your athlete. Own your franchise. Compete in beautifully rendered 3D arenas with skill-based gameplay. One home for basketball, football, soccer and baseball.</p><div class="cta"><button class="primary" data-view="game">ENTER THE ARENA <b>→</b></button><button class="outline" data-view="player">BUILD MYPLAYER ↗</button></div><div class="heroStats"><div><b>04</b><span>PLAYABLE SPORTS</span></div><div><b>3D</b><span>LIVE GRAPHICS</span></div><div><b>∞</b><span>CAREER SEASONS</span></div></div></div><div class="heroCorner">ER / SEASON 26</div></section>
-<section class="below"><div class="sectionHeading"><div><span class="eyebrow">CHOOSE YOUR ARENA</span><h2>THE FOUR SPORTS</h2></div><span class="faded">ORIGINAL GAMEPLAY · COLLEGE & PRO</span></div><div id="homeSports" class="sportsGrid"></div></section><div class="newsStrip"><span>DEVELOPMENT BUILD</span><p>Original 3D prototype, not a commercial sports simulation. No official athlete images, logos, licensed likenesses, or proprietary code.</p></div></div>
-<div id="game" class="view"><section class="playTop"><div><div class="eyebrow">ARENA / LIVE GAMEPLAY</div><h2>PLAY THE GAME.</h2></div><div class="picker" id="gameSports"></div></section><section class="playgrid"><div class="arenaShell"><div class="scoreboard"><div class="scoreTeam"><small id="homeTag">HOME</small><b id="homeScore">00</b></div><div class="middleScore"><span id="period">Q1 · LIVE</span><strong id="clock">2:00</strong><small id="gameSituation">TIP-OFF</small></div><div class="scoreTeam"><small id="awayTag">AWAY</small><b id="awayScore">00</b></div></div><canvas id="game3d" tabindex="0" aria-label="Playable three-dimensional sports game"></canvas><div class="gameFlash" id="flash"></div><div class="charge"><div id="chargeFill"></div><span id="chargeLabel">SHOT TIMING</span></div><div class="overlayGame" id="gameOver" hidden><span class="eyebrow">FINAL RESULT</span><h2 id="endTitle">FULL TIME</h2><p id="endText"></p><div class="cta"><button class="primary" id="rematch">REMATCH ↻</button><button class="outline" data-view="career">CAREER RESULTS ↗</button></div></div><div class="fieldHints" id="fieldHints">WASD · MOVE &nbsp; SPACE · SHOOT</div></div><aside class="gameSide"><div class="gameSideHead"><span class="eyebrow">ATHLETE TRACKER</span><div class="miniOvr" id="liveOvr">72 <small>OVR</small></div></div><h3 id="liveName">CREATED ATHLETE</h3><div class="subtle" id="liveTeam">#9 · STARTER</div><div class="liveAttributes" id="liveAttributes"></div><div class="sideDivider"></div><div class="eyebrow">MATCH FEED</div><div class="commentary" id="commentary" aria-live="polite"><div>Entering the arena...</div></div><div class="buttons"><button class="primary" id="actionBtn">SHOOT / SPACE</button><button class="outline" id="passBtn">PASS / J</button><button class="outline" id="defendBtn">DEFEND / F</button><button class="outline" id="restartBtn">RESTART ↻</button></div><div class="controlsHelp">WASD / ARROWS TO MOVE · SHIFT SPRINT · SPACE HOLD & RELEASE · J PASS · F DEFEND · Q/E TARGETS · P PAUSE · GAMEPAD SUPPORTED</div></aside></section><div class="mobileActions"><button data-touch="w">▲</button><button data-touch="a">◀</button><button data-touch="s">▼</button><button data-touch="d">▶</button><button id="touchAction">ACTION</button></div></div>
-<div id="player" class="view"><section class="innerTop"><span class="eyebrow">MYPLAYER / IDENTITY LAB</span><h2>BUILD A LEGEND.</h2><p>Every change updates your 3D player. Build for your sport, your position, your strengths.</p></section><div class="creatorGrid"><section class="creatorPreview"><canvas id="creator3d" aria-label="Interactive rotating 3D athlete preview"></canvas><div class="previewBottom"><span>3D PREVIEW · DRAG TO ROTATE</span><span id="previewNumber">#9</span></div></section><section class="creatorOptions"><div class="tabNav"><button class="active" data-builder="identity">IDENTITY</button><button data-builder="appearance">APPEARANCE</button><button data-builder="attributes">ATTRIBUTES</button></div><div id="builderPane"></div><div class="bottomSave"><div id="buildOverall">72 OVR</div><button class="primary" id="saveBuild">SAVE MYPLAYER ✓</button></div></section></div></div>
-<div id="career" class="view"><section class="innerTop"><span class="eyebrow">MYCAREER / ROAD TO GREATNESS</span><h2>WRITE YOUR STORY.</h2><p>Play in college or the pros. Train, earn upgrades, build records and pursue championships.</p></section><div class="careerLayout"><div class="careerMajor"><div class="playerOverview"><div class="overviewName"><span class="eyebrow">STARTING FIVE / PLAYER LOCK</span><h2 id="careerName">YOUR ATHLETE</h2><div id="careerSub">ROOKIE · PG</div></div><div class="ratingBadge" id="careerOVR">72 <small>OVR</small></div></div><div id="careerDetails" class="careerDetails"></div><div class="sectionHeading"><h3>CAREER PATH</h3></div><div class="formCols"><label>CAREER LEVEL<select id="careerLevel"><option value="college">COLLEGE</option><option value="pro">PROFESSIONAL</option></select></label><label>YOUR TEAM<select id="careerTeam"></select></label><label>STARTING ERA<select id="careerEra"><option value="1984">1984 · CLASSIC RIVALS</option><option value="1992">1992 · LEGENDS ERA</option><option value="2003">2003 · NEW GENERATION</option><option value="2016">2016 · MODERN DYNASTIES</option><option value="2026">2026 · CURRENT ERA</option></select></label><label>LEAGUE RULES<select id="careerRules"><option value="simulation">SIMULATED HISTORY</option><option value="alternate">REWRITE HISTORY</option></select></label></div><p class="fineprint">Historical starts are alternate-history scenarios with fictional player rosters, not verified year-specific NCAA/NBA/NFL/MLB/club rosters.</p><div class="cta"><button class="primary" id="saveCareer">CONFIRM TEAM & PATH</button><button class="outline" data-view="game">PLAY NEXT GAME ↗</button></div></div><div class="careerRight"><span class="eyebrow">PROGRESSION TRACKER</span><h3 id="careerXP">0 XP</h3><div class="progress"><i id="progressFill"></i></div><div id="careerStats" class="statRows"></div><button class="outline block" id="trainBtn">TRAIN · 100 XP → +1 SKILL</button><p class="subtle">Match stats, career history and customizations save in this browser.</p></div></div></div>
-<div id="franchise" class="view"><section class="innerTop"><span class="eyebrow">FRANCHISE / FRONT OFFICE</span><h2>RUN THE LEAGUE.</h2><p>Design your identity. Build your own roster. Make the decisions.</p></section><div class="frontGrid"><div class="teamEdit"><span class="eyebrow">01 / CREATE YOUR TEAM</span><label>FRANCHISE NAME<input id="clubName" maxlength="32" placeholder="Rivals Elite"></label><label>HOME CITY<input id="clubCity" maxlength="30" placeholder="San Juan"></label><label>PRIMARY COLOR<input id="clubColor" type="color" value="#c5fa68"></label><label>SECONDARY COLOR<input id="clubAlt" type="color" value="#182840"></label><div id="logoPreview" class="clubPreview"></div><button class="primary" id="saveClub">SAVE FRANCHISE</button></div><div class="frontRoster"><span class="eyebrow">02 / TEAM BLUEPRINT</span><h3 id="rosterTitle">MY STARTING LINEUP</h3><div id="rosterList"></div><div class="franchiseActions"><button class="outline" id="shuffleRoster">SCOUT NEW PROSPECTS ↻</button><button class="primary" data-view="game">PLAY WITH YOUR TEAM →</button></div><span class="fineprint">Fictional prospects, original ratings, independent game universe.</span></div></div></div>
-</main><footer><span>ERA <b>RIVALS</b> · CREATED BY XAVIER MATOS</span><span>ORIGINAL INDEPENDENT SPORTS GAME · SINGLE PLAYER · V2 PROTOTYPE</span></footer><script src="pro.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#070a10">
+<meta name="description" content="ERA RIVALS — Four sports. Four legendary athletes. One champion. Enter basketball, football, soccer or baseball.">
+<title>ERA RIVALS | Every Era. One Champion.</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://upload.wikimedia.org" crossorigin>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap');
+:root{--bg:#080b11;--ink:#f3f5f5;--muted:#8d9ba8;--lime:#c9fb68;--line:#24313d;--display:'Barlow Condensed','Arial Narrow',Impact,sans-serif;--sans:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#080b11;color:var(--ink);font-family:var(--sans);min-width:320px}button,a{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:none}button:focus-visible,a:focus-visible{outline:3px solid var(--lime);outline-offset:3px}[hidden]{display:none!important}
+::selection{background:var(--lime);color:#060a08}
+.site-shell{min-height:100svh;position:relative;overflow:hidden;background:radial-gradient(circle at 72% 2%,#15231c 0%,transparent 35%),linear-gradient(135deg,#080b11 0%,#0a101a 100%)}
+.site-shell:before{content:"";pointer-events:none;position:fixed;z-index:0;inset:0;background-image:radial-gradient(#c8e4dd 0.55px,transparent .65px);background-size:18px 18px;opacity:.022}
+.masthead{height:83px;display:flex;gap:30px;align-items:center;justify-content:space-between;padding:0 clamp(22px,4vw,72px);border-bottom:1px solid #2a35405c;position:relative;z-index:4;background:linear-gradient(180deg,#0c131bcc,#090e13bb);backdrop-filter:blur(16px)}
+.brand{display:inline-flex;align-items:center;gap:12px;white-space:nowrap;min-width:235px}.brand-emblem{width:52px;height:52px;border-radius:12px;background:var(--lime);color:#0d1311;display:grid;place-items:center;font-family:Georgia,serif;font-size:25px;font-weight:900;position:relative;box-shadow:0 0 36px #c9fb6814}.brand-emblem .star{position:absolute;top:-7px;right:2px;font-family:var(--sans);font-size:15px}.brand-copy{display:flex;flex-direction:column;gap:0;line-height:1.2}.brand-copy strong{font-family:var(--display);font-size:26px;letter-spacing:.03em;font-weight:900}.brand-copy strong span{color:var(--lime)}.brand-copy small{font-size:8px;font-weight:900;color:#a2b3c4;letter-spacing:.29em;margin-top:3px}
+.mast-center{font-weight:800;letter-spacing:.27em;color:#b8c8d2;font-size:10px;white-space:nowrap;display:flex;align-items:center;gap:11px}.pulse-dot{width:6px;height:6px;display:inline-block;background:var(--lime);box-shadow:0 0 10px #c9fb686a;border-radius:50%;flex:none}.mast-actions{display:flex;align-items:center;gap:24px;white-space:nowrap}.mast-actions a{font-size:10px;font-weight:850;letter-spacing:.11em;color:#cbd6db;transition:color .2s}.mast-actions a:hover{color:var(--lime)}.mast-actions a span{color:var(--lime);font-size:15px}.mast-sep{width:1px;height:21px;background:#293543}.solo{color:#91a9ad;font-weight:800;letter-spacing:.15em;font-size:9px;display:inline-flex;align-items:center;gap:9px}
+.opening{height:150px;display:flex;align-items:end;justify-content:space-between;gap:20px;padding:28px clamp(22px,4vw,72px) 26px;position:relative;z-index:2}.intro-left{min-width:0}.overline{display:flex;align-items:center;gap:9px;letter-spacing:.22em;color:var(--lime);font-size:10px;font-weight:850;margin-bottom:8px}.overline i{width:24px;height:1px;background:var(--lime)}.overline b{color:#6b7887;font-weight:700;margin-left:12px}.opening h1{font:900 clamp(39px,4.3vw,65px)/.94 var(--display);letter-spacing:.024em;margin:0}.opening h1 span{color:var(--lime)}.opening p{margin:5px 0 0;color:#9aabba;font-size:12px}.intro-right{font-size:9px;letter-spacing:.19em;font-weight:800;color:#8a9ba6;white-space:nowrap;padding-bottom:11px}.intro-right .tiny-cross{color:var(--lime);font-size:16px;vertical-align:middle;margin-right:9px}.intro-divider{margin:0 9px;color:#536671}
+.legend-grid{position:relative;z-index:2;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));height:clamp(440px,62vh,760px);margin:0 clamp(9px,1vw,18px);gap:clamp(6px,.7vw,12px)}
+.legend-card{position:relative;isolation:isolate;overflow:hidden;border:1px solid #53616a60;border-radius:15px;background:#13202b;color:white;text-align:left;padding:0;box-shadow:0 18px 45px #0004;transition:border-color .32s,transform .32s,filter .32s,box-shadow .32s;contain:layout paint}
+.legend-card:after{content:"";position:absolute;pointer-events:none;z-index:3;inset:0;border:1px solid transparent;border-radius:inherit;transition:border-color .25s,box-shadow .25s}.legend-card:hover,.legend-card:focus-visible{transform:translateY(-5px);border-color:var(--highlight);box-shadow:0 16px 56px #0009,0 0 35px var(--glow)}.legend-card:hover:after,.legend-card:focus-visible:after{border-color:var(--highlight);box-shadow:inset 0 0 30px #ffffff0a}
+.legend-nba{--highlight:#e66a4c;--glow:#c9503b38;background:radial-gradient(circle at 45% 35%,#703c2d,#13131b 69%)}.legend-nfl{--highlight:#79a5fa;--glow:#4369ae38;background:radial-gradient(circle at 46% 35%,#294361,#121b30 70%)}.legend-soccer{--highlight:#7fe6d0;--glow:#3c9d853c;background:radial-gradient(circle at 46% 35%,#37686a,#101d25 71%)}.legend-mlb{--highlight:#f5d6a7;--glow:#e6c49e34;background:radial-gradient(circle at 46% 35%,#62665a,#171918 70%)}
+.legend-photo{position:absolute;z-index:0;inset:0;width:100%;height:100%;object-fit:cover;object-position:center center;filter:saturate(.8) contrast(1.15) brightness(.69);transform:scale(1.02);transition:transform .8s cubic-bezier(.12,.7,.22,1),filter .6s;user-select:none;pointer-events:none}.legend-nba .legend-photo{object-position:48% 39%;filter:contrast(1.2) brightness(.73) saturate(.87)}.legend-nfl .legend-photo{object-position:48% 29%}.legend-soccer .legend-photo{object-position:52% 23%;filter:contrast(1.12) brightness(.72) saturate(.78)}.legend-mlb .legend-photo{object-position:42% 30%;filter:grayscale(1) sepia(.18) contrast(1.2) brightness(.70)}.legend-photo.image-error{opacity:0}.legend-card:hover .legend-photo,.legend-card:focus-visible .legend-photo{transform:scale(1.1);filter:saturate(1.07) contrast(1.12) brightness(.94)}.legend-mlb:hover .legend-photo{filter:grayscale(.82) sepia(.13) contrast(1.25) brightness(.9)}
+.image-veil{position:absolute;z-index:1;inset:0;background:linear-gradient(180deg,#06101c5b 0%,transparent 25%,#07101912 35%,#070b13b6 68%,#06080ef8 100%),linear-gradient(90deg,#060e17b8,transparent 22%,transparent 82%,#060e17b8)}.legend-nba .image-veil{background:linear-gradient(180deg,#1c111079,transparent 25%,#130a0922 44%,#100e16ed 82%,#100d15 100%)}.legend-soccer .image-veil{background:linear-gradient(180deg,#10182075,transparent 25%,#05132226 44%,#08101ddf 84%,#090e18 100%)}.panel-shine{position:absolute;z-index:2;inset:0;background:linear-gradient(117deg,#ffffff13,transparent 36%,transparent 70%,#ffffff05);pointer-events:none}
+.number-ghost{font:900 clamp(120px,17vw,270px)/1 var(--display);position:absolute;z-index:-1;top:14%;left:5%;color:#ffffff11;user-select:none;letter-spacing:-.1em;pointer-events:none}.legend-no{position:absolute;z-index:4;top:22px;left:21px;font:900 10px var(--sans);letter-spacing:.24em;color:#f3f5f1ad}.legend-no:after{content:"";position:absolute;left:0;top:26px;width:32px;height:2px;background:var(--highlight)}
+.sport-info{position:absolute;z-index:4;bottom:0;left:0;right:0;padding:0 clamp(15px,2vw,33px) clamp(19px,2vw,32px);display:flex;flex-direction:column;align-items:start;gap:0;transition:transform .32s ease}.sport-kicker{font-size:10px;color:#f4f7f1c7;font-weight:850;letter-spacing:.21em;margin-bottom:17px}.sport-kicker .spot{color:var(--highlight);font-size:11px}.legend-first,.legend-last{font:900 clamp(30px,3.4vw,59px)/.9 var(--display);letter-spacing:-.012em;text-shadow:0 3px 16px #000a}.legend-last{color:#fff}.legend-era{font-size:9px;font-weight:800;letter-spacing:.17em;color:#b8bec5;margin-top:11px}.legend-open{width:100%;margin-top:26px;padding-top:17px;border-top:1px solid #ffffff47;color:#f8f9f5;display:flex;justify-content:space-between;align-items:center;font-weight:900;letter-spacing:.12em;font-size:10px}.legend-open span{display:grid;place-items:center;width:34px;height:34px;border:1px solid #ffffff6c;border-radius:50%;font-size:19px;transition:background .2s,color .2s,transform .2s}.legend-card:hover .legend-open span{background:var(--highlight);color:#081218;transform:translate(3px,-3px);border-color:transparent}
+.landing-bar{position:relative;z-index:2;margin:0 clamp(20px,4vw,72px);min-height:89px;display:flex;align-items:center;justify-content:space-between;gap:20px;border-bottom:1px solid #273644}.landing-bar>div:first-child{display:flex;align-items:center;gap:14px}.accent-icon{width:33px;height:33px;display:grid;place-items:center;color:#0d1513;background:var(--lime);border-radius:50%;font-size:23px;font-weight:900}.landing-bar strong{font-size:10px;letter-spacing:.15em;white-space:nowrap}.muted-bar{color:#7e929c;font-size:11px}.mini-feature{font-size:10px;font-weight:800;letter-spacing:.12em;color:#a9b8c2}.mini-feature i{font-style:normal;color:var(--lime);margin:0 7px}.right-end{font-size:10px;color:var(--lime);letter-spacing:.24em;font-weight:850;white-space:nowrap}
+.site-footer{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:62px;padding:16px clamp(22px,4vw,72px);color:#738594;font-size:9px;letter-spacing:.12em;font-weight:750}.site-footer b{color:#a4e76f}.site-footer button{background:none;color:#a0b4bf;border:0;font-size:9px;letter-spacing:.13em;font-weight:900;white-space:nowrap;padding:6px}.site-footer button:hover{color:var(--lime)}.photo-credits{padding:24px clamp(22px,4vw,72px) 40px;background:#121a23;border-top:1px solid #2b3946;color:#b9c8d1;font-size:12px;line-height:1.8}.photo-credits h2{font:900 24px var(--display);color:#fff;margin:0 0 8px}.photo-credits ul{margin:10px 0 0;padding-left:18px}.photo-credits a{text-decoration:underline;text-decoration-color:#73966d;text-underline-offset:3px;color:var(--lime)}
+.sport-overlay{position:fixed;inset:0;z-index:25;display:grid;place-items:center;padding:18px;overflow-y:auto;overscroll-behavior:contain}.overlay-backdrop{position:fixed;inset:0;background:#020508df;backdrop-filter:blur(22px);cursor:pointer}.sport-gateway{--gateway-accent:#d4fa79;width:min(100%,980px);max-height:min(94svh,830px);min-height:560px;display:grid;grid-template-columns:38% minmax(0,1fr);position:relative;z-index:1;border:1px solid #475763;border-radius:22px;overflow:hidden;background:#101823;box-shadow:0 30px 120px #000e,0 0 80px #9dca9622;animation:gatewayIn .24s ease-out both}.sport-overlay[data-sport="nba"] .sport-gateway{--gateway-accent:#ed846c}.sport-overlay[data-sport="nfl"] .sport-gateway{--gateway-accent:#86b0ff}.sport-overlay[data-sport="soccer"] .sport-gateway{--gateway-accent:#85e9d4}.sport-overlay[data-sport="mlb"] .sport-gateway{--gateway-accent:#f4d4a5}
+@keyframes gatewayIn{from{opacity:0;transform:translateY(15px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.gateway-image{position:relative;overflow:hidden;background:radial-gradient(circle at 50% 30%,#41536a,#101721 76%)}.gateway-image>img{position:absolute;inset:0;height:100%;width:100%;object-fit:cover;object-position:50% 31%;filter:brightness(.75) saturate(.88)}.gateway-image-shadow{position:absolute;inset:0;background:linear-gradient(90deg,#050a1200,#10182368),linear-gradient(0deg,#0c1527bb,transparent 65%)}.gateway-body{padding:clamp(29px,4vw,52px);display:flex;flex-direction:column;justify-content:center;min-width:0}.gateway-eyebrow{font-weight:800;letter-spacing:.22em;font-size:10px;color:#a4b4c1}.gateway-eyebrow .dot{color:var(--gateway-accent);margin:0 9px}.gateway-sport-label{margin-top:29px;font-size:11px;font-weight:850;letter-spacing:.22em;color:var(--gateway-accent)}.gateway-body h2{margin:8px 0 4px;font:900 clamp(53px,5vw,86px)/.9 var(--display);letter-spacing:-.012em}.gateway-body>p:not(.gateway-note){color:#a5b5c5;font-size:13px;margin:9px 0 25px}.gateway-modes{display:grid;gap:8px}.mode-tile{min-height:69px;padding:12px 15px;display:flex;align-items:center;gap:16px;border:1px solid #344759;background:#1a2736ad;border-radius:9px;transition:transform .2s,border-color .2s,background .2s}.mode-tile:hover,.mode-tile:focus-visible{transform:translateX(4px);border-color:var(--gateway-accent);background:#26384a}.mode-num{font:900 12px var(--sans);color:var(--gateway-accent);letter-spacing:.04em}.mode-desc{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.mode-desc strong{font-size:13px;letter-spacing:.09em}.mode-desc small{color:#8ba1b2;font-size:10px}.mode-arrow{font-size:21px;color:var(--gateway-accent)}.gateway-note{margin-top:20px;color:#788f9f;font-size:9px!important;line-height:1.6}.close-gateway{position:absolute;top:16px;right:17px;z-index:5;width:40px;height:40px;display:grid;place-items:center;border-radius:50%;border:1px solid #71818d84;color:white;background:#13212bd9;font-size:14px;transition:background .2s}.close-gateway:hover{background:#425368}
+body.modal-open{overflow:hidden}
+@media(max-width:1180px){.mast-center{display:none}.legend-grid{height:clamp(450px,59vh,650px)}.sport-info{padding:0 17px 18px}.legend-first,.legend-last{font-size:clamp(30px,3.9vw,48px)}.legend-era{font-size:8px}.intro-right{display:none}.mini-feature{display:none}}
+@media(max-width:760px){.masthead{height:72px;padding:0 16px}.brand{min-width:unset}.brand-emblem{height:42px;width:42px;font-size:21px;border-radius:9px}.brand-copy strong{font-size:22px}.brand-copy small{font-size:7px}.mast-actions{gap:9px}.mast-actions .solo,.mast-sep{display:none}.mast-actions a{font-size:9px}.opening{height:auto;padding:30px 20px 22px}.opening h1{font-size:clamp(40px,9vw,62px)}.opening p{font-size:11px}.legend-grid{grid-template-columns:repeat(2,minmax(0,1fr));height:auto;margin:0 9px;gap:9px}.legend-card{min-height:clamp(295px,49svh,480px)}.legend-first,.legend-last{font-size:clamp(35px,6vw,53px)}.sport-kicker{font-size:9px;margin-bottom:12px}.legend-no{top:14px;left:15px}.legend-open{margin-top:14px;padding-top:12px;font-size:9px}.legend-open span{width:28px;height:28px;font-size:16px}.landing-bar{margin:0 20px;min-height:72px}.muted-bar,.right-end{display:none}.site-footer{flex-wrap:wrap;justify-content:center;text-align:center;font-size:8px;padding:18px 15px}.sport-gateway{min-height:unset;grid-template-columns:1fr;max-height:96svh;overflow:auto}.gateway-image{min-height:170px;max-height:26svh}.gateway-image img{object-position:50% 33%}.gateway-body{padding:24px}.gateway-sport-label{margin-top:7px}.gateway-body h2{font-size:57px}.gateway-body>p:not(.gateway-note){margin:4px 0 18px}.mode-tile{min-height:65px}.sport-overlay{padding:8px}.close-gateway{top:11px;right:11px}}
+@media(max-width:430px){.legend-card{min-height:clamp(240px,39svh,360px)}.sport-info{padding:0 10px 11px}.legend-first,.legend-last{font-size:clamp(28px,8.3vw,43px)}.sport-kicker{font-size:7px;letter-spacing:.1em}.legend-era{font-size:7px;letter-spacing:.08em}.legend-open{font-size:8px}.opening h1{font-size:42px}.brand-copy small{letter-spacing:.12em}.overline{font-size:9px;letter-spacing:.13em}.overline b{display:none}.mode-desc strong{font-size:12px}.gateway-body{padding:20px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:0.01ms!important;transition-duration:0.01ms!important;scroll-behavior:auto!important}}
+
+</style>
+</head>
+<body>
+<div class="site-shell">
+  <header class="masthead">
+    <a class="brand" href="index.html" aria-label="ERA RIVALS sport selection"><span class="brand-emblem">ER<span class="star">✦</span></span><span class="brand-copy"><strong>ERA<span>RIVALS</span></strong><small>EVERY ERA. ONE CHAMPION.</small></span></a>
+    <div class="mast-center"><span class="pulse-dot"></span> CHOOSE YOUR SPORT</div>
+    <nav class="mast-actions" aria-label="Main navigation">
+      <a href="classic.html">CLASSIC DRAFTS <span aria-hidden="true">↗</span></a><span class="mast-sep"></span><span class="solo"><span class="pulse-dot"></span> SINGLE PLAYER</span>
+    </nav>
+  </header>
+
+  <main>
+    <section class="opening" aria-label="Era Rivals introduction">
+      <div class="intro-left"><span class="overline"><i></i> THE LEGENDS COLLECTION <b>01 — 04</b></span>
+       <h1>FOUR SPORTS. <span>ONE LEGACY.</span></h1><p>Pick your sport. Write your own history.</p></div>
+      <div class="intro-right"><span class="tiny-cross">✦</span> COLLEGE &amp; PRO <span class="intro-divider">/</span> EVERY ERA <span class="intro-divider">/</span> ONE CHAMPION.</div>
+    </section>
+    <section class="legend-grid" aria-label="Select one of four sports">
+      <button type="button" class="legend-card legend-nba" data-sport-door="nba" aria-label="Enter Basketball with Michael Jordan">
+    <span class="legend-no" aria-hidden="true">01 / 04</span>
+    <span class="image-veil" aria-hidden="true"></span>
+    <img class="legend-photo" src="https://upload.wikimedia.org/wikipedia/commons/f/f0/Jordan_by_Lipofsky_16577_%28high_quality%29.jpg" alt="Michael Jordan" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.classList.add('image-error')">
+    <span class="number-ghost" aria-hidden="true">23</span>
+    <span class="panel-shine" aria-hidden="true"></span>
+    <span class="sport-info"><span class="sport-kicker">🏀 &nbsp;BASKETBALL &nbsp;<span class="spot">●</span></span><span class="legend-first">MICHAEL</span><span class="legend-last">JORDAN</span><span class="legend-era">THE AIR ERA</span><span class="legend-open">ENTER BASKETBALL <span aria-hidden="true">↗</span></span></span>
+  </button>
+<button type="button" class="legend-card legend-nfl" data-sport-door="nfl" aria-label="Enter Football with Tom Brady">
+    <span class="legend-no" aria-hidden="true">02 / 04</span>
+    <span class="image-veil" aria-hidden="true"></span>
+    <img class="legend-photo" src="https://upload.wikimedia.org/wikipedia/commons/3/3b/Tom_Brady_2015.JPG" alt="Tom Brady" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.classList.add('image-error')">
+    <span class="number-ghost" aria-hidden="true">12</span>
+    <span class="panel-shine" aria-hidden="true"></span>
+    <span class="sport-info"><span class="sport-kicker">🏈 &nbsp;FOOTBALL &nbsp;<span class="spot">●</span></span><span class="legend-first">TOM</span><span class="legend-last">BRADY</span><span class="legend-era">THE DYNASTY ERA</span><span class="legend-open">ENTER FOOTBALL <span aria-hidden="true">↗</span></span></span>
+  </button>
+<button type="button" class="legend-card legend-soccer" data-sport-door="soccer" aria-label="Enter Soccer with Lionel Messi">
+    <span class="legend-no" aria-hidden="true">03 / 04</span>
+    <span class="image-veil" aria-hidden="true"></span>
+    <img class="legend-photo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Lionel-Messi-Argentina-2022-FIFA-World-Cup_sharpness.jpg/960px-Lionel-Messi-Argentina-2022-FIFA-World-Cup_sharpness.jpg" alt="Lionel Messi" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.classList.add('image-error')">
+    <span class="number-ghost" aria-hidden="true">10</span>
+    <span class="panel-shine" aria-hidden="true"></span>
+    <span class="sport-info"><span class="sport-kicker">⚽ &nbsp;SOCCER &nbsp;<span class="spot">●</span></span><span class="legend-first">LIONEL</span><span class="legend-last">MESSI</span><span class="legend-era">THE MAGIC ERA</span><span class="legend-open">ENTER SOCCER <span aria-hidden="true">↗</span></span></span>
+  </button>
+<button type="button" class="legend-card legend-mlb" data-sport-door="mlb" aria-label="Enter Baseball with Babe Ruth">
+    <span class="legend-no" aria-hidden="true">04 / 04</span>
+    <span class="image-veil" aria-hidden="true"></span>
+    <img class="legend-photo" src="https://upload.wikimedia.org/wikipedia/commons/7/79/Babe_Ruth%2C_full-length_portrait%2C_standing%2C_facing_front%2C_holding_up_bat%2C_in_baseball_uniform%2C_on_field_LCCN89714713.jpg" alt="Babe Ruth" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.classList.add('image-error')">
+    <span class="number-ghost" aria-hidden="true">03</span>
+    <span class="panel-shine" aria-hidden="true"></span>
+    <span class="sport-info"><span class="sport-kicker">⚾ &nbsp;BASEBALL &nbsp;<span class="spot">●</span></span><span class="legend-first">BABE</span><span class="legend-last">RUTH</span><span class="legend-era">THE LEGEND ERA</span><span class="legend-open">ENTER BASEBALL <span aria-hidden="true">↗</span></span></span>
+  </button>
+    </section>
+    <div class="landing-bar"><div><span class="accent-icon">↖</span><strong>SELECT A LEGEND</strong><span class="muted-bar">Explore their sport and choose how to play.</span></div><div class="mini-feature">MYCAREER <i>•</i> FRANCHISE <i>•</i> QUICK PLAY <i>•</i> FANTASY DRAFT</div><div class="right-end">ER / SEASON 26</div></div>
+  </main>
+  <footer class="site-footer"><span>ERA <b>RIVALS</b> © 2026 · CREATED BY XAVIER MATOS</span><span>INDEPENDENT FAN-MADE GAME PROTOTYPE · NO OFFICIAL ENDORSEMENT</span><button type="button" id="creditsToggle" aria-expanded="false" aria-controls="photoCredits">PHOTO CREDITS ↗</button></footer>
+  <aside class="photo-credits" id="photoCredits" hidden aria-label="Photograph credits"><h2>Photo credits &amp; licenses</h2><p>Photos are displayed with crop, color and shadow overlays. ERA RIVALS is an independent prototype and is not endorsed by the athletes or leagues.</p>
+  <ul><li><a href="https://commons.wikimedia.org/wiki/File:Jordan_by_Lipofsky_16577_(high_quality).jpg" target="_blank" rel="noopener">Michael Jordan</a> · Steve Lipofsky, <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener">CC BY-SA 3.0</a></li>
+  <li><a href="https://commons.wikimedia.org/wiki/File:Tom_Brady_2015.JPG" target="_blank" rel="noopener">Tom Brady</a> · Jeffrey Beall, <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener">CC BY 3.0</a></li>
+  <li><a href="https://commons.wikimedia.org/wiki/File:Lionel-Messi-Argentina-2022-FIFA-World-Cup_sharpness.jpg" target="_blank" rel="noopener">Lionel Messi</a> · Hossein Zohrevand / Tasnim News Agency, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>, digitally upscaled source</li>
+  <li><a href="https://commons.wikimedia.org/wiki/File:Babe_Ruth,_full-length_portrait,_standing,_facing_front,_holding_up_bat,_in_baseball_uniform,_on_field_LCCN89714713.jpg" target="_blank" rel="noopener">Babe Ruth</a> · Library of Congress / National Photo Company Collection, <a href="https://creativecommons.org/publicdomain/mark/1.0/" target="_blank" rel="noopener">Public domain</a></li></ul>
+  </aside>
+</div>
+<div id="sportOverlay" class="sport-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="selectedSportTitle">
+  <div class="overlay-backdrop" data-close-overlay></div>
+  <section class="sport-gateway" aria-label="Choose a play mode">
+    <button class="close-gateway" type="button" id="closeGateway" aria-label="Back to sport selection">✕</button>
+    <div class="gateway-image"><img id="selectedPhoto" src="" alt="" decoding="async" referrerpolicy="no-referrer"><div class="gateway-image-shadow"></div></div>
+    <div class="gateway-body">
+      <div class="gateway-eyebrow">ERA RIVALS <span class="dot">/</span> <span id="selectedSportNumber">01</span> OF 04</div>
+      <div class="gateway-sport-label" id="selectedSportKicker">🏀 BASKETBALL</div>
+      <h2 id="selectedSportTitle">BASKETBALL</h2>
+      <p id="selectedSportSub">Build a career. Call your shots. Make history.</p>
+      <div class="gateway-modes"><a id="linkCareer" class="mode-tile" href="#"><span class="mode-num">01</span><span class="mode-desc"><strong>MYCAREER</strong><small>Create your athlete · college or pro</small></span><span class="mode-arrow">↗</span></a>
+      <a id="linkFranchise" class="mode-tile" href="#"><span class="mode-num">02</span><span class="mode-desc"><strong>FRANCHISE</strong><small>Create your club · build your team</small></span><span class="mode-arrow">↗</span></a>
+      <a id="linkPlay" class="mode-tile" href="#"><span class="mode-num">03</span><span class="mode-desc"><strong>QUICK PLAY</strong><small>Enter the playable sports arena</small></span><span class="mode-arrow">↗</span></a>
+      <a id="linkClassic" class="mode-tile" href="classic.html"><span class="mode-num">04</span><span class="mode-desc"><strong>CLASSIC DRAFTS</strong><small>Build an all-time fantasy dream team</small></span><span class="mode-arrow">↗</span></a></div>
+      <p class="gateway-note">Original browser game · simulated careers and arcade gameplay · single-player</p>
+    </div>
+  </section>
+</div>
+<script>
+'use strict';
+/* ERA RIVALS Legends Portal: each athlete opens a sport-specific, real playable destination. */
+const modes={
+ nba:{title:'BASKETBALL',number:'01',emoji:'🏀',sub:'Make the next great dynasty. College or pro. Every era is yours.'},
+ nfl:{title:'FOOTBALL',number:'02',emoji:'🏈',sub:'Own the sidelines. Build your superstar or your franchise.'},
+ soccer:{title:'SOCCER',number:'03',emoji:'⚽',sub:'Make the beautiful game yours. Club career, legacy and glory.'},
+ mlb:{title:'BASEBALL',number:'04',emoji:'⚾',sub:'Write your name in baseball history. Every inning matters.'}
+};
+const $=id=>document.getElementById(id);
+const overlay=$('sportOverlay');
+let previousFocus=null;
+function chooseSport(sp){
+ const sport=modes[sp];if(!sport)return;
+ const card=document.querySelector(`[data-sport-door="${sp}"]`);
+ previousFocus=document.activeElement;
+ overlay.dataset.sport=sp;
+ $('selectedSportTitle').textContent=sport.title;
+ $('selectedSportNumber').textContent=sport.number;
+ $('selectedSportKicker').textContent=`${sport.emoji}  ${sport.title}`;
+ $('selectedSportSub').textContent=sport.sub;
+ const img=card.querySelector('.legend-photo');
+ $('selectedPhoto').src=img.src;
+ $('selectedPhoto').alt=img.alt;
+ for(const [id,mode] of [['linkCareer','player'],['linkFranchise','franchise'],['linkPlay','play']]) $(id).href=`pro-series.html?sport=${sp}&mode=${mode}`;
+ $('linkClassic').href=`classic.html`;
+ overlay.hidden=false;
+ document.body.classList.add('modal-open');
+ $('closeGateway').focus({preventScroll:true});
+}
+function closeSport(){
+ if(overlay.hidden)return;
+ overlay.hidden=true;
+ document.body.classList.remove('modal-open');
+ previousFocus?.focus?.({preventScroll:true});
+}
+for(const b of document.querySelectorAll('[data-sport-door]')) b.addEventListener('click',()=>chooseSport(b.dataset.sportDoor));
+$('closeGateway').addEventListener('click',closeSport);
+overlay.querySelector('[data-close-overlay]').addEventListener('click',closeSport);
+document.addEventListener('keydown',e=>{
+ if(e.key==='Escape') closeSport();
+ if(!overlay.hidden&&e.key==='Tab'){
+  const focusables=[...overlay.querySelectorAll('button,a[href]')].filter(el=>!el.disabled);
+  const first=focusables[0],last=focusables[focusables.length-1];
+  if(e.shiftKey&&document.activeElement===first){last.focus();e.preventDefault()}
+  else if(!e.shiftKey&&document.activeElement===last){first.focus();e.preventDefault()}
+ }
+});
+$('creditsToggle').addEventListener('click',()=>{
+ const el=$('photoCredits');el.hidden=!el.hidden;
+ $('creditsToggle').setAttribute('aria-expanded',String(!el.hidden));
+ if(!el.hidden)el.scrollIntoView({behavior:'smooth',block:'nearest'});
+});
+
+</script>
+</body>
+</html>
