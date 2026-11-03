@@ -8,7 +8,7 @@ An original single-player sports game prototype created by Xavier Matos. Basketb
 - MyPLAYER / MyCAREER builder: position, height, weight, attributes, franchise, era, progression and season results.
 - Manager Career, franchise roster management and live coaching simulator.
 - 2D animated coach board with play calls, tactics, substitutions, timeouts, pause, speed and possession simulation.
-- Blacktop 1v1 versus CPU, first to 11, with possession-by-possession results.
+- Blacktop 1v1 / 2v2 / 3v3 versus CPU, first to 11, with possession-by-possession results.
 - Squad Builder for PG / SG / SF / PF / C.
 - Salary Cap Builder with $100M / $150M / $200M caps.
 - Player of the Day, local Builder Pass XP, daily / weekly challenges, Nine Squares, saved builds, badges, local leaderboard, career history and trophy room.
