@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#090706"><meta name="description" content="ERA RIVALS: an original four-sport pro-only fantasy draft, career and live tactical coaching game."><title>ERA RIVALS | Build Your Legacy</title><link rel="icon" href="sports-lab-icon.svg" type="image/svg+xml"><link rel="stylesheet" href="lab/styles.css"></head>
+<body>
+<div id="appShell">
+<header class="masthead">
+  <button class="brand" id="brandHome" title="Go to dashboard"><span class="brand-icon">ER<span>✦</span></span><span class="brand-type"><strong>ERA <em>RIVALS</em></strong><small>THE PRO SPORTS LAB · EST. 2026</small></span></button>
+  <nav class="navtop" id="navTop" aria-label="Main navigation">
+    <button data-page="home" class="selected">HOME</button><button data-page="draft">DRAFT</button><button data-page="career">CAREER</button><button data-page="coach">LIVE COACH</button><button data-page="grid">THE GRID</button><button data-page="profile">TROPHY ROOM</button>
+  </nav>
+  <div class="mast-side"><span class="prolabel">PRO ONLY <i></i></span><button class="icon-btn" id="themeBtn" title="Switch light/dark theme">◐</button><button class="icon-btn menu-toggle" id="menuToggle" aria-label="Toggle navigation">☰</button></div>
+</header>
+<div class="ticker"><div><b>FOUR SPORTS.</b> ONE UNIVERSE.</div><div class="ticker-mid">NO COLLEGE. NO HIGH SCHOOL. ALL PROS.</div><span id="tickerDate">THE NEXT ERA STARTS NOW</span></div>
+<div class="sports-nav" id="sportsNav" role="tablist" aria-label="Choose sport"></div>
+<main id="page" aria-live="polite"></main>
+<footer class="footer"><div><strong>ERA RIVALS</strong> · ORIGINAL INDEPENDENT GAME · CREATED BY XAVIER MATOS</div><div><span>ALL PRO · NO CHARACTER MODELS</span><span>·</span><button id="openAbout">GAME INFO</button></div></footer>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<div id="modalRoot" class="modal-root" hidden></div>
+<script src="lab/data.js"></script><script src="lab/app.js"></script>
+</body></html>
