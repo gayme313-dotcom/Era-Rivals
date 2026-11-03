@@ -2,6 +2,9 @@
 
 An original single-player sports game prototype created by Xavier Matos. Basketball is the featured experience; NFL, soccer and MLB remain available through the sport selector.
 
+## Dedicated NBA Basketball Lab
+Open `basketball.html` from the main navigation for the focused Build-a-Bucket-style basketball experience. The curated NBA pool contains 183 player-season cards, with custom season-specific OVRs from 82 to 99 across the 1960s–2020s. A player can carry a different rating for different seasons; the scale is ERA RIVALS' own editorial simulation, not an official NBA 2K rating.
+
 ## Basketball features
 - Nine-skill Spin & Build fantasy draft with Guard / Big and Modern (2010+) / All-Time player pools.
 - Classic, Blind, Daily, Weekly, Auction, Playoff, Team and Season Simulator draft modes.
