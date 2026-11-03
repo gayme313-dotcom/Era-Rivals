@@ -104,7 +104,7 @@ function rollDraft(d,key='init'){
  const options=eligibleDraft(d);if(!options.length)return;
  let random=rng(hash([d.seed,d.round,d.rollIndex,key].join(':')));
  let cat=d.slots[d.round]||'FINAL';
- if(d.sport==='nba'&&d.picks.length===0&&key==='init')d.categories=shuffle(LEAGUES.nba.slots,d.seed);
+ if(d.sport==='nba'&&d.picks.length===0&&key==='init')d.categories=shuffle(d.mode==='build'?BUILD_SLOTS.nba:LEAGUES.nba.slots,d.seed);
  if(d.sport==='nba')cat=d.categories?.[d.round]||cat;
  d.category=cat;
  const choose=(a)=>a[Math.floor(random()*a.length)]||a[0];
