@@ -174,3 +174,9 @@ body.dark:before{opacity:.09;background-image:linear-gradient(#b86a2b12 1px,tran
 .bp-role-group b{font:800 11px 'DM Sans';letter-spacing:.08em}
 .bp-role-group small{font:7px 'Space Mono';color:#b49b7f}
 .bp-role-group:hover small{color:#f2c27a}
+
+
+.bp-quick-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.bp-quick.blacktop{background:radial-gradient(circle at 90% 15%,#63351688,transparent 40%),linear-gradient(125deg,#27170e,#17100b);border-color:#80502b}
+.bp-quick.blacktop>span{color:#c9f36b}
+@media(max-width:900px){.bp-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
