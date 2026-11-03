@@ -11,6 +11,7 @@ An original, single-player, four-sport professional sports draft and coaching ga
 - **Squad builder:** Draft a full roster for a selected franchise.
 - **Player and Manager Careers:** Choose position, height, weight, team, era and skill ratings. Physical choices affect build modifiers and simulated performance.
 - **2D Live Coach:** Animated name markers and ball movement. Call plays, change tactics, queue substitutions, pause and adjust match speed.
+- **2v2 Blacktop:** Single-player, first-to-11 basketball run against the CPU with a two-player lineup.
 - **Challenges and records:** Daily challenges, weekly gauntlets, Nine Squares, saved builds, badges, local standings, player records, Hall of Fame, past dailies and draft history.
 - **Trophy Room:** Career history, local leagues, saved builds and JSON backup/export.
 
