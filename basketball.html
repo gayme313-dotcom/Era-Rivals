@@ -41,7 +41,7 @@ main{max-width:1440px;margin:0 auto;padding:30px clamp(16px,4vw,58px) 70px}.eyeb
 (function(){
 'use strict';
 var $=function(s){return document.querySelector(s)}, $$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s))};
-var players=(window.PLAYER_DB&&PLAYER_DB.nba)||[];
+var players=(typeof PLAYER_DB!=='undefined'&&PLAYER_DB.nba)?PLAYER_DB.nba:[];
 var categories=[{id:'fin',name:'Finishing',desc:'Rim pressure, touch and contact finishing'},{id:'mid',name:'Mid-Range',desc:'Pull-ups, fades and tough twos'},{id:'three',name:'Three-Point',desc:'Spot-ups, movement shooting and range'},{id:'play',name:'Playmaking',desc:'Passing, handle and creation'},{id:'perim',name:'Perimeter D',desc:'On-ball defense and disruption'},{id:'inside',name:'Interior D',desc:'Rim protection and post defense'},{id:'rebound',name:'Rebounding',desc:'Board work and positioning'},{id:'ath',name:'Athleticism',desc:'Speed, strength, burst and vertical pop'},{id:'iq',name:'Basketball IQ',desc:'Reads, decision-making and winning plays'}];
 var teams=['Atlanta Hawks','Boston Celtics','Brooklyn Nets','Charlotte Hornets','Chicago Bulls','Cleveland Cavaliers','Dallas Mavericks','Denver Nuggets','Detroit Pistons','Golden State Warriors','Houston Rockets','Indiana Pacers','Los Angeles Clippers','Los Angeles Lakers','Memphis Grizzlies','Miami Heat','Milwaukee Bucks','Minnesota Timberwolves','New Orleans Pelicans','New York Knicks','Oklahoma City Thunder','Orlando Magic','Philadelphia 76ers','Phoenix Suns','Portland Trail Blazers','Sacramento Kings','San Antonio Spurs','Toronto Raptors','Utah Jazz','Washington Wizards'];
 var pos=['PG','SG','SF','PF','C'];
