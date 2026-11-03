@@ -114,9 +114,9 @@
     const height=score(60+(ht-72)*4);
     const attrs={Scoring:scoring,Finishing:finishing,Shooting:shooting,Passing:passing,Handles:handles,Defense:defense,Rebounding:rebounding,Athleticism:athleticism,Speed:speed,Bounce:bounce,IQ:iq,Height:height};
     const w=weights[(p.pos||[])[0]]||weights.SF;
-    const awardBoost=(awards.includes('MVP')?2:0)+(awards.includes('DPOY')?1.5:0)+(awards.includes('NBA1')?1:awards.includes('NBA2')?.5:0)+(awards.includes('DEF1')?.8:awards.includes('DEF2')?.4:0)+(awards.includes('AS')?.3:0)+(awards.includes('FMVP')?.8:0);
+    const awardBoost=(awards.includes('MVP')?2:0)+(awards.includes('DPOY')?1.5:0)+(awards.includes('NBA1')?1:awards.includes('NBA2')?0.5:0)+(awards.includes('DEF1')?0.8:awards.includes('DEF2')?0.4:0)+(awards.includes('AS')?.3:0)+(awards.includes('FMVP')?.8:0);
     const dominance=Math.min(5,Math.max(0,(pts-25)*.10)+Math.max(0,reb-10)*.08+Math.max(0,ast-8)*.08);
-    const availability=g>=80?.5:g<55?-1.5:g<65?-.8:0;
+    const availability=g>=80?0.5:g<55?-1.5:g<65?-0.8:0;
     const overall=clamp(Math.round(Object.keys(w).reduce((sum,k)=>sum+(attrs[k]||0)*w[k],0)+awardBoost+dominance+availability),55,99);
     const statsUrl='https://www.basketball-reference.com/leagues/NBA_'+p.season+'_per_game.html';
     return {...p,stats:s,attributes:attrs,rating:overall,statsVerified:true,ratingLabel:'ERA OVR',statsSource:'Basketball-Reference',statsUrl,statSeason:(p.season-1)+'–'+String(p.season).slice(-2)};
