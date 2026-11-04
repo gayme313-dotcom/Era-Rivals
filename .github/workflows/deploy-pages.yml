@@ -29,6 +29,18 @@ jobs:
           python-version: "3.12"
       - name: Build 100-player position pools
         run: python scripts/build-draft-player-pools.py
+      - name: Check draft JavaScript syntax
+        run: |
+          python - <<'PY'
+          import pathlib, re
+          html = pathlib.Path("draft.html").read_text(encoding="utf-8")
+          inline = re.findall(r"<script(?:\\s[^>]*)?>(.*?)</script>", html, re.S)
+          if not inline:
+              raise SystemExit("No inline draft script found")
+          pathlib.Path("/tmp/draft-inline.js").write_text("\\n".join(inline), encoding="utf-8")
+          PY
+          node --check /tmp/draft-inline.js
+          node --check draft-player-pools.js
       - name: Save generated player database
         run: |
           git config user.name "github-actions[bot]"
