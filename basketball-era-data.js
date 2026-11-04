@@ -24,5 +24,20 @@ PF:[
 C:[
 ['Bill Russell','Celtics',100,['defense','rebound','iq']],['Wilt Chamberlain','Lakers',100,['strength','inside','rebound']],['Moses Malone','76ers',99,['rebound','inside','strength']],['David Robinson','Spurs',98,['defense','block','speed']],['Patrick Ewing','Knicks',97,['inside','mid','block']],['Dwight Howard','Magic',97,['rebound','block','strength']],['Yao Ming','Rockets',96,['inside','size','mid']],['Bill Walton','Trail Blazers',97,['passing','defense','iq']],['George Mikan','Lakers',98,['inside','rebound','strength']],['Alonzo Mourning','Heat',95,['block','defense','strength']],['Artis Gilmore','Bulls',96,['inside','rebound','strength']],['Dikembe Mutombo','Nuggets',96,['block','defense','rebound']],['Robert Parish','Celtics',96,['inside','rebound','iq']],['Willis Reed','Knicks',97,['strength','inside','clutch']],['Wes Unseld','Bullets',96,['rebound','passing','strength']]]
 };
+
+Object.assign(meta,{
+'Bob Cousy':{'50s':98,'60s':93},'Walt Frazier':{'60s':95,'70s':98},'Nate Archibald':{'70s':98,'80s':91},
+'Sam Jones':{'60s':97,'70s':91},'Hal Greer':{'60s':97,'70s':92},'Lou Hudson':{'60s':94,'70s':96},'David Thompson':{'70s':97,'80s':91},'Sidney Moncrief':{'70s':90,'80s':97},
+'Rick Barry':{'60s':94,'70s':99,'80s':90},'John Havlicek':{'60s':97,'70s':98},'Billy Cunningham':{'60s':95,'70s':97},'James Worthy':{'80s':97,'90s':91},'Chris Mullin':{'80s':93,'90s':96},
+'Elvin Hayes':{'60s':90,'70s':98,'80s':91},'Dave DeBusschere':{'60s':96,'70s':94},'Jerry Lucas':{'60s':97,'70s':94},'Connie Hawkins':{'60s':94,'70s':96},'Maurice Lucas':{'70s':96,'80s':91},
+'Bob Lanier':{'70s':98,'80s':92},'Nate Thurmond':{'60s':98,'70s':93},'Bill Laimbeer':{'80s':95,'90s':90},'Ben Wallace':{'00s':97,'10s':90},
+'Rudy Gobert':{'10s':93,'20s':94},'Bam Adebayo':{'10s':90,'20s':94},'Karl-Anthony Towns':{'10s':94,'20s':93},'Domantas Sabonis':{'10s':90,'20s':94},'Chet Holmgren':{'20s':92},'Alperen Sengun':{'20s':92}
+});
+extras.PG.push(['Bob Cousy','Celtics',98,['passing','handles','iq']],['Walt Frazier','Knicks',98,['defense','handles','iq']],['Nate Archibald','Kings',97,['speed','handles','passing']]);
+extras.SG.push(['Sam Jones','Celtics',97,['shot','clutch','speed']],['Hal Greer','76ers',97,['shot','finishing','mid']],['Lou Hudson','Hawks',96,['shot','finishing','mid']],['David Thompson','Nuggets',97,['bounce','speed','finishing']],['Sidney Moncrief','Bucks',97,['defense','speed','iq']]);
+extras.SF.push(['Rick Barry','Warriors',99,['shot','passing','finishing']],['John Havlicek','Celtics',98,['stamina','defense','finishing']],['Billy Cunningham','76ers',97,['rebound','finishing','speed']],['James Worthy','Lakers',97,['finishing','speed','clutch']],['Chris Mullin','Warriors',96,['shot','range','iq']]);
+extras.PF.push(['Elvin Hayes','Bullets',98,['rebound','inside','defense']],['Dave DeBusschere','Knicks',96,['defense','rebound','strength']],['Jerry Lucas','Knicks',97,['rebound','passing','inside']],['Connie Hawkins','Suns',96,['handles','finishing','bounce']],['Maurice Lucas','Trail Blazers',96,['strength','rebound','inside']]);
+extras.C.push(['Bob Lanier','Pistons',98,['inside','strength','rebound']],['Nate Thurmond','Warriors',98,['defense','rebound','block']],['Willis Reed','Knicks',97,['strength','inside','clutch']],['Bill Laimbeer','Pistons',94,['rebound','range','strength']],['Ben Wallace','Pistons',97,['defense','rebound','block']],['Rudy Gobert','Timberwolves',94,['rebound','block','defense']],['Bam Adebayo','Heat',94,['defense','mobility','passing']],['Karl-Anthony Towns','Knicks',94,['range','inside','rebound']],['Domantas Sabonis','Kings',94,['rebound','passing','inside']],['Chet Holmgren','Thunder',93,['block','range','mobility']],['Alperen Sengun','Rockets',93,['inside','passing','iq']]);
+
 window.ERBasketballEraData={meta:meta,extras:extras};
 })();
