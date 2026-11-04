@@ -320,7 +320,7 @@ def build_mlb() -> dict[str, list[dict]]:
         if year and team_id:
             team_names[(year, team_id)] = value(row, "name", default=team_id)
 
-    fielding = defaultdict(lambda: {"games": 0, "year": 0, "team": ""})
+    fielding = defaultdict(lambda: {"games": 0, "exact_games": 0, "year": 0, "team": ""})
     for row in fielding_rows:
         pid = value(row, "playerID")
         pos = value(row, "POS").upper()
@@ -335,6 +335,8 @@ def build_mlb() -> dict[str, list[dict]]:
         for field_pos in field_positions:
             item = fielding[(pid, field_pos)]
             item["games"] += games
+            if pos != "OF":
+                item["exact_games"] += games
             if year >= item["year"]:
                 item["year"], item["team"] = year, team
 
@@ -366,7 +368,7 @@ def build_mlb() -> dict[str, list[dict]]:
         for rank, (pid, games, year, team_id) in enumerate(candidates[:TARGET_PER_POSITION]):
             pools[pos].append(player(
                 people[pid], team_names.get((year, team_id), team_id or "MLB Legends"),
-                99 - rank * 0.13, pos, boosts=BOOSTS["mlb"][pos],
+                99 - rank * 0.13, (pos if fielding[(pid, pos)]["exact_games"] else "OF"), boosts=BOOSTS["mlb"][pos],
             ))
 
     pitching_roles = {
