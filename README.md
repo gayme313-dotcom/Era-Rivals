@@ -1,29 +1,37 @@
-# ERA RIVALS — Basketball Hub + Pro Sports Lab
+# ERA RIVALS — Browser Sports Game
 
-An original single-player sports game prototype created by Xavier Matos. Basketball is the featured experience; NFL, soccer and MLB remain available through the sport selector.
+An original browser-based sports game created by Xavier Matos. The main entry point is `index.html`, which opens the Legends sport selector. Basketball, American football, soccer and baseball are available.
 
-## Dedicated NBA Basketball Lab
-Open `basketball.html` from the main navigation for the focused Build-a-Bucket-style basketball experience. The curated NBA pool contains 183 player-season cards, with custom season-specific OVRs from 82 to 99 across the 1960s–2020s. A player can carry a different rating for different seasons; the scale is ERA RIVALS' own editorial simulation, not an official NBA 2K rating.
+## Career mode
 
-## Basketball features
-- Nine-skill Spin & Build fantasy draft with Guard / Big and Modern (2010+) / All-Time player pools.
-- Classic, Blind, Daily, Weekly, Auction, Playoff, Team and Season Simulator draft modes.
-- MyPLAYER / MyCAREER builder: position, height, weight, attributes, franchise, era, progression and season results.
-- Manager Career, franchise roster management and live coaching simulator.
-- 2D animated coach board with play calls, tactics, substitutions, timeouts, pause, speed and possession simulation.
-- Blacktop 1v1 / 2v2 / 3v3 versus CPU, first to 11, with possession-by-possession results.
-- Squad Builder for PG / SG / SF / PF / C.
-- Salary Cap Builder with $100M / $150M / $200M caps.
-- Player of the Day, local Builder Pass XP, daily / weekly challenges, Nine Squares, saved builds, badges, local leaderboard, career history and trophy room.
+Each sport has a dedicated Player Career experience with:
 
-## Other sports
-NFL, professional soccer and MLB remain selectable. They retain their own draft, career, season simulation, tactical coaching and record systems.
+- Five save slots per sport, with separate player builds and career histories.
+- Player development through training points and attribute upgrades.
+- Full season progression and simulated games.
+- Sport-specific awards, championships and career legacy points.
+- Contracts, free agency offers, trade requests and team changes.
+- Editable depth charts with starters and bench roles.
+- Retirement, Hall of Fame eligibility and an all-time career leaderboard.
+
+Career achievements award legacy points. Examples include MVP (1,000), league or Super Bowl championship (1,500), Finals / Super Bowl MVP (1,000), All-Star / Pro Bowl (250), and Hall of Fame induction (2,000). Soccer and baseball have their own sport-specific award values.
+
+## Other game modes
+
+- 3D browser gameplay with keyboard, touch and gamepad controls.
+- MyPLAYER identity, appearance and attribute builder.
+- Franchise team builder and roster management.
+- Build-a-player fantasy draft with sport and position filters.
+- Basketball Lab with curated player-season cards and season-specific ratings.
 
 ## Saves and online services
-Progress is stored in the browser's localStorage. Export / import saves in Trophy Room. Local leagues and leaderboards are device-local. Online accounts, global leaderboards, live multiplayer and remote friend leagues require a backend and are not included.
 
-## Data and licensing
-Player/team/season references are curated and incomplete. Fantasy ratings, estimated salary-cap values, match results and career statistics are original game simulations, not official ratings or verified box scores. This project does not include protected game source code, official logos, licensed player likenesses, or copied game assets.
+Career slots and player progress are stored in the browser's localStorage on the device being used. They are not automatically synced between devices. Online accounts, global leaderboards, remote multiplayer and cloud saves require a backend and are not included in this static browser build.
 
 ## Run
-Open `index.html` in a modern browser or deploy the folder to GitHub Pages. All files are static; no build step is required.
+
+Open `index.html` in a modern browser or publish the repository with GitHub Pages. The site is static and has no build step.
+
+## Data and licensing
+
+Season simulations, ratings, contracts, career awards and results are original game simulations, not official league ratings or verified statistics. Player and team data is curated and may be incomplete. ERA RIVALS is an independent fan-made prototype and is not affiliated with the NBA, NFL, MLB, FIFA, or any sports league.
