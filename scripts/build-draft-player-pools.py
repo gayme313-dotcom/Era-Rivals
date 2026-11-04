@@ -324,15 +324,19 @@ def build_mlb() -> dict[str, list[dict]]:
     for row in fielding_rows:
         pid = value(row, "playerID")
         pos = value(row, "POS").upper()
-        if not pid or pos not in ("C", "1B", "2B", "3B", "SS", "LF", "CF", "RF"):
+        if not pid:
+            continue
+        field_positions = [pos] if pos in ("C", "1B", "2B", "3B", "SS", "LF", "CF", "RF") else (["LF", "CF", "RF"] if pos == "OF" else [])
+        if not field_positions:
             continue
         games = int(number(row, "G"))
         year = int(number(row, "yearID"))
         team = value(row, "teamID")
-        item = fielding[(pid, pos)]
-        item["games"] += games
-        if year >= item["year"]:
-            item["year"], item["team"] = year, team
+        for field_pos in field_positions:
+            item = fielding[(pid, field_pos)]
+            item["games"] += games
+            if year >= item["year"]:
+                item["year"], item["team"] = year, team
 
     pitching = defaultdict(lambda: {"g": 0, "gs": 0, "sv": 0, "ipouts": 0, "so": 0, "year": 0, "team": ""})
     for row in pitching_rows:
