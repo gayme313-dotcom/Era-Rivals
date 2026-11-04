@@ -109,10 +109,10 @@ body.modal-open{overflow:hidden}
       <div class="gateway-sport-label" id="selectedSportKicker">🏀 BASKETBALL</div>
       <h2 id="selectedSportTitle">BASKETBALL</h2>
       <p id="selectedSportSub">Build a career. Call your shots. Make history.</p>
-      <div class="gateway-modes"><a id="linkCareer" class="mode-tile" href="#"><span class="mode-num">01</span><span class="mode-desc"><strong>MYCAREER</strong><small>Create your athlete · college or pro</small></span><span class="mode-arrow">↗</span></a>
-      <a id="linkFranchise" class="mode-tile" href="#"><span class="mode-num">02</span><span class="mode-desc"><strong>FRANCHISE</strong><small>Create your club · build your team</small></span><span class="mode-arrow">↗</span></a>
-      <a id="linkPlay" class="mode-tile" href="#"><span class="mode-num">03</span><span class="mode-desc"><strong>QUICK PLAY</strong><small>Enter the playable sports arena</small></span><span class="mode-arrow">↗</span></a>
-      <a id="linkClassic" class="mode-tile" href="classic.html"><span class="mode-num">04</span><span class="mode-desc"><strong>CLASSIC DRAFTS</strong><small>Build an all-time fantasy dream team</small></span><span class="mode-arrow">↗</span></a></div>
+      <div class="gateway-modes"><a id="linkCareer" class="mode-tile" href="#"><span class="mode-num">01</span><span class="mode-desc"><strong>MYCAREER</strong><small>Multiple saves · seasons · contracts · Hall of Fame</small></span><span class="mode-arrow">↗</span></a>
+      <a id="linkFranchise" class="mode-tile" href="#"><span class="mode-num">02</span><span class="mode-desc"><strong>FRANCHISE</strong><small>Build a roster · set your depth chart</small></span><span class="mode-arrow">↗</span></a>
+      <a id="linkPlay" class="mode-tile" href="#"><span class="mode-num">03</span><span class="mode-desc"><strong>QUICK PLAY</strong><small>3D gameplay · all four sports</small></span><span class="mode-arrow">↗</span></a>
+      <a id="linkClassic" class="mode-tile" href="classic.html"><span class="mode-num">04</span><span class="mode-desc"><strong>PLAYER DRAFT</strong><small>Spin current and all-time player attributes</small></span><span class="mode-arrow">↗</span></a></div>
       <p class="gateway-note">Original browser game · simulated careers and arcade gameplay · single-player</p>
     </div>
   </section>
@@ -131,7 +131,20 @@ const overlay=$('sportOverlay');
 let previousFocus=null;
 function chooseSport(sp){
  if(!modes[sp])return;
- window.location.href='draft.html?sport='+encodeURIComponent(sp);
+ previousFocus=document.activeElement;
+ $('selectedSportNumber').textContent=modes[sp].number;
+ $('selectedSportKicker').textContent=modes[sp].emoji+' '+modes[sp].title;
+ $('selectedSportTitle').textContent=modes[sp].title;
+ $('selectedSportSub').textContent=modes[sp].sub;
+ const card=document.querySelector('[data-sport-door="'+sp+'"]');
+ const photo=card&&card.querySelector('.legend-photo');
+ $('selectedPhoto').src=photo?photo.src:'';
+ $('selectedPhoto').alt=modes[sp].title;
+ $('linkCareer').href='pro-series.html?sport='+encodeURIComponent(sp)+'&mode=career';
+ $('linkFranchise').href='pro-series.html?sport='+encodeURIComponent(sp)+'&mode=franchise';
+ $('linkPlay').href='pro-series.html?sport='+encodeURIComponent(sp)+'&mode=play';
+ $('linkClassic').href='draft.html?sport='+encodeURIComponent(sp);
+ overlay.dataset.sport=sp;overlay.hidden=false;document.body.classList.add('modal-open');$('closeGateway').focus();
 }
 function closeSport(){
  if(overlay.hidden)return;
