@@ -37,3 +37,14 @@ Open `index.html` in a modern browser or publish the repository with GitHub Page
 ## Data and licensing
 
 Season simulations, ratings, contracts, career awards and results are original game simulations, not official league ratings or verified statistics. Basketball decade ratings are ERA RIVALS estimates designed for gameplay balance, not official historical ratings. Player and team data is curated and may be incomplete. ERA RIVALS is an independent fan-made prototype and is not affiliated with the NBA, NFL, MLB, FIFA, or any sports league.
+
+## Expanded fantasy draft pools
+
+The fantasy draft now targets **100 unique players for every selectable role** across basketball, American football, soccer, and baseball. The UI removes duplicate names and caps each selected role at 100 players.
+
+- Basketball: curated all-time players plus the 2017–18 positional sample from [lazappi/nba_positions](https://github.com/lazappi/nba_positions). The era selector still filters players to the selected decade.
+- American football: player identities, position groups, ESPN IDs, and available headshots from [nflverse](https://github.com/nflverse/nflverse-data).
+- Soccer: player names, main/secondary positions, clubs, market values, and available portraits from [salimt/football-datasets](https://github.com/salimt/football-datasets).
+- Baseball: historical names, position appearances, and team history from the [Lahman database](https://github.com/daviddalpiaz/pylahman).
+
+The generated `draft-player-pools.js` file is refreshed during the GitHub Pages publishing workflow. ERA RIVALS overall ratings are game estimates, not official league ratings. Some older basketball and baseball players may use initials instead of a portrait when the source does not provide a usable image ID.
