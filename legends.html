@@ -130,22 +130,8 @@ const $=id=>document.getElementById(id);
 const overlay=$('sportOverlay');
 let previousFocus=null;
 function chooseSport(sp){
- const sport=modes[sp];if(!sport)return;
- const card=document.querySelector(`[data-sport-door="${sp}"]`);
- previousFocus=document.activeElement;
- overlay.dataset.sport=sp;
- $('selectedSportTitle').textContent=sport.title;
- $('selectedSportNumber').textContent=sport.number;
- $('selectedSportKicker').textContent=`${sport.emoji}  ${sport.title}`;
- $('selectedSportSub').textContent=sport.sub;
- const img=card.querySelector('.legend-photo');
- $('selectedPhoto').src=img.src;
- $('selectedPhoto').alt=img.alt;
- for(const [id,mode] of [['linkCareer','player'],['linkFranchise','franchise'],['linkPlay','play']]) $(id).href=`pro-series.html?sport=${sp}&mode=${mode}`;
- $('linkClassic').href=`classic.html`;
- overlay.hidden=false;
- document.body.classList.add('modal-open');
- $('closeGateway').focus({preventScroll:true});
+ if(!modes[sp])return;
+ window.location.href='draft.html?sport='+encodeURIComponent(sp);
 }
 function closeSport(){
  if(overlay.hidden)return;
