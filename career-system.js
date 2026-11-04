@@ -137,6 +137,7 @@ function mount(){
  if(!root){root=document.createElement('section');root.id='erCareerApp';root.className='er-career-app';page.appendChild(root)}
  root.addEventListener('click',clickHandler);
  root.addEventListener('change',function(e){if(e.target.id==='erSlotSelect')activate(e.target.value);if(e.target.id==='erAttrSelect'){selectedAttr=e.target.value;render()}});
+ window.addEventListener('er:profile-saved',function(e){if(!e.detail||e.detail.sport===activeSport){saveCurrent();if(!simulating)render()}});
  window.addEventListener('er:game-awarded',handleGameAward);
  window.addEventListener('er:sport-changed',function(e){activeSport=e.detail&&e.detail.sport||activeSport;var s=ensure(activeSport);if(s&&window.ERPro)window.ERPro.loadProfile(activeSport,s.profile);render()});
  document.addEventListener('click',function(e){var b=e.target.closest('[data-view="game"]');if(b){var s=activeSlot(activeSport);if(s&&s.career.status==='RETIRED'){e.preventDefault();e.stopImmediatePropagation();toast('This player has retired. Create a new career to play.')}}},true);
