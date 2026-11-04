@@ -48,3 +48,5 @@ The fantasy draft now targets **100 unique players for every selectable role** a
 - Baseball: historical names, position appearances, and team history from the [Lahman database](https://github.com/daviddalpiaz/pylahman).
 
 The generated `draft-player-pools.js` file is refreshed during the GitHub Pages publishing workflow. ERA RIVALS overall ratings are game estimates, not official league ratings. Some older basketball and baseball players may use initials instead of a portrait when the source does not provide a usable image ID.
+
+Outfield note: the historical baseball source records some players only as `OF`, without a separate LF/CF/RF split. Those players can appear in all three outfield pools and are labeled `OF` in the player list. Era filters in basketball show players active in the selected decade, so those filtered lists can be smaller than the 100-player all-time pools.
