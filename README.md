@@ -22,7 +22,9 @@ Career achievements award legacy points. Examples include MVP (1,000), league or
 - MyPLAYER identity, appearance and attribute builder.
 - Franchise team builder and roster management.
 - Build-a-player fantasy draft with sport and position filters.
-- Basketball Lab with curated player-season cards and season-specific ratings.
+- Basketball all-time player pool with 133 curated players across five positions (23–32 per position).
+- Basketball decade filter from the 1960s through the 2020s, with era-specific game overall ratings for each player's active era.
+- Attribute spins use the selected era rating, and positions with no eligible players in that decade are disabled.
 
 ## Saves and online services
 
@@ -34,4 +36,4 @@ Open `index.html` in a modern browser or publish the repository with GitHub Page
 
 ## Data and licensing
 
-Season simulations, ratings, contracts, career awards and results are original game simulations, not official league ratings or verified statistics. Player and team data is curated and may be incomplete. ERA RIVALS is an independent fan-made prototype and is not affiliated with the NBA, NFL, MLB, FIFA, or any sports league.
+Season simulations, ratings, contracts, career awards and results are original game simulations, not official league ratings or verified statistics. Basketball decade ratings are ERA RIVALS estimates designed for gameplay balance, not official historical ratings. Player and team data is curated and may be incomplete. ERA RIVALS is an independent fan-made prototype and is not affiliated with the NBA, NFL, MLB, FIFA, or any sports league.
