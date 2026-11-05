@@ -1,52 +1,54 @@
-# ERA RIVALS — Browser Sports Game
+# ERA RIVALS — Decision-Based Sports Management Game
 
-An original browser-based sports game created by Xavier Matos. The main entry point is `index.html`, which opens the Legends sport selector. Basketball, American football, soccer and baseball are available.
+ERA RIVALS is an original browser sports universe created by Xavier Matos. The main entry point is `index.html`, which opens the all-time legends portal for basketball, American football, soccer and baseball.
 
-## Career mode
+## Main game: Front Office
 
-Each sport has a dedicated Player Career experience with:
+The primary game is a management simulator. You do not control athletes with movement or shooting controls. You make the decisions and the match engine simulates the result.
 
-- Five save slots per sport, with separate player builds and career histories.
-- Player development through training points and attribute upgrades.
-- Full season progression and simulated games.
-- Sport-specific awards, championships and career legacy points.
-- Contracts, free agency offers, trade requests and team changes.
-- Editable depth charts with starters and bench roles.
-- Retirement, Hall of Fame eligibility and an all-time career leaderboard.
+Open `manager.html` directly or choose a sport from the Legends homepage.
 
-Career achievements award legacy points. Examples include MVP (1,000), league or Super Bowl championship (1,500), Finals / Super Bowl MVP (1,000), All-Star / Pro Bowl (250), and Hall of Fame induction (2,000). Soccer and baseball have their own sport-specific award values.
+- Five local dynasty save slots per sport.
+- Current-player and All-Time Legends roster eras.
+- 100+ player entries per position, using curated current stars, historical legends, database players and clearly labeled generated prospects where a pool needs filling.
+- Roster management: starters, bench, player roles, injuries, morale and fatigue.
+- Team tactics: offensive identity, defensive identity, tempo, risk and rotation.
+- Matchday decisions: prepare a game, simulate the first half, make a halftime adjustment, then simulate the finish.
+- Season progression, records, standings, match reports and championship awards.
+- Front office: free-agent signings, player trades, contract extensions and releases.
+- Scouting and drafting prospects.
+- Team training and player development based on potential.
+- Player career legacy points, retirement and Hall of Fame rankings by exact position.
+
+The match engine uses team ratings, lineup choices, chemistry, morale, fatigue, tactics and matchday decisions. Results and ratings are original game simulations, not official league statistics.
 
 ## Other game modes
 
-- 3D browser gameplay with keyboard, touch and gamepad controls.
-- MyPLAYER identity, appearance and attribute builder.
-- Franchise team builder and roster management.
-- Build-a-player fantasy draft with sport and position filters.
-- Basketball all-time player pool with 133 curated players across five positions (23–32 per position).
-- Basketball decade filter from the 1960s through the 2020s, with era-specific game overall ratings for each player's active era.
-- Attribute spins use the selected era rating, and positions with no eligible players in that decade are disabled.
+- The Legends homepage presents an editorial all-time top five for each of the four sports.
+- `draft.html` provides the player draft and attribute-spin experience.
+- `career-system.js` supports the separate player-career system with multiple saves, training, simulated seasons, contracts, trades, depth charts, retirement and Hall of Fame eligibility.
+- `classic.html` contains the separate school / college career prototype.
+- `pro-series.html` is the older 3D arcade prototype. Its old Play and Franchise entry points now route to the decision-based Front Office game.
 
 ## Saves and online services
 
-Career slots and player progress are stored in the browser's localStorage on the device being used. They are not automatically synced between devices. Online accounts, global leaderboards, remote multiplayer and cloud saves require a backend and are not included in this static browser build.
+Front Office dynasty saves are stored in the browser's localStorage on the device being used. They are not automatically synced between devices. Online accounts, global leaderboards, remote multiplayer and cloud saves require a hosted backend and are not included in this static browser build.
 
 ## Run
 
-Open `index.html` in a modern browser or publish the repository with GitHub Pages. The site is static and has no build step.
+Open `index.html` or `manager.html` in a modern browser, or publish the repository with GitHub Pages. The site is static and has no build step.
 
 ## Data and licensing
 
-Season simulations, ratings, contracts, career awards and results are original game simulations, not official league ratings or verified statistics. Basketball decade ratings are ERA RIVALS estimates designed for gameplay balance, not official historical ratings. Player and team data is curated and may be incomplete. ERA RIVALS is an independent fan-made prototype and is not affiliated with the NBA, NFL, MLB, FIFA, or any sports league.
+Player identities are drawn from curated and open sports datasets. ERA RIVALS overall ratings, contracts, match simulations, awards and results are original game estimates, not official league ratings or verified statistics. ERA RIVALS is an independent fan-made prototype and is not affiliated with the NBA, NFL, MLB, FIFA or any sports league.
 
-## Expanded fantasy draft pools
+## Expanded player pools
 
-The fantasy draft now targets **100 unique players for every selectable role** across basketball, American football, soccer, and baseball. The UI removes duplicate names and caps each selected role at 100 players.
+The fantasy draft targets 100 unique players for every selectable role across basketball, American football, soccer and baseball. The Front Office game uses the expanded pools and adds current-star and all-time legend entries. If a current pool has fewer than 100 entries, clearly labeled fictional ERA RIVALS prospects fill the remaining slots.
 
-- Basketball: curated all-time players plus the 2017–18 positional sample from [lazappi/nba_positions](https://github.com/lazappi/nba_positions). The era selector still filters players to the selected decade.
-- American football: player identities, position groups, ESPN IDs, and available headshots from [nflverse](https://github.com/nflverse/nflverse-data).
-- Soccer: player names, main/secondary positions, clubs, market values, and available portraits from [salimt/football-datasets](https://github.com/salimt/football-datasets).
-- Baseball: historical names, position appearances, and team history from the [Lahman database](https://github.com/daviddalpiaz/pylahman).
+- Basketball: curated historical players, current stars and positional data from the NBA datasets.
+- American football: player identities and position groups from [nflverse](https://github.com/nflverse/nflverse-data).
+- Soccer: player names, positions and club data from [football-datasets](https://github.com/salimt/football-datasets).
+- Baseball: historical names and position appearances from the [Lahman database](https://github.com/daviddalpiaz/pylahman).
 
-The generated `draft-player-pools.js` file is refreshed during the GitHub Pages publishing workflow. ERA RIVALS overall ratings are game estimates, not official league ratings. Some older basketball and baseball players may use initials instead of a portrait when the source does not provide a usable image ID.
-
-Outfield note: the historical baseball source records some players only as `OF`, without a separate LF/CF/RF split. Those players can appear in all three outfield pools and are labeled `OF` in the player list. Era filters in basketball show players active in the selected decade, so those filtered lists can be smaller than the 100-player all-time pools.
+The generated `draft-player-pools.js` file is refreshed during the GitHub Pages publishing workflow. Some player records may have incomplete team or portrait data.
