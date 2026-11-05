@@ -51,7 +51,7 @@ The fantasy draft targets 100 unique players for every selectable role across ba
 - Soccer: player names, positions and club data from [football-datasets](https://github.com/salimt/football-datasets).
 - Baseball: historical names and position appearances from the [Lahman database](https://github.com/daviddalpiaz/pylahman).
 
-The generated `draft-player-pools.js` file is refreshed during the GitHub Pages publishing workflow. Some player records may have incomplete team or portrait data.
+The generated `draft-player-pools.js` file is refreshed during the GitHub Pages publishing workflow. Some player records may have incomplete team or portrait data. Generated fallback prospects are cached by sport, era and position during a session so scouting pools and opponent ratings stay consistent.
 
 ## Front Office v2 (November 5, 2026)
 
