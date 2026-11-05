@@ -69,6 +69,50 @@ const LEGENDS={
  RF:[['Babe Ruth','New York Yankees',100],['Hank Aaron','Atlanta Braves',100],['Roberto Clemente','Pittsburgh Pirates',99],['Ichiro Suzuki','Seattle Mariners',99]]
  }
 };
+const CURRENT={
+ nba:{
+  PG:[['Shai Gilgeous-Alexander','Oklahoma City Thunder',98],['Luka Dončić','Dallas Mavericks',98],['Jalen Brunson','New York Knicks',95],['Tyrese Haliburton','Indiana Pacers',94]],
+  SG:[['Anthony Edwards','Minnesota Timberwolves',97],['Devin Booker','Phoenix Suns',96],['Donovan Mitchell','Cleveland Cavaliers',96],['Jaylen Brown','Boston Celtics',95]],
+  SF:[['Jayson Tatum','Boston Celtics',98],['Kevin Durant','Phoenix Suns',95],['LeBron James','Los Angeles Lakers',95],['Kawhi Leonard','LA Clippers',93]],
+  PF:[['Giannis Antetokounmpo','Milwaukee Bucks',99],['Paolo Banchero','Orlando Magic',93],['Zion Williamson','New Orleans Pelicans',92],['Jaren Jackson Jr.','Memphis Grizzlies',92]],
+  C:[['Nikola Jokić','Denver Nuggets',100],['Victor Wembanyama','San Antonio Spurs',98],['Joel Embiid','Philadelphia 76ers',97],['Bam Adebayo','Miami Heat',94]]
+ },
+ nfl:{
+  QB:[['Patrick Mahomes','Kansas City Chiefs',99],['Josh Allen','Buffalo Bills',98],['Lamar Jackson','Baltimore Ravens',97],['Joe Burrow','Cincinnati Bengals',96],['Jalen Hurts','Philadelphia Eagles',95]],
+  RB:[['Christian McCaffrey','San Francisco 49ers',98],['Saquon Barkley','Philadelphia Eagles',97],['Derrick Henry','Baltimore Ravens',96],['Jahmyr Gibbs','Detroit Lions',95]],
+  WR:[['Justin Jefferson','Minnesota Vikings',99],['Ja’Marr Chase','Cincinnati Bengals',99],['CeeDee Lamb','Dallas Cowboys',98],['Amon-Ra St. Brown','Detroit Lions',96]],
+  TE:[['Travis Kelce','Kansas City Chiefs',97],['George Kittle','San Francisco 49ers',96],['Sam LaPorta','Detroit Lions',94],['Trey McBride','Arizona Cardinals',93]],
+  OL:[['Trent Williams','San Francisco 49ers',98],['Penei Sewell','Detroit Lions',97],['Lane Johnson','Philadelphia Eagles',96],['Creed Humphrey','Kansas City Chiefs',95]],
+  DL:[['Myles Garrett','Cleveland Browns',99],['T.J. Watt','Pittsburgh Steelers',98],['Micah Parsons','Dallas Cowboys',98],['Nick Bosa','San Francisco 49ers',97]],
+  LB:[['Fred Warner','San Francisco 49ers',98],['Roquan Smith','Baltimore Ravens',96],['Bobby Wagner','Washington Commanders',94]],
+  DB:[['Sauce Gardner','New York Jets',97],['Patrick Surtain II','Denver Broncos',97],['Kyle Hamilton','Baltimore Ravens',96],['Minkah Fitzpatrick','Pittsburgh Steelers',95]]
+ },
+ soccer:{
+  GK:[['Thibaut Courtois','Real Madrid',97],['Alisson','Liverpool',96],['Gianluigi Donnarumma','Paris Saint-Germain',96]],
+  RB:[['Achraf Hakimi','Paris Saint-Germain',97],['Trent Alexander-Arnold','Liverpool',96],['Jeremie Frimpong','Bayer Leverkusen',94]],
+  CB:[['Virgil van Dijk','Liverpool',98],['William Saliba','Arsenal',97],['Rúben Dias','Manchester City',96],['Alessandro Bastoni','Inter Milan',96]],
+  LB:[['Theo Hernández','AC Milan',96],['Nuno Mendes','Paris Saint-Germain',96],['Alphonso Davies','Bayern Munich',96]],
+  CDM:[['Rodri','Manchester City',99],['Declan Rice','Arsenal',97],['Moisés Caicedo','Chelsea',95]],
+  CM:[['Jude Bellingham','Real Madrid',98],['Federico Valverde','Real Madrid',97],['Pedri','FC Barcelona',97],['Kevin De Bruyne','Manchester City',96]],
+  CAM:[['Florian Wirtz','Bayer Leverkusen',97],['Jamal Musiala','Bayern Munich',97],['Martin Ødegaard','Arsenal',96],['Cole Palmer','Chelsea',96]],
+  RW:[['Lamine Yamal','FC Barcelona',98],['Bukayo Saka','Arsenal',97],['Mohamed Salah','Liverpool',96]],
+  LW:[['Vinícius Júnior','Real Madrid',98],['Raphinha','FC Barcelona',96],['Khvicha Kvaratskhelia','Napoli',95]],
+  ST:[['Kylian Mbappé','Real Madrid',99],['Erling Haaland','Manchester City',99],['Harry Kane','Bayern Munich',97],['Lautaro Martínez','Inter Milan',96]]
+ },
+ mlb:{
+  SP:[['Paul Skenes','Pittsburgh Pirates',98],['Tarik Skubal','Detroit Tigers',97],['Zack Wheeler','Philadelphia Phillies',96],['Gerrit Cole','New York Yankees',95]],
+  RP:[['Josh Hader','Houston Astros',96],['Ryan Helsley','St. Louis Cardinals',95],['Devin Williams','New York Yankees',94]],
+  CP:[['Emmanuel Clase','Cleveland Guardians',98],['Edwin Díaz','New York Mets',96],['Mason Miller','Oakland Athletics',95]],
+  C:[['Cal Raleigh','Seattle Mariners',96],['William Contreras','Milwaukee Brewers',95],['Adley Rutschman','Baltimore Orioles',94]],
+  '1B':[['Freddie Freeman','Los Angeles Dodgers',97],['Matt Olson','Atlanta Braves',96],['Vladimir Guerrero Jr.','Toronto Blue Jays',95]],
+  '2B':[['Ketel Marte','Arizona Diamondbacks',96],['Jose Altuve','Houston Astros',95],['Marcus Semien','Texas Rangers',95]],
+  '3B':[['José Ramírez','Cleveland Guardians',97],['Austin Riley','Atlanta Braves',95],['Rafael Devers','Boston Red Sox',94]],
+  SS:[['Bobby Witt Jr.','Kansas City Royals',98],['Gunnar Henderson','Baltimore Orioles',97],['Francisco Lindor','New York Mets',96]],
+  LF:[['Juan Soto','New York Yankees',98],['Yordan Alvarez','Houston Astros',97],['Kyle Tucker','Chicago Cubs',95]],
+  CF:[['Julio Rodríguez','Seattle Mariners',96],['Corbin Carroll','Arizona Diamondbacks',95],['Mike Trout','Los Angeles Angels',94]],
+  RF:[['Aaron Judge','New York Yankees',100],['Mookie Betts','Los Angeles Dodgers',97],['Shohei Ohtani','Los Angeles Dodgers',100]]
+ }
+};
 const TACTICS={
  nba:{off:['Balanced','Pick & Roll','3-Point Heavy','Inside Game','Motion Offense'],def:['Man-to-Man','Zone Defense','Switch Everything','Protect the Paint','Full-Court Press'],tempo:['Slow','Normal','Fast'],risk:['Conservative','Balanced','Aggressive'],decisions:[['Feed the hot hand','Give your best scorer more touches. More offense, more fatigue.',6,0,8],['Lock in defensively','Make every possession difficult. Stronger defense.',1,7,1],['Push the pace','Create more possessions and attack early.',5,0,10]]},
  nfl:{off:['Balanced','Air Raid','Ground & Pound','Play Action','West Coast'],def:['Cover 2','Man Blitz','Zone Blitz','Stop the Run','Prevent Defense'],tempo:['Slow','Normal','Fast'],risk:['Conservative','Balanced','Aggressive'],decisions:[['Attack downfield','Take shots at big plays. More upside and more turnovers.',7,0,5],['Protect the quarterback','Keep the pocket clean and control the clock.',3,3,1],['Bring the pressure','Send extra rushers and force a mistake.',0,7,6]]},
@@ -94,13 +138,14 @@ function cleanName(n){return String(n||'').replace(/\s+\(\d+\)$/,'')}
 function playerPools(pos,era){
  const raw=(window.ERDraftExpandedPools&&window.ERDraftExpandedPools[sport]&&window.ERDraftExpandedPools[sport][pos])||[];
  let list=raw.map(p=>({name:cleanName(p.name),team:p.team||'Free Agent',base:Number(p.base)||74,source:'Player Database'}));
+ if(era==='current'&&CURRENT[sport]&&CURRENT[sport][pos])CURRENT[sport][pos].forEach(x=>list.push({name:x[0],team:x[1],base:x[2],source:'Current Star'}));
  if(era==='alltime'&&sport==='nba'&&window.ERBasketballEraData&&window.ERBasketballEraData.extras&&window.ERBasketballEraData.extras[pos]){
   window.ERBasketballEraData.extras[pos].forEach(x=>list.push({name:x[0],team:x[1],base:Number(x[2])||80,source:'Historical Archive'}));
  }
  if(era==='alltime'&&LEGENDS[sport]&&LEGENDS[sport][pos]){
   LEGENDS[sport][pos].forEach(x=>list.push({name:x[0],team:x[1],base:x[2],source:'All-Time Legend'}));
  }
- const seen=new Set();list=list.filter(p=>{const k=p.name.toLowerCase();if(seen.has(k))return false;seen.add(k);return true});
+ const byName=new Map();list.forEach(p=>{const k=p.name.toLowerCase(),old=byName.get(k);if(!old||p.base>old.base)byName.set(k,p)});list=[...byName.values()];
  let n=1;while(list.length<100){list.push({name:'ER Prospect '+pos+' '+String(n++).padStart(3,'0'),team:'ERA RIVALS ACADEMY',base:68+Math.floor(rand(0,15)),source:'Generated Prospect'})}
  return list.sort((a,b)=>b.base-a.base);
 }
