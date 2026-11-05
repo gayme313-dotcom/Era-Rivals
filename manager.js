@@ -500,21 +500,37 @@ function sameFranchise(playerTeam,selectedTeam){
  const accepted=[selectedTeam,...aliases].map(normalizedClubName);
  return accepted.includes(normalizedClubName(playerTeam));
 }
+function allTimeClubRating(team){
+ const used=new Set(),ratings=[];
+ Object.entries(STARTERS[sport]).forEach(([pos,count])=>{
+  const pool=playerPools(pos,'alltime');
+  const local=pool.filter(p=>sameFranchise(p.team,team)&&!used.has(p.name.toLowerCase()));
+  const selected=local.slice(0,count);
+  selected.forEach(p=>{used.add(p.name.toLowerCase());ratings.push(Number(p.base)||74)});
+  if(selected.length<count)pool.filter(p=>!used.has(p.name.toLowerCase())).slice(0,count-selected.length).forEach(p=>{used.add(p.name.toLowerCase());ratings.push(Number(p.base)||74)});
+ });
+ return ratings.length?Math.round(ratings.reduce((a,b)=>a+b,0)/ratings.length):76;
+}
 function clubColor(team){return /^#[a-f0-9]{6}$/i.test(clubData(team)?.color||'')?clubData(team).color:'#254d47'}
 function clubBadge(team){const c=clubData(team);return c?.logo?'<img src="'+esc(c.logo)+'" alt="'+esc(team)+' crest" loading="lazy">':'<b>ER</b>'}
 function makeClubRoster(team,era){
  if(era==='alltime'){
   const used=new Set();
-  return PLAN[sport].map((pos,i)=>{
+  const roster=PLAN[sport].map((pos,i)=>{
    const pool=playerPools(pos,era),home=pool.filter(p=>sameFranchise(p.team,team)&&!used.has(p.name.toLowerCase()));
    const candidate=home[0]||pool.find(p=>!used.has(p.name.toLowerCase()));
    if(!candidate)return null;
    used.add(candidate.name.toLowerCase());
-   const player=makePlayer(candidate,pos,false,i);
+   const player=makePlayer(candidate,pos,false,i),franchiseMatch=sameFranchise(candidate.team,team);
    player.team=team;player.originalTeam=candidate.team;player.depthRank=PLAN[sport].slice(0,i).filter(x=>x===pos).length;
-   if(!sameFranchise(candidate.team,team))player.source='All-Time Legend Free Agent';
+   player.age=27;player.potential=player.overall;player.contractYears=2;
+   player.careerPoints=Math.round(player.overall*18);
+   player.source=franchiseMatch?'All-Time Legend':'All-Time Legend Free Agent';
    return player;
   }).filter(Boolean);
+  const budget=roster.reduce((n,p)=>n+p.salary,0),scale=Math.min(1,capFor()*.87/Math.max(1,budget));
+  roster.forEach(p=>p.salary=Math.max(.4,Math.round(p.salary*scale*10)/10));
+  return roster;
  }
  const club=clubData(team);if(!club)return makeRoster(era);
  const players=club.players.map((p,i)=>({...makePlayer(p,p.pos,false,i),overall:p.base,potential:Math.min(99,p.base+(p.age<25?8:p.age<29?3:0)),age:p.age||25,photo:p.photo,jersey:p.jersey,listedPosition:p.listedPosition,team,originalTeam:team,depthRank:p.depthRank??9,source:'ESPN snapshot · '+(window.ERTeamRosters?.fetchedAt||'').slice(0,10)}));
@@ -523,7 +539,7 @@ function makeClubRoster(team,era){
 function initialLineup(s){s.roster.forEach(p=>p.starter=false);Object.entries(STARTERS[sport]).forEach(([pos,n])=>s.roster.filter(p=>p.pos===pos&&!p.injured).sort((a,b)=>(a.depthRank??9)-(b.depthRank??9)||b.overall-a.overall).slice(0,n).forEach(p=>p.starter=true))}
 function autoLineup(s){s.roster.forEach(p=>p.starter=false);fillVacancies(s)}
 function fillVacancies(s){Object.entries(STARTERS[sport]).forEach(([pos,count])=>{const active=s.roster.filter(p=>p.pos===pos&&p.starter&&!p.injured).length;s.roster.filter(p=>p.pos===pos&&!p.starter&&!p.injured).sort((a,b)=>(b.overall-b.fatigue*.15)-(a.overall-a.fatigue*.15)).slice(0,Math.max(0,count-active)).forEach(p=>p.starter=true)})}
-function clubRating(team,era){const ps=clubData(team)?.players;if(!ps?.length)return 76;const top=[];Object.entries(STARTERS[sport]).forEach(([pos,n])=>top.push(...ps.filter(p=>p.pos===pos).sort((a,b)=>b.base-a.base).slice(0,n)));return top.length?Math.round(top.reduce((n,p)=>n+p.base,0)/top.length):76}
+function clubRating(team,era){if(era==='alltime')return allTimeClubRating(team);const ps=clubData(team)?.players;if(!ps?.length)return 76;const top=[];Object.entries(STARTERS[sport]).forEach(([pos,n])=>top.push(...ps.filter(p=>p.pos===pos).sort((a,b)=>b.base-a.base).slice(0,n)));return top.length?Math.round(top.reduce((n,p)=>n+p.base,0)/top.length):76}
 function ensureSeason(s){
  s.matchHistory=s.matchHistory||[];s.seasonDrafts=s.seasonDrafts||0;
  if(!s.schedule){
