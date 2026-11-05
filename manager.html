@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080d12">
+<meta name="description" content="ERA RIVALS Front Office. Build a dynasty through decisions, tactics, trades, player development and simulated seasons across four sports.">
+<title>ERA RIVALS | Front Office</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="manager.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html" aria-label="Era Rivals home">
+    <span class="brand-mark">ER✦</span>
+    <span><span class="brand-name">ERA<em>RIVALS</em></span><small>FRONT OFFICE · DECISION SIM</small></span>
+  </a>
+  <nav id="sportTabs" class="sport-tabs" aria-label="Choose sport"></nav>
+  <div class="top-meta"><div id="topMeta"></div><div id="slotTools" class="slot-tools"></div></div>
+</header>
+<div class="layout">
+  <aside id="sidebar" class="sidebar" aria-label="Game navigation"></aside>
+  <main id="screen" tabindex="-1"></main>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="draft-player-pools.js"></script>
+<script src="basketball-era-data.js"></script>
+<script src="manager.js"></script>
+</body>
+</html>

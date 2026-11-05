@@ -96,7 +96,7 @@ body.modal-open{overflow:hidden}
     <span class="sport-info"><span class="sport-kicker">⚾ &nbsp;BASEBALL &nbsp;<span class="spot">●</span></span><span class="legend-first">BABE</span><span class="legend-last">RUTH</span><span class="legend-era">THE LEGEND ERA</span><span class="legend-top-five" aria-label="Era Rivals all-time baseball top five"><span class="rank-label">ERA RIVALS · ALL-TIME TOP 5</span><span class="rank-entry"><b>01</b><span>Babe Ruth</span><small>RF</small></span><span class="rank-entry"><b>02</b><span>Willie Mays</span><small>CF</small></span><span class="rank-entry"><b>03</b><span>Hank Aaron</span><small>RF</small></span><span class="rank-entry"><b>04</b><span>Barry Bonds</span><small>LF</small></span><span class="rank-entry"><b>05</b><span>Ted Williams</span><small>LF</small></span></span><span class="legend-open">ENTER BASEBALL <span aria-hidden="true">↗</span></span></span>
   </button>
     </section>
-    <div class="landing-bar"><div><span class="accent-icon">↖</span><strong>THE ALL-TIME GREATS</strong><span class="muted-bar">Top five legends in every sport. Pick a sport to enter.</span></div><div class="mini-feature">MYCAREER <i>•</i> FRANCHISE <i>•</i> QUICK PLAY <i>•</i> FANTASY DRAFT</div><div class="right-end">ER / SEASON 26</div></div>
+    <div class="landing-bar"><div><span class="accent-icon">↖</span><strong>THE ALL-TIME GREATS</strong><span class="muted-bar">Top five legends in every sport. Pick a sport to enter.</span></div><div class="mini-feature">FRONT OFFICE <i>•</i> MATCH SIM <i>•</i> PLAYER DEVELOPMENT <i>•</i> FANTASY DRAFT</div><div class="right-end">ER / SEASON 26</div></div>
   </main>
   <footer class="site-footer"><span>ERA <b>RIVALS</b> © 2026 · CREATED BY XAVIER MATOS</span><span>INDEPENDENT FAN-MADE GAME PROTOTYPE · NO OFFICIAL ENDORSEMENT</span><button type="button" id="creditsToggle" aria-expanded="false" aria-controls="photoCredits">PHOTO CREDITS ↗</button></footer>
   <aside class="photo-credits" id="photoCredits" hidden aria-label="Photograph credits"><h2>Photo credits &amp; licenses</h2><p>Photos are displayed with crop, color and shadow overlays. ERA RIVALS is an independent prototype and is not endorsed by the athletes or leagues.</p>
@@ -116,11 +116,11 @@ body.modal-open{overflow:hidden}
       <div class="gateway-sport-label" id="selectedSportKicker">🏀 BASKETBALL</div>
       <h2 id="selectedSportTitle">BASKETBALL</h2>
       <p id="selectedSportSub">Build a career. Call your shots. Make history.</p>
-      <div class="gateway-modes"><a id="linkCareer" class="mode-tile" href="#"><span class="mode-num">01</span><span class="mode-desc"><strong>MYCAREER</strong><small>Multiple saves · seasons · contracts · Hall of Fame</small></span><span class="mode-arrow">↗</span></a>
-      <a id="linkFranchise" class="mode-tile" href="#"><span class="mode-num">02</span><span class="mode-desc"><strong>FRANCHISE</strong><small>Build a roster · set your depth chart</small></span><span class="mode-arrow">↗</span></a>
-      <a id="linkPlay" class="mode-tile" href="#"><span class="mode-num">03</span><span class="mode-desc"><strong>QUICK PLAY</strong><small>3D gameplay · all four sports</small></span><span class="mode-arrow">↗</span></a>
+      <div class="gateway-modes"><a id="linkCareer" class="mode-tile" href="#"><span class="mode-num">01</span><span class="mode-desc"><strong>MY DYNASTY</strong><small>Five saves · seasons · player development · legacy</small></span><span class="mode-arrow">↗</span></a>
+      <a id="linkFranchise" class="mode-tile" href="#"><span class="mode-num">02</span><span class="mode-desc"><strong>FRONT OFFICE</strong><small>Roster · contracts · trades · tactics · scouting</small></span><span class="mode-arrow">↗</span></a>
+      <a id="linkPlay" class="mode-tile" href="#"><span class="mode-num">03</span><span class="mode-desc"><strong>SIMULATE MATCHES</strong><small>Make game-day calls · watch your decisions play out</small></span><span class="mode-arrow">↗</span></a>
       <a id="linkClassic" class="mode-tile" href="classic.html"><span class="mode-num">04</span><span class="mode-desc"><strong>PLAYER DRAFT</strong><small>Spin current and all-time player attributes</small></span><span class="mode-arrow">↗</span></a></div>
-      <p class="gateway-note">Original browser game · simulated careers and arcade gameplay · single-player</p>
+      <p class="gateway-note">Decision-based sports management · simulated matches and seasons · single-player</p>
     </div>
   </section>
 </div>
@@ -147,9 +147,9 @@ function chooseSport(sp){
  const photo=card&&card.querySelector('.legend-photo');
  $('selectedPhoto').src=photo?photo.src:'';
  $('selectedPhoto').alt=modes[sp].title;
- $('linkCareer').href='pro-series.html?sport='+encodeURIComponent(sp)+'&mode=career';
- $('linkFranchise').href='pro-series.html?sport='+encodeURIComponent(sp)+'&mode=franchise';
- $('linkPlay').href='pro-series.html?sport='+encodeURIComponent(sp)+'&mode=play';
+ $('linkCareer').href='manager.html?sport='+encodeURIComponent(sp)+'&mode=career';
+ $('linkFranchise').href='manager.html?sport='+encodeURIComponent(sp)+'&mode=franchise';
+ $('linkPlay').href='manager.html?sport='+encodeURIComponent(sp)+'&mode=play';
  $('linkClassic').href='draft.html?sport='+encodeURIComponent(sp);
  overlay.dataset.sport=sp;overlay.hidden=false;document.body.classList.add('modal-open');$('closeGateway').focus();
 }
