@@ -41,6 +41,7 @@ jobs:
           PY
           node --check /tmp/draft-inline.js
           node --check draft-player-pools.js
+          node --check manager.js
       - name: Save generated player database
         run: |
           git config user.name "github-actions[bot]"
