@@ -22,7 +22,7 @@ for(const sp of ['nba','nfl','mlb','soccer']){
  const before=s.season;t.advanceSeason();assert.equal(s.season,before+1);assert.equal(s.week,0);assert.equal(s.playoffs,null);assert(s.schedule.length===t.SPORT[sp].games);
  console.log('PASS',sp, s.roster.length+' roster players; full season, injuries, fixtures, saves and next season');
 }
-assert(t.sameFranchise('Cincinnati Royals','Sacramento Kings'),'historical NBA franchise alias');assert(t.sameFranchise('San Diego Chargers','Los Angeles Chargers'),'historical NFL franchise alias');assert(t.sameFranchise('Brooklyn Dodgers','Los Angeles Dodgers'),'historical MLB franchise alias');
+t.setSport('nba');assert(t.sameFranchise('Cincinnati Royals','Sacramento Kings'),'historical NBA franchise alias');t.setSport('nfl');assert(t.sameFranchise('San Diego Chargers','Los Angeles Chargers'),'historical NFL franchise alias');t.setSport('mlb');assert(t.sameFranchise('Brooklyn Dodgers','Los Angeles Dodgers'),'historical MLB franchise alias');
 // Trade rejection must prevent swapping weak players for superstars.
 t.setSport('nba');const s=t.getSave();const out=s.roster[0];out.overall=60;out.potential=60;out.age=35;doc.getElementById('tradeOutgoing').value=out.id;const candidates=context.window.ERTeamRosters.teams.nba;const target=Object.values(candidates).flatMap(c=>c.players).find(p=>p.pos===out.pos&&p.base>=90&&!s.roster.some(x=>x.name===p.name));if(target){doc.getElementById('tradeIncoming').value=target.name;t.tradePlayers();assert(s.roster.includes(out),'unfair trade rejected')}
 for(const [sp,team] of [['nba','Boston Celtics'],['nfl','New England Patriots'],['mlb','New York Yankees'],['soccer','Real Madrid']]){
