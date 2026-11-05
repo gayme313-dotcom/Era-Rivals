@@ -182,11 +182,12 @@ function createSave(form){
 function feed(s,msg){s.feed.unshift('S'+s.season+' · '+msg);s.feed=s.feed.slice(0,18)}
 function starters(s){return s.roster.filter(p=>p.starter&&!p.injured)}
 function teamPower(s){const a=starters(s);if(!a.length)return 60;const avg=a.reduce((n,p)=>n+p.overall,0)/a.length;const morale=s.roster.reduce((n,p)=>n+p.morale,0)/Math.max(1,s.roster.length);const fatigue=a.reduce((n,p)=>n+p.fatigue,0)/a.length;return avg+(s.chemistry-70)*.075+(morale-70)*.035-(fatigue-20)*.08}
-function tacticBonus(s){let b=0;const t=s.tactics;if(t.tempo==='Fast')b+=1.2;if(t.tempo==='Slow')b+=.5;if(t.risk==='Aggressive')b+=1.5;if(t.risk==='Conservative')b-=.5;if(/Pick & Roll|3-Point Heavy|Air Raid|Counter Attack|High Press|Power Hitting/.test(t.off))b+=1.4;if(/Zone Defense|Cover 2|Compact Shape|Strikeout Pitching/.test(t.def))b+=.9;return b}
+function tacticBonus(s){let b=0;const t=s.tactics;if(t.tempo==='Fast')b+=1.2;if(t.tempo==='Slow')b+=.5;if(t.risk==='Aggressive')b+=1.5;if(t.risk==='Conservative')b-=.5;if(t.rotation==='Short Rotation')b+=.6;if(t.rotation==='Deep Rotation')b+=.3;if(/Pick & Roll|3-Point Heavy|Air Raid|Counter Attack|High Press|Power Hitting/.test(t.off))b+=1.4;if(/Zone Defense|Cover 2|Compact Shape|Strikeout Pitching/.test(t.def))b+=.9;return b}
+function planBonus(s){const p=s.matchPlan||'';if(/Attack from the start/.test(p))return 2;if(/Protect the lead/.test(p))return 1.2;if(/Play through your best player/.test(p))return 2.2;if(/Exploit the wings/.test(p))return 1.6;if(/Control possession/.test(p))return 1.3;return 0}
 function opponentPower(s){const extra=s.difficulty==='hard'?4:0;return Math.max(65,Math.min(99,Math.round(teamPower(s)+rand(-8,8)+extra)))}
 function segmentScore(sp,diff){
  if(sp==='nba')return Math.max(34,Math.round(51+diff*.36+rand(-8,8)));
- if(sp==='nfl')return Math.max(0,Math.round((10+diff*.20+rand(-4,4))/3)*3);
+ if(sp==='nfl'){const target=10+diff*.20+rand(-5,5),scores=[0,3,7,10,14,17,21,24];return scores.reduce((best,x)=>Math.abs(x-target)<Math.abs(best-target)?x:best,0)}
  if(sp==='soccer'){const chance=Math.max(.08,Math.min(.82,.34+diff*.025));return (Math.random()<chance?1:0)+(Math.random()<chance*.24?1:0)}
  return Math.max(0,Math.round(2+diff*.065+rand(-1.4,1.5)));
 }
@@ -196,13 +197,13 @@ function beginMatch(){
  if(s.pending){notify('Finish the current match decision first.','bad');return}
  const opponent=pick(TEAMS[sport].filter(t=>t!==s.team));
  const opp=opponentPower(s),power=teamPower(s)+tacticBonus(s);
- const diff=power-opp;
- s.pending={opponent:opponent,oppOvr:opp,home:segmentScore(sport,diff),away:segmentScore(sport,-diff),stage:'halftime',plan:s.matchPlan,options:matchDecisionOptions(),start:Date.now()};
+ const diff=power-opp+planBonus(s);
+ s.pending={opponent:opponent,oppOvr:opp,home:segmentScore(sport,diff),away:segmentScore(sport,-diff),stage:'halftime',plan:s.matchPlan,planBonus:planBonus(s),options:matchDecisionOptions(),start:Date.now()};
  feed(s,'Matchday: '+s.team+' vs '+opponent+'. Your first-half decisions are coming up.');
  persist();page='matchday';render();
 }
 function finishMatch(s,pending,choice){
- const diff=teamPower(s)+tacticBonus(s)+choice[2]+choice[3]*.6-pending.oppOvr;
+ const diff=teamPower(s)+tacticBonus(s)+(pending.planBonus||0)+choice[2]+choice[3]*.6-pending.oppOvr;
  let home=pending.home+segmentScore(sport,diff),away=pending.away+segmentScore(sport,-diff);
  if(sport!=='soccer'&&home===away){if(Math.random()<.5)home+=sport==='nfl'?3:1;else away+=sport==='nfl'?3:1}
  const win=home>away,draw=home===away;
@@ -256,7 +257,7 @@ function advanceSeason(){
  persist();render();notify('New season started.');
 }
 function simAuto(s){
- const opp=opponentPower(s),diff=teamPower(s)+tacticBonus(s)-opp;
+ const opp=opponentPower(s),diff=teamPower(s)+tacticBonus(s)+planBonus(s)-opp;
  let a=segmentScore(sport,diff)+segmentScore(sport,diff),b=segmentScore(sport,-diff)+segmentScore(sport,-diff);
  if(sport!=='soccer'&&a===b){if(Math.random()<.5)a++;else b++}
  const win=a>b,draw=a===b;if(win)s.record.w++;else if(draw)s.record.d++;else s.record.l++;
