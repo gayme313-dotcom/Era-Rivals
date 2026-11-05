@@ -57,6 +57,8 @@ The generated `draft-player-pools.js` file is refreshed during the GitHub Pages 
 
 - 112 club roster snapshots from ESPN (30 NBA, 32 NFL, 30 MLB and 20 soccer clubs), with logos and player portraits. NBA/NFL/MLB depth charts inform initial roles. Soccer uses simplified game roles. Includes reserves and practice-squad players; this is not a league eligibility simulator.
 - Start a **new current-era save** to use the new club rosters. Existing save rosters are preserved.
+- All-Time mode now builds full position-by-position squads with a real bench, historical franchise-name matching, prime-age legends and a salary budget. Opponent ratings use the selected era instead of current-era club ratings.
+- NFL team snapshots include specialist positions (kicker and punter); overtime results use sport-appropriate scoring.
 - One preparation choice per fixture: recovery, team meeting or intense practice. Costs and bonuses are shown before selection.
 - Consistent scheduled opponents with independent ratings. Each simulated league round updates both sides of every fixture. Soccer uses three points per win; other sports use wins.
 - Top eight advance to a three-round, single-game ERA Cup in NBA/NFL/MLB. Soccer awards its custom league title to first place. These schedules and playoffs are simplified game formats, not official league formats.
