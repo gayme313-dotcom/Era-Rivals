@@ -2,11 +2,11 @@ const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/st
 const elements=new Map(),storage=new Map();const doc={getElementById(id){if(!elements.has(id))elements.set(id,{innerHTML:'',textContent:'',className:'',value:'',hidden:false});return elements.get(id)},addEventListener(){},createElement(){return {click(){}}}};
 const context={document:doc,window:{},location:{search:'?sport=nfl'},localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},URLSearchParams,console,setTimeout:()=>0,clearTimeout(){},confirm:()=>true,Blob,URL,Math};vm.createContext(context);
 for(const file of ['draft-player-pools.js','team-rosters.js','basketball-era-data.js'])vm.runInContext(fs.readFileSync(file,'utf8'),context);
-const source=fs.readFileSync('manager.js','utf8').replace(/render\(\);\s*\}\)\(\);\s*$/,`globalThis.test={createSave,getSave,beginMatch,finishMatch,simAuto,simFive,simRest,prepareTeam,nextOpponent,teamPower,teamOvr,renderDashboard,renderRoster,renderTactics,renderTransactions,renderScouting,renderStandings,renderLegacy,renderMatchday,renderSaveCenter,validateSave,toggleStarter,tradePlayers,advanceSeason,autoLineup,rankedTeams,state,SPORT,TEAMS,STARTERS,PLAN,resolveTie,sameFranchise,setSport:v=>sport=v,setPage:v=>page=v,readState};\n})();`);
+const source=fs.readFileSync('manager.js','utf8').replace(/render\(\);\s*\}\)\(\);\s*$/,`globalThis.test={createSave,getSave,beginMatch,finishMatch,simAuto,simFive,simRest,prepareTeam,nextOpponent,teamPower,teamOvr,renderDashboard,renderRoster,renderTactics,renderTransactions,renderScouting,renderStandings,renderLegacy,renderMatchday,renderSaveCenter,validateSave,toggleStarter,tradePlayers,advanceSeason,autoLineup,rankedTeams,state,SPORT,TEAMS,STARTERS,PLAN,resolveTie,sameFranchise,clubRating,teamPayroll,setSport:v=>sport=v,setPage:v=>page=v,readState};\n})();`);
 vm.runInContext(source,context);const t=context.test;
 for(const sp of ['nba','nfl','mlb','soccer']){
  t.setSport(sp);const team={nba:'Boston Celtics',nfl:'New England Patriots',mlb:'Boston Red Sox',soccer:'Real Madrid'}[sp];t.createSave({team,era:'current',manager:'Xavi'});const s=t.getSave();
- assert(s.roster.length>=10,sp+' full squad');assert(s.roster.every(p=>p.originalTeam===team),'club-bound players');assert(s.roster.every(p=>Number.isFinite(p.overall)));for(const [pos,count] of Object.entries(t.STARTERS[sp]))assert.equal(s.roster.filter(p=>p.pos===pos&&p.starter).length,count,sp+' current starting '+pos+' depth chart');
+ assert(s.roster.length>=10,sp+' full squad');assert(s.roster.every(p=>p.originalTeam===team),'club-bound players');assert(s.roster.every(p=>Number.isFinite(p.overall)));assert(t.teamPayroll(s)<=t.SPORT[sp].cap,sp+' current payroll under cap');for(const [pos,count] of Object.entries(t.STARTERS[sp]))assert.equal(s.roster.filter(p=>p.pos===pos&&p.starter).length,count,sp+' current starting '+pos+' depth chart');
  assert(new Set(s.roster.map(p=>p.name)).size===s.roster.length,'no duplicates');
  for(const name of ['renderDashboard','renderRoster','renderTactics','renderTransactions','renderScouting','renderStandings','renderLegacy','renderMatchday','renderSaveCenter']){const html=t[name](s);assert(!html.includes('undefined'),sp+' '+name+' contains undefined');}
  const expected=t.nextOpponent(s);t.prepareTeam(s,'recover');t.beginMatch();assert.equal(s.pending.opponent,expected,'preview matches actual opponent');
@@ -22,6 +22,7 @@ for(const sp of ['nba','nfl','mlb','soccer']){
  const before=s.season;t.advanceSeason();assert.equal(s.season,before+1);assert.equal(s.week,0);assert.equal(s.playoffs,null);assert(s.schedule.length===t.SPORT[sp].games);
  console.log('PASS',sp, s.roster.length+' roster players; full season, injuries, fixtures, saves and next season');
 }
+assert(t.sameFranchise('Cincinnati Royals','Sacramento Kings'),'historical NBA franchise alias');assert(t.sameFranchise('San Diego Chargers','Los Angeles Chargers'),'historical NFL franchise alias');assert(t.sameFranchise('Brooklyn Dodgers','Los Angeles Dodgers'),'historical MLB franchise alias');
 // Trade rejection must prevent swapping weak players for superstars.
 t.setSport('nba');const s=t.getSave();const out=s.roster[0];out.overall=60;out.potential=60;out.age=35;doc.getElementById('tradeOutgoing').value=out.id;const candidates=context.window.ERTeamRosters.teams.nba;const target=Object.values(candidates).flatMap(c=>c.players).find(p=>p.pos===out.pos&&p.base>=90&&!s.roster.some(x=>x.name===p.name));if(target){doc.getElementById('tradeIncoming').value=target.name;t.tradePlayers();assert(s.roster.includes(out),'unfair trade rejected')}
 for(const [sp,team] of [['nba','Boston Celtics'],['nfl','New England Patriots'],['mlb','New York Yankees'],['soccer','Real Madrid']]){
@@ -30,7 +31,7 @@ for(const [sp,team] of [['nba','Boston Celtics'],['nfl','New England Patriots'],
   assert.equal(s.roster.filter(p=>p.pos===pos).length,t.PLAN[sp].filter(x=>x===pos).length,sp+' all-time '+pos+' roster depth');
   assert.equal(s.roster.filter(p=>p.pos===pos&&p.starter).length,count,sp+' all-time '+pos+' starters');
  }
- assert(s.roster.length>Object.values(t.STARTERS[sp]).reduce((a,b)=>a+b,0),sp+' all-time bench players');
+ assert(s.roster.length>Object.values(t.STARTERS[sp]).reduce((a,b)=>a+b,0),sp+' all-time bench players');assert(t.teamPayroll(s)<=t.SPORT[sp].cap,sp+' all-time payroll under cap');assert(s.roster.every(p=>p.age===27&&p.potential===p.overall&&p.careerPoints>0),sp+' all-time legends begin in their prime');assert(s.roster.some(p=>t.sameFranchise(p.originalTeam,team)),sp+' team-specific legends included');const rival=t.TEAMS[sp].find(x=>x!==team);assert.equal(s.standings[rival].ovr,t.clubRating(rival,'alltime'),sp+' opponents use all-time ratings');
  const [x,y]=t.resolveTie(100,100);if(sp==='soccer')assert.equal(x,y,'soccer may finish level');else assert.notEqual(x,y,sp+' overtime resolves ties');
  t.simAuto(s);assert.equal(s.week,1);console.log('PASS',sp,'all-time depth chart, bench and overtime');
 }
