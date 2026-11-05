@@ -37,7 +37,7 @@ def roster(task):
         p=a.get('position',{}).get('abbreviation',''); key=normal(n); k=known[sp].get(key); seed=int(hashlib.sha256(n.encode()).hexdigest()[:8],16)
         if sp=='nba':
             if p not in ['PG','SG','SF','PF','C']:p=k[0] if k else ('PG' if p=='G' and counts.get('PG',0)<=counts.get('SG',0) else 'SG' if p=='G' else 'PF' if a.get('height',0)>=81 else 'SF')
-        elif sp=='nfl':p={'OT':'OL','OG':'OL','C':'OL','G':'OL','T':'OL','LS':'OL','DE':'DL','DT':'DL','NT':'DL','EDGE':'DL','OLB':'LB','ILB':'LB','MLB':'LB','CB':'DB','S':'DB','FS':'DB','SS':'DB','SAF':'DB','FB':'RB'}.get(p,p)
+        elif sp=='nfl':p={'OT':'OL','OG':'OL','C':'OL','G':'OL','T':'OL','LS':'OL','DE':'DL','DT':'DL','NT':'DL','EDGE':'DL','OLB':'LB','ILB':'LB','MLB':'LB','CB':'DB','S':'DB','FS':'DB','SS':'DB','SAF':'DB','FB':'RB','PK':'K','K':'K','P':'P'}.get(p,p)
         elif sp=='soccer':
             if p not in config['STARTERS']['soccer']:
                 group={'G':['GK'],'GK':['GK'],'D':['CB','RB','CB','LB'],'M':['CM','CDM','CAM'],'F':['ST','RW','LW']}.get(p,['CM'])
