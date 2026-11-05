@@ -8,10 +8,10 @@ const SPORT={
  mlb:{name:'BASEBALL',emoji:'⚾',positions:['SP','RP','CP','C','1B','2B','3B','SS','LF','CF','RF'],games:162,cap:240,unit:'M'}
 };
 const TEAMS={
- nba:['Los Angeles Lakers','Boston Celtics','Golden State Warriors','New York Knicks','Chicago Bulls','Miami Heat','Dallas Mavericks','San Antonio Spurs','Denver Nuggets','Oklahoma City Thunder','Phoenix Suns','Cleveland Cavaliers'],
- nfl:['Kansas City Chiefs','San Francisco 49ers','Philadelphia Eagles','Dallas Cowboys','Baltimore Ravens','Buffalo Bills','Green Bay Packers','Detroit Lions','Cincinnati Bengals','Los Angeles Rams','Miami Dolphins','New England Patriots'],
- soccer:['Real Madrid','FC Barcelona','Manchester City','Arsenal','Liverpool','Bayern Munich','Paris Saint-Germain','Inter Milan','AC Milan','Chelsea','Atlético Madrid','Borussia Dortmund'],
- mlb:['New York Yankees','Los Angeles Dodgers','Boston Red Sox','New York Mets','Atlanta Braves','Chicago Cubs','Houston Astros','San Diego Padres','Philadelphia Phillies','Seattle Mariners','Texas Rangers','Baltimore Orioles']
+ nba:['Atlanta Hawks','Boston Celtics','Brooklyn Nets','Charlotte Hornets','Chicago Bulls','Cleveland Cavaliers','Dallas Mavericks','Denver Nuggets','Detroit Pistons','Golden State Warriors','Houston Rockets','Indiana Pacers','LA Clippers','Los Angeles Lakers','Memphis Grizzlies','Miami Heat','Milwaukee Bucks','Minnesota Timberwolves','New Orleans Pelicans','New York Knicks','Oklahoma City Thunder','Orlando Magic','Philadelphia 76ers','Phoenix Suns','Portland Trail Blazers','Sacramento Kings','San Antonio Spurs','Toronto Raptors','Utah Jazz','Washington Wizards'],
+ nfl:['Arizona Cardinals','Atlanta Falcons','Baltimore Ravens','Buffalo Bills','Carolina Panthers','Chicago Bears','Cincinnati Bengals','Cleveland Browns','Dallas Cowboys','Denver Broncos','Detroit Lions','Green Bay Packers','Houston Texans','Indianapolis Colts','Jacksonville Jaguars','Kansas City Chiefs','Las Vegas Raiders','Los Angeles Chargers','Los Angeles Rams','Miami Dolphins','Minnesota Vikings','New England Patriots','New Orleans Saints','New York Giants','New York Jets','Philadelphia Eagles','Pittsburgh Steelers','San Francisco 49ers','Seattle Seahawks','Tampa Bay Buccaneers','Tennessee Titans','Washington Commanders'],
+ soccer:['Arsenal','Aston Villa','Atlético Madrid','Bayern Munich','Benfica','Borussia Dortmund','Chelsea','FC Barcelona','Inter Milan','Juventus','Liverpool','Manchester City','Manchester United','Napoli','Newcastle United','Paris Saint-Germain','Porto','Real Madrid','Roma','Tottenham Hotspur'],
+ mlb:['Arizona Diamondbacks','Atlanta Braves','Baltimore Orioles','Boston Red Sox','Chicago Cubs','Chicago White Sox','Cincinnati Reds','Cleveland Guardians','Colorado Rockies','Detroit Tigers','Houston Astros','Kansas City Royals','Los Angeles Angels','Los Angeles Dodgers','Miami Marlins','Milwaukee Brewers','Minnesota Twins','New York Mets','New York Yankees','Oakland Athletics','Philadelphia Phillies','Pittsburgh Pirates','San Diego Padres','San Francisco Giants','Seattle Mariners','St. Louis Cardinals','Tampa Bay Rays','Texas Rangers','Toronto Blue Jays','Washington Nationals']
 };
 const PLAN={
  nba:['PG','SG','SF','PF','C','PG','SG','SF','PF','C'],
@@ -228,7 +228,7 @@ function finishMatch(s,pending,choice){
  s.lastMatch={opponent:pending.opponent,home:home,away:away,result:result,decision:choice[0],mvp:mvp?mvp.name:'Team effort'};
  feed(s,result+' '+home+'-'+away+' vs '+pending.opponent+'. '+(mvp?mvp.name+' led the team.':'Team effort.')+' Decision: '+choice[0]+'.');
  const row=s.standings[s.team];row.w=s.record.w;row.l=s.record.l;row.d=s.record.d;row.ovr=teamOvr(s);
- TEAMS[sport].filter(t=>t!==s.team).slice(0,5).forEach(t=>{const r=s.standings[t];if(Math.random()<.55)r.w++;else r.l++});
+ TEAMS[sport].filter(t=>t!==s.team).forEach(t=>{if(Math.random()<.24){const r=s.standings[t];if(Math.random()<.52)r.w++;else r.l++}});
  s.pending=null;
  if(s.week>=SPORT[sport].games)completeSeason(s);
  persist();render();
@@ -263,6 +263,7 @@ function simAuto(s){
  s.week++;s.roster.forEach(p=>{p.games++;if(p.starter){p.fatigue=Math.min(100,p.fatigue+5);p.morale=Math.max(30,Math.min(100,p.morale+(win?2:-2)))}else p.fatigue=Math.max(0,p.fatigue-3);p.careerPoints+=win?6:3});
  s.chemistry=Math.max(35,Math.min(99,s.chemistry+(win?1:-.5)));s.gmPoints+=win?20:5;s.legacyPoints+=win?12:3;
  const row=s.standings[s.team];row.w=s.record.w;row.l=s.record.l;row.d=s.record.d;row.ovr=teamOvr(s);
+ TEAMS[sport].filter(t=>t!==s.team).forEach(t=>{if(Math.random()<.24){const r=s.standings[t];if(Math.random()<.52)r.w++;else r.l++}});
  if(s.week>=SPORT[sport].games)completeSeason(s);
 }
 function simFive(){const s=getSave();if(!s||s.offseason)return;for(let i=0;i<5&&s.week<SPORT[sport].games;i++)simAuto(s);feed(s,'Front office simulated up to five fixtures using your current tactics.');persist();render();notify('Five-game simulation complete.')}
