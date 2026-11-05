@@ -72,7 +72,7 @@ Run `python scripts/build-team-rosters.py`, then `python scripts/refresh-depth-c
 
 ### Validation
 
-Run `node --check manager.js` and `node tests/manager.test.cjs`. Tests cover all four sports, all-time mode, full seasons, consistent fixture accounting, opponent identity, injury recovery, pending-game protection, backups and season rollover. The GitHub Pages workflow runs these checks.
+Run `node --check manager.js` and `node tests/manager.test.cjs`. Tests cover all four sports, full current and all-time depth charts, prime-age legends, payroll limits, franchise aliases, era-specific opponent ratings, overtime scoring, full seasons, consistent fixture accounting, opponent identity, injury recovery, pending-game protection, backups and season rollover. The GitHub Pages workflow runs these checks.
 
 `database/schema.sql` documents the deployed schema. Database verification used rolled-back test users and confirmed owner-only saves, blocked cross-owner writes, public-field-only leaderboard reads, and own-score updates. Security advisors reported no issues. Browser smoke testing covered creation, preparation, a complete match and a live empty leaderboard response.
 
