@@ -32,7 +32,7 @@ The match engine uses team ratings, lineup choices, chemistry, morale, fatigue, 
 
 ## Saves and online services
 
-Front Office dynasty saves are stored in the browser's localStorage on the device being used. They are not automatically synced between devices. Online accounts, global leaderboards, remote multiplayer and cloud saves require a hosted backend and are not included in this static browser build.
+Front Office dynasty saves are stored in the browser's localStorage on the device being used. They are not automatically synced between devices. The Saves & Online screen supports explicit private cloud snapshots and opt-in casual leaderboards through Supabase; see the online launch note below. Remote multiplayer is not included.
 
 ## Run
 
@@ -52,3 +52,32 @@ The fantasy draft targets 100 unique players for every selectable role across ba
 - Baseball: historical names and position appearances from the [Lahman database](https://github.com/daviddalpiaz/pylahman).
 
 The generated `draft-player-pools.js` file is refreshed during the GitHub Pages publishing workflow. Some player records may have incomplete team or portrait data.
+
+## Front Office v2 (November 5, 2026)
+
+- 112 club roster snapshots from ESPN (30 NBA, 32 NFL, 30 MLB and 20 soccer clubs), with logos and player portraits. NBA/NFL/MLB depth charts inform initial roles. Soccer uses simplified game roles. Includes reserves and practice-squad players; this is not a league eligibility simulator.
+- Start a **new current-era save** to use the new club rosters. Existing save rosters are preserved.
+- One preparation choice per fixture: recovery, team meeting or intense practice. Costs and bonuses are shown before selection.
+- Consistent scheduled opponents with independent ratings. Each simulated league round updates both sides of every fixture. Soccer uses three points per win; other sports use wins.
+- Top eight advance to a three-round, single-game ERA Cup in NBA/NFL/MLB. Soccer awards its custom league title to first place. These schedules and playoffs are simplified game formats, not official league formats.
+- Injury countdowns, injured-player restrictions, automatic vacancy coverage, fair-value trade checks, two fictional draft picks per season, and salary limits.
+- Download/import backups preserve in-progress matches and playoff rounds. Cloud loads create a new local slot.
+- Supabase stores private, owner-scoped save snapshots and optional public **casual, self-reported** GM leaderboards. Cloud upload is explicit, not continuous synchronization. Public score fields omit account identifiers and email. Email confirmation is required for signup.
+
+### Data refresh
+
+Run `python scripts/build-team-rosters.py`, then `python scripts/refresh-depth-charts.py` to refresh the checked-in snapshot. Node is required to read the game's position/club configuration. Ratings, potentials, salaries, contracts and all generated prospects are fictional game estimates. ESPN source links and snapshot time are included in `team-rosters.js`. Rosters are a dated snapshot, not a continuously updated feed.
+
+### Validation
+
+Run `node --check manager.js` and `node tests/manager.test.cjs`. Tests cover all four sports, all-time mode, full seasons, consistent fixture accounting, opponent identity, injury recovery, pending-game protection, backups and season rollover. The GitHub Pages workflow runs these checks.
+
+`database/schema.sql` documents the deployed schema. Database verification used rolled-back test users and confirmed owner-only saves, blocked cross-owner writes, public-field-only leaderboard reads, and own-score updates. Security advisors reported no issues. Browser smoke testing covered creation, preparation, a complete match and a live empty leaderboard response.
+
+### Online launch note
+
+The backend and game integration are configured. Email delivery/sign-in has not been tested end-to-end with a real inbox. Supabase's default mailer is restricted; configure production SMTP and the site's Auth URL settings in Supabase before opening account creation to the public. After email verification, players can return to the game and sign in. Offline play and JSON backups do not require an account.
+
+### Third-party dependency
+
+`vendor/supabase-2.57.4.js` is the pinned Supabase JavaScript UMD distribution from jsDelivr's npm mirror. Its MIT license is in `vendor/SUPABASE-LICENSE`. The game runs locally without this optional online client.

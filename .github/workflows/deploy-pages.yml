@@ -42,6 +42,8 @@ jobs:
           node --check /tmp/draft-inline.js
           node --check draft-player-pools.js
           node --check manager.js
+          node --check team-rosters.js
+          node tests/manager.test.cjs
       - name: Save generated player database
         run: |
           git config user.name "github-actions[bot]"
