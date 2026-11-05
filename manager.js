@@ -136,7 +136,9 @@ function notify(msg,type){const el=$('toast');el.textContent=msg;el.className='t
 function getSave(){const a=state.saves[sport]||[];return a.find(x=>x.id===state.active[sport])||null}
 function teamName(){const s=getSave();return s?s.team:'UNSIGNED'}
 function cleanName(n){return String(n||'').replace(/\s+\(\d+\)$/,'')}
+const playerPoolCache=new Map();
 function playerPools(pos,era){
+ const cacheKey=sport+'|'+era+'|'+pos;if(playerPoolCache.has(cacheKey))return playerPoolCache.get(cacheKey);
  const raw=(window.ERDraftExpandedPools&&window.ERDraftExpandedPools[sport]&&window.ERDraftExpandedPools[sport][pos])||[];
  let list=raw.map(p=>({name:cleanName(p.name),team:p.team||'Free Agent',base:Number(p.base)||74,source:'Player Database'}));
  if(era==='current'&&CURRENT[sport]&&CURRENT[sport][pos])CURRENT[sport][pos].forEach(x=>list.push({name:x[0],team:x[1],base:x[2],source:'Current Star'}));
@@ -149,7 +151,7 @@ function playerPools(pos,era){
  if(era==='current'&&window.ERTeamRosters?.teams?.[sport])list=Object.values(window.ERTeamRosters.teams[sport]).flatMap(c=>c.players.filter(p=>p.pos===pos).map(p=>({...p,source:'Current club roster'})));
  const byName=new Map();list.forEach(p=>{const k=p.name.toLowerCase(),old=byName.get(k);if(!old||p.base>old.base)byName.set(k,p)});list=[...byName.values()];
  let n=1;while(list.length<100){list.push({name:'ER Prospect '+pos+' '+String(n++).padStart(3,'0'),team:'ERA RIVALS ACADEMY',base:68+Math.floor(rand(0,15)),source:'Generated Prospect'})}
- return list.sort((a,b)=>b.base-a.base);
+ const sorted=list.sort((a,b)=>b.base-a.base);playerPoolCache.set(cacheKey,sorted);return sorted;
 }
 function capFor(){return SPORT[sport].cap}
 function salaryFor(ovr){const mult={nba:.42,nfl:.31,soccer:.36,mlb:.34}[sport];return Math.max(.7,Math.round((ovr-55)*mult*10)/10)}
