@@ -15,9 +15,9 @@ const TEAMS={
 };
 const PLAN={
  nba:['PG','SG','SF','PF','C','PG','SG','SF','PF','C'],
- nfl:['QB','RB','WR','WR','TE','OL','OL','OL','OL','OL','DL','DL','DL','LB','LB','LB','DB','DB','DB','DB'],
- soccer:['GK','RB','CB','CB','LB','CDM','CM','CAM','RW','LW','ST','GK','CB','CDM','CM','RW','LW','ST'],
- mlb:['SP','SP','SP','SP','SP','RP','RP','RP','CP','C','1B','2B','3B','SS','LF','CF','RF']
+ nfl:['QB','QB','RB','RB','RB','WR','WR','WR','WR','WR','WR','TE','TE','OL','OL','OL','OL','OL','OL','OL','DL','DL','DL','DL','DL','DL','LB','LB','LB','LB','LB','DB','DB','DB','DB','DB','DB','K','P'],
+ soccer:['GK','GK','RB','RB','CB','CB','CB','CB','LB','LB','CDM','CDM','CM','CM','CM','CM','CAM','CAM','RW','RW','RW','LW','LW','LW','ST','ST','ST','ST'],
+ mlb:['SP','SP','SP','SP','SP','RP','RP','RP','RP','RP','RP','CP','C','C','1B','1B','2B','2B','3B','3B','SS','SS','LF','LF','CF','CF','RF','RF']
 };
 const STARTERS={
  nba:{PG:1,SG:1,SF:1,PF:1,C:1},
@@ -219,8 +219,7 @@ function finishMatch(s,pending,choice,silent=false){
  if(!pending||s.offseason)return;
  const swing=(s.tactics.risk==='Aggressive'?rand(-5,5):s.tactics.risk==='Conservative'?rand(-1,1):rand(-3,3));
  const diff=teamPower(s)+tacticBonus(s)+(pending.planBonus||0)+(s.preparation?.bonus||0)+choice[2]+choice[3]*.6-pending.oppOvr+swing;
- let home=pending.home+segmentScore(sport,diff),away=pending.away+segmentScore(sport,-diff);
- if(sport!=='soccer'&&home===away){if(Math.random()<.5)home+=sport==='nfl'?3:1;else away+=sport==='nfl'?3:1}
+ let [home,away]=resolveTie(pending.home+segmentScore(sport,diff),pending.away+segmentScore(sport,-diff));
  const win=home>away,draw=home===away,post=!!s.playoffs;
  if(!post){updateLeagueRound(s,pending.opponent,home,away);if(win)s.record.w++;else if(draw)s.record.d++;else s.record.l++;s.week++}
  const active=starters(s),activeIds=new Set(active.map(p=>p.id));
@@ -468,11 +467,54 @@ function clamp(n,min,max){return Math.max(min,Math.min(max,n))}
 function draftPool(s,pos){return Array.from({length:12},(_,i)=>({name:['Mateo','Jordan','Kai','Lucas','Andre','Noah','Diego','Leo','Eli','Marco','Dante','Alex'][i]+' '+['Cruz','Bennett','Reed','Santos','Brooks','Hayes','Rivera','Costa','Walker','Silva','Cole','Vega'][(i+s.season)%12]+' '+pos+' '+s.season,pos,team:'Draft class '+s.year,base:66+((i*7+s.season)%14),source:'Fictional prospect'}))}
 function freeAgents(s,pos){return [...(s.released||[]).filter(p=>p.pos===pos),...draftPool(s,pos).map(p=>({...p,name:p.name+' FA',team:'Free Agent',source:'Fictional free agent'}))]}
 function clubData(team){return window.ERTeamRosters?.teams?.[sport]?.[team]}
+const FRANCHISE_ALIASES={
+ nba:{
+  'Los Angeles Lakers':['Minneapolis Lakers'],'Sacramento Kings':['Cincinnati Royals','Kansas City Kings','Rochester Royals'],
+  'Oklahoma City Thunder':['Seattle SuperSonics'],'Brooklyn Nets':['New Jersey Nets','New York Nets'],
+  'Memphis Grizzlies':['Vancouver Grizzlies'],'Charlotte Hornets':['Charlotte Bobcats'],
+  'New Orleans Pelicans':['New Orleans Hornets'],'Washington Wizards':['Washington Bullets'],
+  'Atlanta Hawks':['St Louis Hawks','St. Louis Hawks','Milwaukee Hawks','Tri-Cities Blackhawks'],
+  'Golden State Warriors':['Philadelphia Warriors','San Francisco Warriors'],'Detroit Pistons':['Fort Wayne Pistons'],
+  'Philadelphia 76ers':['Syracuse Nationals'],'Utah Jazz':['New Orleans Jazz'],'LA Clippers':['Los Angeles Clippers','San Diego Clippers','Buffalo Braves']
+ },
+ nfl:{
+  'Las Vegas Raiders':['Oakland Raiders','Los Angeles Raiders'],'Los Angeles Chargers':['San Diego Chargers'],
+  'Los Angeles Rams':['St Louis Rams','St. Louis Rams','Cleveland Rams'],'Tennessee Titans':['Houston Oilers'],
+  'Indianapolis Colts':['Baltimore Colts'],'Washington Commanders':['Washington Redskins','Washington Football Team']
+ },
+ mlb:{
+  'Los Angeles Dodgers':['Brooklyn Dodgers'],'San Francisco Giants':['New York Giants'],
+  'Washington Nationals':['Montreal Expos'],'Miami Marlins':['Florida Marlins'],
+  'Tampa Bay Rays':['Tampa Bay Devil Rays'],'Cleveland Guardians':['Cleveland Indians'],
+  'Oakland Athletics':['Philadelphia Athletics','Kansas City Athletics'],
+  'Atlanta Braves':['Boston Braves','Milwaukee Braves'],'Baltimore Orioles':['St Louis Browns','St. Louis Browns'],
+  'Minnesota Twins':['Washington Senators'],'New York Yankees':['New York Highlanders'],
+  'Los Angeles Angels':['California Angels','Anaheim Angels'],'Chicago White Sox':['Chicago White Stockings'],
+  'Cincinnati Reds':['Cincinnati Redlegs']
+ },
+ soccer:{}
+};
+function normalizedClubName(value){return String(value||'').toLowerCase().replace(/[^a-z0-9]/g,'')}
+function sameFranchise(playerTeam,selectedTeam){
+ const aliases=FRANCHISE_ALIASES[sport]?.[selectedTeam]||[];
+ const accepted=[selectedTeam,...aliases].map(normalizedClubName);
+ return accepted.includes(normalizedClubName(playerTeam));
+}
 function clubColor(team){return /^#[a-f0-9]{6}$/i.test(clubData(team)?.color||'')?clubData(team).color:'#254d47'}
 function clubBadge(team){const c=clubData(team);return c?.logo?'<img src="'+esc(c.logo)+'" alt="'+esc(team)+' crest" loading="lazy">':'<b>ER</b>'}
 function makeClubRoster(team,era){
  if(era==='alltime'){
-  const used=new Set();return PLAN[sport].map((pos,i)=>{const pool=playerPools(pos,era),home=pool.filter(p=>p.team===team&&!used.has(p.name)),candidate=home[0]||pool.find(p=>!used.has(p.name));if(!candidate)return null;used.add(candidate.name);return makePlayer(candidate,pos,true,i)}).filter(Boolean);
+  const used=new Set();
+  return PLAN[sport].map((pos,i)=>{
+   const pool=playerPools(pos,era),home=pool.filter(p=>sameFranchise(p.team,team)&&!used.has(p.name.toLowerCase()));
+   const candidate=home[0]||pool.find(p=>!used.has(p.name.toLowerCase()));
+   if(!candidate)return null;
+   used.add(candidate.name.toLowerCase());
+   const player=makePlayer(candidate,pos,false,i);
+   player.team=team;player.originalTeam=candidate.team;player.depthRank=PLAN[sport].slice(0,i).filter(x=>x===pos).length;
+   if(!sameFranchise(candidate.team,team))player.source='All-Time Legend Free Agent';
+   return player;
+  }).filter(Boolean);
  }
  const club=clubData(team);if(!club)return makeRoster(era);
  const players=club.players.map((p,i)=>({...makePlayer(p,p.pos,false,i),overall:p.base,potential:Math.min(99,p.base+(p.age<25?8:p.age<29?3:0)),age:p.age||25,photo:p.photo,jersey:p.jersey,listedPosition:p.listedPosition,team,originalTeam:team,depthRank:p.depthRank??9,source:'ESPN snapshot · '+(window.ERTeamRosters?.fetchedAt||'').slice(0,10)}));
@@ -494,7 +536,16 @@ function ensureSeason(s){
 }
 function nextOpponent(s){if(s.offseason)return 'Season complete';if(s.playoffs){const pair=s.playoffs.pairs.find(p=>p.includes(s.team));return pair?.find(t=>t!==s.team)||'Final'}const pair=s.schedule?.[s.week]?.find(p=>p.includes(s.team));return pair?.find(t=>t!==s.team)||Object.keys(s.standings).find(t=>t!==s.team)}
 function leagueResult(s,a,b,x,y){const ra=s.standings[a],rb=s.standings[b];if(x>y){ra.w++;rb.l++}else if(x<y){ra.l++;rb.w++}else{ra.d++;rb.d++}}
-function simulatePair(s,a,b){const diff=(s.standings[a]?.ovr||78)-(s.standings[b]?.ovr||78);let x=segmentScore(sport,diff)*2,y=segmentScore(sport,-diff)*2;if(sport!=='soccer'&&x===y){if(Math.random()<.5)x++;else y++}return [x,y]}
+function resolveTie(x,y){
+ if(sport==='soccer'||x!==y)return [x,y];
+ const bonus=sport==='nfl'?(Math.random()<.72?3:7):sport==='nba'?(Math.random()<.65?2:3):1;
+ if(Math.random()<.5)x+=bonus;else y+=bonus;
+ return [x,y];
+}
+function simulatePair(s,a,b){
+ const diff=(s.standings[a]?.ovr||78)-(s.standings[b]?.ovr||78);
+ return resolveTie(segmentScore(sport,diff)*2,segmentScore(sport,-diff)*2);
+}
 function updateLeagueRound(s,opponent,home,away){
  for(const [a,b] of s.schedule[s.week]||[]){if(a===s.team)leagueResult(s,a,b,home,away);else if(b===s.team)leagueResult(s,a,b,away,home);else{const [x,y]=simulatePair(s,a,b);leagueResult(s,a,b,x,y)}}s.standings[s.team].ovr=teamOvr(s);
 }
