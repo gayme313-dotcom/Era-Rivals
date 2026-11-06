@@ -12,7 +12,7 @@ for(const sp of ['nba','nfl','mlb','soccer']){
  const expected=t.nextOpponent(s);t.prepareTeam(s,'recover');t.beginMatch();assert.equal(s.pending.opponent,expected,'preview matches actual opponent');
  const oldPending=s.pending;t.simFive();assert.equal(s.week,0,'pending games cannot be bypassed');assert.equal(s.pending,oldPending);
  const checked=t.validateSave(JSON.parse(JSON.stringify(s)));assert(checked.pending,'backup preserves pending decision');
- t.finishMatch(s,s.pending,s.pending.options[1],true);assert.equal(s.week,1);assert(s.roster.some(p=>p.seasonStats.appearances===1),sp+' player game stats recorded');assert(s.roster.some(p=>p.careerStats.appearances===1),sp+' career stats recorded');assert(t.renderRecords(s).includes('SEASON MVP RACE'),sp+' record book renders');
+ t.finishMatch(s,s.pending,s.pending.options[1],true);assert.equal(s.week,1);assert(s.roster.some(p=>p.seasonStats.appearances===1),sp+' player game stats recorded');assert(s.roster.some(p=>p.careerStats.appearances===1),sp+' career stats recorded');assert(t.renderRecords(s).includes('SEASON MVP RACE'),sp+' record book renders');assert(t.renderRecords(s).includes('CAREER RECORDS BY STAT'),sp+' career stat leaders render');
  const hurt=s.roster.find(p=>p.starter);hurt.injured=2;hurt.starter=false;t.toggleStarter(hurt.id);assert.equal(hurt.injured,2,'starting cannot heal injuries');assert(!hurt.starter);const played=hurt.games;
  t.simAuto(s);assert.equal(hurt.injured,1);assert.equal(hurt.games,played,'injured players get no games');
  t.simAuto(s);assert.equal(hurt.injured,0,'injuries recover');
