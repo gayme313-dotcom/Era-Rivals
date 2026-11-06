@@ -40,3 +40,32 @@
 @media(min-width:1000px){.decision-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.decision-card{min-width:0}}
 @media(max-width:700px){.club-crest{width:62px}.team-grade{width:70px;height:70px}.team-grade b{font-size:30px}.welcome-panel{gap:12px}.decision-grid{grid-template-columns:1fr}.decision-room .decision-card{min-height:120px}.season-progress{gap:10px}.page-heading{flex-wrap:wrap}.page-heading .btn{padding:10px}.bracket-pair{font-size:10px}.player-photo{width:36px;height:35px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+
+/* ERA RIVALS franchise depth: negotiations, player relations and live records. */
+.trade-asset-list{max-height:245px;overflow:auto;margin:14px 0;padding:12px;border:1px solid #2b414a;border-radius:10px;background:#0c171f}
+.trade-asset-list> b{display:flex;justify-content:space-between;gap:10px;color:#a9bdc2;font-size:9px;letter-spacing:.12em;margin-bottom:8px}
+.trade-asset-list> b small{color:var(--lime);font-size:8px}
+.trade-asset{display:flex;align-items:center;gap:10px;padding:8px 5px;border-bottom:1px solid #263942;color:var(--ink);cursor:pointer}
+.trade-asset:last-child{border-bottom:0}
+.trade-asset input{flex:none;width:16px!important;height:16px;margin:0!important;accent-color:var(--lime)}
+.trade-asset span{min-width:0}
+.trade-asset span b{display:block;font-size:10px}
+.trade-asset span small{display:block;color:#8fa6af;font-size:8px;margin-top:3px}
+.pick-asset{background:#18251e}
+.trade-response{margin:14px 0;border-color:#806d3a;background:linear-gradient(125deg,#29271d,#111e27)}
+.trade-response h2{font-size:27px}
+.promise-panel{margin-top:14px;border-color:#466c5b}
+.promise-grid{display:grid;grid-template-columns:1fr 1fr auto;align-items:end;gap:12px}
+.promise-grid .field{min-width:0}
+.promise-grid .btn{min-height:42px;white-space:nowrap}
+.record-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}
+.record-card{min-width:0}
+.record-card .eyebrow{color:var(--lime)}
+.record-leaders{display:grid;gap:7px}
+.record-row{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px;border:1px solid #293e48;border-radius:8px;background:#0e1921}
+.record-row> b{color:var(--gold);font:900 14px var(--display)}
+.record-row span{min-width:0}
+.record-row span strong{display:block;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.record-row span small{display:block;margin-top:3px;color:#8fa6af;font-size:8px}
+.record-row>strong{font:900 13px var(--display);color:#c9fb68;text-align:right}
+@media(max-width:760px){.promise-grid{grid-template-columns:1fr}.promise-grid .btn{width:100%}.record-grid{grid-template-columns:1fr}.trade-asset-list{max-height:210px}.record-row{grid-template-columns:22px minmax(0,1fr) auto;gap:7px}}
