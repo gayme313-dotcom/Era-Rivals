@@ -2,7 +2,7 @@ const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/st
 const elements=new Map(),storage=new Map();const doc={getElementById(id){if(!elements.has(id))elements.set(id,{innerHTML:'',textContent:'',className:'',value:'',hidden:false});return elements.get(id)},addEventListener(){},createElement(){return {click(){}}}};
 const context={document:doc,window:{},location:{search:'?sport=nfl'},localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},URLSearchParams,console,setTimeout:()=>0,clearTimeout(){},confirm:()=>true,Blob,URL,Math};vm.createContext(context);
 for(const file of ['draft-player-pools.js','team-rosters.js','basketball-era-data.js'])vm.runInContext(fs.readFileSync(file,'utf8'),context);
-const source=fs.readFileSync('manager.js','utf8').replace(/render\(\);\s*\}\)\(\);\s*$/,`globalThis.test={createSave,getSave,beginMatch,finishMatch,simAuto,simFive,simRest,prepareTeam,nextOpponent,teamPower,teamOvr,renderDashboard,renderRoster,renderTactics,renderTransactions,renderScouting,renderStandings,renderLegacy,renderMatchday,renderSaveCenter,validateSave,toggleStarter,tradePlayers,advanceSeason,autoLineup,rankedTeams,state,SPORT,TEAMS,STARTERS,PLAN,resolveTie,sameFranchise,clubRating,teamPayroll,playerPools,recordPlayerGameStats,mvpScore,renderRecords,makePromise,evaluatePromises,proposeTrade,acceptTrade,makeDraftPicks,ensureSeason,completeSeason,playerTradeValue,setSport:v=>sport=v,setPage:v=>page=v,readState};\n})();`);
+const source=fs.readFileSync('manager.js','utf8').replace(/render\(\);\s*\}\)\(\);\s*$/,`globalThis.test={createSave,getSave,beginMatch,finishMatch,simAuto,simFive,simRest,prepareTeam,nextOpponent,teamPower,teamOvr,renderDashboard,renderRoster,renderTactics,renderTransactions,renderScouting,renderStandings,renderLegacy,renderMatchday,renderSaveCenter,validateSave,toggleStarter,tradePlayers,advanceSeason,autoLineup,rankedTeams,state,SPORT,TEAMS,STARTERS,PLAN,resolveTie,sameFranchise,clubRating,teamPayroll,playerPools,recordPlayerGameStats,mvpScore,renderRecords,makePromise,evaluatePromises,proposeTrade,counterTrade,acceptTrade,makeDraftPicks,ensureSeason,completeSeason,playerTradeValue,setSport:v=>sport=v,setPage:v=>page=v,readState};\n})();`);
 vm.runInContext(source,context);const t=context.test;
 for(const sp of ['nba','nfl','mlb','soccer']){
  t.setSport(sp);for(const era of ['current','alltime'])for(const pos of t.SPORT[sp].positions){const pool=t.playerPools(pos,era);assert(pool.length>=100,sp+' '+era+' '+pos+' has 100+ players');assert(new Set(pool.map(p=>p.name.toLowerCase())).size>=100,sp+' '+era+' '+pos+' unique players');assert.strictEqual(t.playerPools(pos,era),pool,sp+' '+era+' '+pos+' pool is stable');}const team={nba:'Boston Celtics',nfl:'New England Patriots',mlb:'Boston Red Sox',soccer:'Real Madrid'}[sp];t.createSave({team,era:'current',manager:'Xavi'});const s=t.getSave();
@@ -49,6 +49,19 @@ assert(!tradeSave.roster.some(p=>p.id===outA.id||p.id===outB.id),'outgoing playe
 assert(tradeSave.roster.some(p=>p.name===targetSource.name),'incoming player joins roster');
 assert(!tradeSave.draftPicks.some(p=>p.id===pickOffered.id),'offered draft pick is transferred');
 assert.equal(tradeSave.tradeHistory.length,1,'trade history is saved');
+
+// A near-fair offer triggers a counter, and the GM can counter back with a pick.
+t.setSport('nfl');t.createSave({team:'New England Patriots',era:'current'});const counterSave=t.getSave();
+const counterOut=counterSave.roster.find(p=>p.pos==='QB');
+const counterTarget=t.playerPools('QB',counterSave.era).find(p=>p.team!==counterSave.team&&!counterSave.roster.some(x=>x.name===p.name)&&p.base>=70);
+assert(counterOut&&counterTarget,'counter test has a QB and trade target');
+counterOut.overall=counterTarget.base-5;counterOut.potential=counterOut.overall;counterOut.age=27;
+const firstOffer=t.proposeTrade(counterSave,[counterOut.id],'QB|'+counterTarget.name,[]);
+assert.equal(firstOffer.status,'counter','near-fair offer receives a counter');
+const counterBack=t.counterTrade(counterSave,[counterOut.id],[firstOffer.counterPick]);
+assert(counterBack,'GM can send a counteroffer');
+assert.equal(counterSave.tradeNegotiation.status,'accepted','added draft pick closes the value gap');
+assert(t.acceptTrade(counterSave,false),'revised offer can be confirmed');
 
 // Player promises reward trust and record season MVPs from actual simulated stats.
 t.setSport('nba');t.createSave({team:'Boston Celtics',era:'current'});const promiseSave=t.getSave();
