@@ -158,7 +158,7 @@ function salaryFor(ovr){const mult={nba:.42,nfl:.31,soccer:.36,mlb:.34}[sport];r
 function makePlayer(source,pos,starter,index){
  const overall=Math.max(62,Math.min(99,Math.round(source.base+rand(-3,2))));
  const age=sport==='nba'?Math.floor(rand(20,35)):sport==='nfl'?Math.floor(rand(21,34)):sport==='soccer'?Math.floor(rand(19,34)):Math.floor(rand(21,36));
- return {id:'p-'+Date.now()+'-'+Math.random().toString(36).slice(2,8),name:source.name,team:sport==='soccer'?source.team:source.team,originalTeam:source.team,pos:pos,overall:overall,potential:Math.min(99,overall+(age<25?Math.floor(rand(4,14)):age<29?Math.floor(rand(1,7)):0)),age:age,salary:salaryFor(overall),contractYears:Math.floor(rand(1,5)),morale:Math.floor(rand(66,96)),fatigue:Math.floor(rand(3,24)),careerPoints:source.source==='All-Time Legend'?Math.round(overall*18):0,games:0,awards:[],starter:starter,injured:0,source:source.source||'Player Database'};
+ return {id:'p-'+Date.now()+'-'+Math.random().toString(36).slice(2,8),name:source.name,team:sport==='soccer'?source.team:source.team,originalTeam:source.team,pos:pos,overall:overall,potential:Math.min(99,overall+(age<25?Math.floor(rand(4,14)):age<29?Math.floor(rand(1,7)):0)),age:age,salary:salaryFor(overall),contractYears:Math.floor(rand(1,5)),morale:Math.floor(rand(66,96)),fatigue:Math.floor(rand(3,24)),careerPoints:source.source==='All-Time Legend'?Math.round(overall*18):0,games:0,awards:[],starter:starter,injured:0,source:source.source||'Player Database',seasonStats:emptyPlayerStats(),careerStats:emptyPlayerStats(),seasonHistory:[]};
 }
 function makeRoster(era){
  const used=new Set(),roster=[];
@@ -177,7 +177,7 @@ function teamChem(s){return Math.round(s.chemistry||70)}
 function createSave(form){
  const era=form.era||'current',team=form.team||TEAMS[sport][0],manager=form.manager||'Xavier Matos';
  const roster=makeClubRoster(team,era);
- const s={id:'save-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),sport:sport,era:era,team:team,manager:manager,difficulty:form.difficulty||'normal',season:1,year:era==='alltime'?1998:2026,week:0,record:{w:0,l:0,d:0},roster:roster,chemistry:72,morale:76,fanSupport:65,gmRep:50,gmPoints:0,trainingPoints:4,legacyPoints:0,tactics:{off:TACTICS[sport].off[0],def:TACTICS[sport].def[0],tempo:'Normal',risk:'Balanced',rotation:'Normal',training:SPORT[sport].positions[0]},matchPlan:'Balanced approach',pending:null,offseason:false,feed:['New franchise established. The board expects a competitive season.'],seasonHistory:[],retired:[],standings:{},awards:[],draftClass:[]};
+ const s={id:'save-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),sport:sport,era:era,team:team,manager:manager,difficulty:form.difficulty||'normal',season:1,year:era==='alltime'?1998:2026,week:0,record:{w:0,l:0,d:0},roster:roster,chemistry:72,morale:76,fanSupport:65,gmRep:50,gmPoints:0,trainingPoints:4,legacyPoints:0,tactics:{off:TACTICS[sport].off[0],def:TACTICS[sport].def[0],tempo:'Normal',risk:'Balanced',rotation:'Normal',training:SPORT[sport].positions[0]},matchPlan:'Balanced approach',pending:null,offseason:false,feed:['New franchise established. The board expects a competitive season.'],seasonHistory:[],retired:[],standings:{},awards:[],draftClass:[],promises:[],tradeHistory:[],tradeNegotiation:null,draftPicks:makeDraftPicks(1)};
  TEAMS[sport].forEach((t,i)=>s.standings[t]={w:0,l:0,d:0,ovr:68+((i*7+Math.floor(rand(0,12)))%23)});
  s.standings[team]={w:0,l:0,d:0,ovr:teamOvr(s)};
  ensureSeason(s);initialLineup(s);Object.keys(s.standings).forEach(t=>s.standings[t].ovr=clubRating(t,era));s.standings[team].ovr=teamOvr(s);
@@ -185,6 +185,106 @@ function createSave(form){
  arr.push(s);state.active[sport]=s.id;page='dashboard';persist();render();notify('Dynasty created. You are in charge.');
 }
 function feed(s,msg){s.feed.unshift('S'+s.season+' · '+msg);s.feed=s.feed.slice(0,18)}
+
+function emptyPlayerStats(){return {appearances:0,points:0,rebounds:0,assists:0,steals:0,blocks:0,passYards:0,passTD:0,interceptions:0,rushYards:0,rushTD:0,recYards:0,recTD:0,tackles:0,sacks:0,fieldGoals:0,goals:0,shots:0,keeperSaves:0,cleanSheets:0,hits:0,homeRuns:0,rbi:0,runs:0,stolenBases:0,pitcherStrikeouts:0,battingStrikeouts:0,inningsPitched:0,pitcherWins:0,pitcherSaves:0}}
+function normalizePlayerStats(source){const out=emptyPlayerStats();Object.keys(out).forEach(k=>{const n=Number(source?.[k]);out[k]=Number.isFinite(n)&&n>=0?Math.round(n*10)/10:0});return out}
+function ensurePlayerStats(p){p.seasonStats=normalizePlayerStats(p.seasonStats);p.careerStats=normalizePlayerStats(p.careerStats);p.seasonHistory=Array.isArray(p.seasonHistory)?p.seasonHistory:[];return p}
+function statAdd(p,key,value){if(!value)return;ensurePlayerStats(p);p.seasonStats[key]=Math.round((p.seasonStats[key]+value)*10)/10;p.careerStats[key]=Math.round((p.careerStats[key]+value)*10)/10}
+function rint(min,max){return Math.floor(rand(min,max+1))}
+function recordPlayerGameStats(p,forScore,againstScore,win,draw){
+ ensurePlayerStats(p);statAdd(p,'appearances',1);
+ if(sport==='nba'){
+  statAdd(p,'points',rint(4,Math.max(8,Math.round((p.overall-55)*.42))));
+  statAdd(p,'rebounds',rint(['C','PF'].includes(p.pos)?5:1,['C','PF'].includes(p.pos)?15:8));
+  statAdd(p,'assists',rint(p.pos==='PG'?4:1,p.pos==='PG'?13:7));statAdd(p,'steals',rint(0,3));statAdd(p,'blocks',rint(0,['C','PF'].includes(p.pos)?4:2));
+ }else if(sport==='nfl'){
+  if(p.pos==='QB'){statAdd(p,'passYards',rint(125,340));statAdd(p,'passTD',rint(0,3));statAdd(p,'interceptions',rint(0,2));statAdd(p,'rushYards',rint(0,55))}
+  else if(p.pos==='RB'){statAdd(p,'rushYards',rint(25,135));statAdd(p,'rushTD',rint(0,2));statAdd(p,'recYards',rint(0,45))}
+  else if(['WR','TE'].includes(p.pos)){statAdd(p,'recYards',rint(18,145));statAdd(p,'recTD',rint(0,2))}
+  else if(['DL','LB'].includes(p.pos)){statAdd(p,'tackles',rint(p.pos==='LB'?3:1,p.pos==='LB'?12:7));statAdd(p,'sacks',rint(0,p.pos==='DL'?2:1))}
+  else if(p.pos==='DB'){statAdd(p,'tackles',rint(1,8));statAdd(p,'interceptions',rint(0,2))}
+  else if(p.pos==='K')statAdd(p,'fieldGoals',rint(0,4));
+ }else if(sport==='soccer'){
+  if(p.pos==='GK'){statAdd(p,'keeperSaves',rint(1,7));if(againstScore===0)statAdd(p,'cleanSheets',1)}
+  else{const attack=['ST','RW','LW','CAM'].includes(p.pos);if(attack&&forScore>0&&Math.random()<.58)statAdd(p,'goals',1+(forScore>1&&Math.random()<.18?1:0));if(['ST','RW','LW','CAM','CM'].includes(p.pos))statAdd(p,'assists',rint(0,2));statAdd(p,'shots',rint(0,attack?5:2));statAdd(p,'tackles',rint(['CB','LB','RB','CDM'].includes(p.pos)?2:0,['CB','LB','RB','CDM'].includes(p.pos)?7:4));if(againstScore===0&&['CB','LB','RB','CDM'].includes(p.pos))statAdd(p,'cleanSheets',1)}
+ }else if(sport==='mlb'){
+  if(['SP','RP','CP'].includes(p.pos)){statAdd(p,'pitcherStrikeouts',rint(p.pos==='SP'?3:1,p.pos==='SP'?10:5));statAdd(p,'inningsPitched',p.pos==='SP'?rand(4,7):rand(1,3));if(win&&p.pos==='SP')statAdd(p,'pitcherWins',1);if(win&&p.pos==='CP')statAdd(p,'pitcherSaves',1)}
+  else{const hits=rint(0,3);statAdd(p,'hits',hits);statAdd(p,'homeRuns',Math.random()<.12?1:0);statAdd(p,'rbi',rint(0,3));statAdd(p,'runs',rint(0,2));statAdd(p,'stolenBases',Math.random()<.12?1:0);statAdd(p,'battingStrikeouts',rint(0,2))}
+ }
+}
+function mvpScore(p){const a=p.seasonStats||{};if(sport==='nba')return a.points+a.rebounds*1.15+a.assists*1.45+a.steals*2+a.blocks*2+a.appearances*.3;if(sport==='nfl')return a.passYards/24+a.passTD*7+a.rushYards/10+a.rushTD*7+a.recYards/14+a.recTD*7+a.tackles*1.2+a.sacks*4+a.interceptions*4;if(sport==='soccer')return a.goals*6+a.assists*4+a.shots*.35+a.tackles*.35+a.keeperSaves*.6+a.cleanSheets*4;return a.hits*2+a.homeRuns*5+a.rbi*2+a.runs+a.stolenBases*2+a.pitcherStrikeouts*1.2+a.pitcherWins*5+a.pitcherSaves*4}
+function seasonMvp(s){return s.roster.filter(p=>(p.seasonStats?.appearances||0)>0).sort((a,b)=>mvpScore(b)-mvpScore(a))[0]||null}
+function makeDraftPicks(season){return [1,2,3].map(round=>({id:'S'+season+'-R'+round,season:season,round:round,value:[0,18,11,6][round],label:'Season '+season+' · Round '+round}))}
+function playerTradeValue(p){const overall=Number(p.overall||p.base||70),potential=Number(p.potential||overall),age=Number(p.age||27);return overall+Math.max(0,potential-overall)*.35+Math.max(0,27-age)*.35}
+function tradeTargetFromKey(key){const raw=String(key||''),i=raw.indexOf('|');return i<0?null:{pos:raw.slice(0,i),name:raw.slice(i+1)}}
+function proposeTrade(s,outIds,targetKey,pickIds){
+ if(!s||s.pending)return {error:'Finish your current match before negotiating.'};
+ const ids=Array.from(new Set(outIds||[])),picks=Array.from(new Set(pickIds||[]));
+ if(!ids.length||ids.length>3)return {error:'Choose one to three players to offer.'};
+ const outgoing=ids.map(id=>s.roster.find(p=>p.id===id));if(outgoing.some(p=>!p))return {error:'One of those players is no longer on your roster.'};
+ const target=tradeTargetFromKey(targetKey);if(!target||!SPORT[sport].positions.includes(target.pos))return {error:'Choose a valid trade target.'};
+ const source=playerPools(target.pos,s.era).find(p=>p.name===target.name);if(!source||source.team===s.team||s.roster.some(p=>p.name===source.name))return {error:'That trade target is unavailable.'};
+ const offered=s.draftPicks.filter(p=>picks.includes(p.id));if(offered.length!==picks.length)return {error:'One of those draft picks is no longer available.'};
+ const offerValue=outgoing.reduce((n,p)=>n+playerTradeValue(p),0)+offered.reduce((n,p)=>n+p.value,0);
+ const targetValue=playerTradeValue({base:source.base,overall:source.base,potential:source.potential||source.base,age:source.age||26});
+ const counterPick=s.draftPicks.filter(p=>!picks.includes(p.id)).sort((a,b)=>b.value-a.value)[0]||null;
+ let status='rejected',message='The other front office declined. The offer was too far below their valuation.';
+ if(offerValue>=targetValue*.97){status='accepted';message='They accepted your offer. Confirm the deal before the deadline.'}
+ else if(offerValue>=targetValue*.78&&counterPick){status='counter';message='They sent a counteroffer: add '+counterPick.label+' to close the value gap.'}
+ s.tradeNegotiation={status:status,message:message,outIds:ids,targetPos:target.pos,targetName:target.name,targetTeam:source.team,pickIds:picks,counterPick:counterPick?.id||null,offerValue:Math.round(offerValue),targetValue:Math.round(targetValue),round:1,deadlineWeek:Math.min(SPORT[sport].games,s.week+2),season:s.season};
+ feed(s,'Trade talks with '+source.team+' opened for '+source.name+'.');return s.tradeNegotiation;
+}
+function acceptTrade(s,useCounter=false){
+ const n=s?.tradeNegotiation;if(!n||!(n.status==='accepted'||(n.status==='counter'&&useCounter)))return false;
+ const target=playerPools(n.targetPos,s.era).find(p=>p.name===n.targetName),outgoing=n.outIds.map(id=>s.roster.find(p=>p.id===id)).filter(Boolean);
+ const picks=[...n.pickIds,...(useCounter&&n.counterPick?[n.counterPick]:[])];
+ if(!target||!outgoing.length||outgoing.length!==n.outIds.length||picks.some(id=>!s.draftPicks.some(p=>p.id===id))){notify('The trade assets changed. Reopen negotiations.','bad');return false}
+ const incoming=makePlayer(target,n.targetPos,false,0);incoming.age=target.age||incoming.age;incoming.team=s.team;incoming.originalTeam=target.team;incoming.starter=outgoing.some(p=>p.pos===n.targetPos&&p.starter);
+ if(teamPayroll(s)-outgoing.reduce((v,p)=>v+p.salary,0)+incoming.salary>capFor()){notify('The incoming contract would put you over the salary cap.','bad');return false}
+ const partner=n.targetTeam,partnerOutValue=outgoing.reduce((v,p)=>v+p.overall,0)/outgoing.length;
+ s.released=s.released||[];outgoing.forEach(p=>s.released.push({...p,base:p.overall,team:'Free Agent'}));
+ s.roster=s.roster.filter(p=>!n.outIds.includes(p.id));s.roster.push(incoming);s.draftPicks=s.draftPicks.filter(p=>!picks.includes(p.id));
+ if(s.standings[partner]&&partner!==s.team)s.standings[partner].ovr=clamp(Math.round(s.standings[partner].ovr+(partnerOutValue-incoming.overall)*.22),65,99);
+ s.chemistry=Math.max(35,s.chemistry-2);s.gmPoints+=25;s.tradeHistory=s.tradeHistory||[];
+ s.tradeHistory.unshift({season:s.season,week:s.week,team:partner,received:incoming.name,sent:outgoing.map(p=>p.name),picks:picks});s.tradeHistory=s.tradeHistory.slice(0,30);
+ s.tradeNegotiation=null;fillVacancies(s);feed(s,'Trade completed with '+partner+': received '+incoming.name+' for '+outgoing.map(p=>p.name).join(', ')+'.');
+ persist();render();notify('Trade accepted and completed.');return true;
+}
+function rejectTrade(s){if(!s?.tradeNegotiation)return false;feed(s,'Trade talks with '+s.tradeNegotiation.targetTeam+' ended without a deal.');s.tradeNegotiation=null;persist();render();notify('Negotiations closed.');return true}
+function makePromise(s,type,playerId){
+ if(!s||s.pending||s.offseason)return {error:'Promises can only be made between games.'};
+ s.promises=s.promises||[];if(s.promises.filter(p=>p.status==='active').length>=3)return {error:'You can manage up to three active promises.'};
+ const player=playerId?s.roster.find(p=>p.id===playerId):null;
+ if(type==='starter'&&!player)return {error:'Choose the player you are promising a starting role.'};
+ if(type==='starter'&&s.promises.some(p=>p.status==='active'&&p.type==='starter'&&p.playerId===playerId))return {error:'You already made that player a playing-time promise.'};
+ if(!['starter','playoffs','championship'].includes(type))return {error:'Choose a valid promise.'};
+ const promise={id:'promise-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),type:type,playerId:player?.id||null,playerName:player?.name||s.team,season:s.season,week:s.week,startAppearances:player?.seasonStats?.appearances||0,status:'active'};
+ s.promises.unshift(promise);return promise;
+}
+function evaluatePromises(s,title,awards){
+ s.promises=s.promises||[];const rank=rankedTeams(s).indexOf(s.team)+1;
+ s.promises.filter(p=>p.status==='active'&&p.season===s.season).forEach(p=>{
+  const player=p.playerId?[...s.roster,...s.retired].find(x=>x.id===p.playerId):null;let fulfilled=false;
+  if(p.type==='starter'){const appearances=(player?.seasonStats?.appearances||0)-p.startAppearances,remaining=Math.max(0,SPORT[sport].games-p.week);fulfilled=!!player&&appearances>=Math.ceil(remaining*.7)}
+  if(p.type==='playoffs')fulfilled=rank<=8||!!title;if(p.type==='championship')fulfilled=!!title;
+  p.status=fulfilled?'fulfilled':'broken';p.resolvedSeason=s.season;
+  if(player)player.morale=clamp(player.morale+(fulfilled?12:-15),30,100);
+  s.gmRep=clamp(s.gmRep+(fulfilled?4:-7),0,100);s.gmPoints+=fulfilled?75:-35;s.morale=clamp(s.morale+(fulfilled?3:-7),30,100);
+  const label=p.type==='starter'?'starting role':p.type==='playoffs'?'playoff push':'championship push';
+  feed(s,(fulfilled?'Kept':'Broke')+' the '+label+' promise to '+p.playerName+'.');awards.push((fulfilled?'Promise kept: ':'Promise broken: ')+p.playerName);
+ });s.promises=s.promises.slice(0,20);
+}
+function renderPromises(s){
+ const players=s.roster.map(p=>'<option value="'+p.id+'">'+esc(p.pos+' · '+p.name)+'</option>').join('');
+ const rows=(s.promises||[]).slice(0,8).map(p=>'<div class="market-row"><div><b>'+esc(p.type==='starter'?'STARTING ROLE':p.type==='playoffs'?'PLAYOFF PUSH':'CHAMPIONSHIP PUSH')+' · '+esc(p.playerName)+'</b><small>SEASON '+p.season+' · '+esc(p.status.toUpperCase())+'</small></div><span class="badge '+(p.status==='fulfilled'?'positive':p.status==='broken'?'negative':'')+'">'+esc(p.status.toUpperCase())+'</span></div>').join('');
+ return '<section class="panel promise-panel"><span class="eyebrow">PLAYER RELATIONS / TRUST IS EARNED</span><h2>MAKE A PROMISE.</h2><div class="promise-grid"><label class="field">PLAYER <select id="promisePlayer"><option value="">TEAM OBJECTIVE</option>'+players+'</select></label><label class="field">PROMISE <select id="promiseType"><option value="starter">Starting role · 70% of remaining games</option><option value="playoffs">Reach the playoffs</option><option value="championship">Win the championship</option></select></label><button class="btn primary" data-action="make-promise">MAKE PROMISE</button></div><p class="fineprint">Keep your word by season end. Broken promises damage morale and GM approval.</p><div class="contract-list">'+(rows||'<div class="empty-state">No promises made yet.</div>')+'</div></section>';
+}
+function renderTradeNegotiation(s){
+ const n=s.tradeNegotiation;if(!n)return '';const counter=n.status==='counter',accepted=n.status==='accepted',done=n.status==='rejected'||n.status==='expired';
+ const status=accepted?'OFFER ACCEPTED':counter?'COUNTEROFFER RECEIVED':n.status==='expired'?'DEADLINE PASSED':'OFFER DECLINED';
+ return '<section class="panel trade-response"><div class="panel-top"><div><span class="eyebrow">TRADE NEGOTIATION · ROUND '+n.round+'</span><h2>'+status+'</h2></div><span class="status-pill">WEEK '+s.week+' / '+n.deadlineWeek+' DEADLINE</span></div><p class="muted">'+esc(n.message)+'</p><div class="market-row"><b>'+esc(n.targetTeam)+' · '+esc(n.targetName)+'</b><strong>'+n.offerValue+' / '+n.targetValue+' VALUE</strong></div>'+(counter?'<p class="fineprint">Their request: '+esc(s.draftPicks.find(p=>p.id===n.counterPick)?.label||'additional draft capital')+'</p>':'')+'<div class="button-row">'+(accepted?'<button class="btn primary" data-action="accept-trade">CONFIRM TRADE</button>':counter?'<button class="btn primary" data-action="accept-counter">ACCEPT COUNTER</button>':'')+'<button class="btn ghost" data-action="reject-trade">'+(done?'DISMISS':'WALK AWAY')+'</button></div></section>';
+}
+
 function starters(s){return s.roster.filter(p=>p.starter&&!p.injured)}
 function teamPower(s){const a=starters(s);if(!a.length)return 60;const avg=a.reduce((n,p)=>n+p.overall,0)/a.length;const morale=s.roster.reduce((n,p)=>n+p.morale,0)/Math.max(1,s.roster.length);const fatigue=a.reduce((n,p)=>n+p.fatigue,0)/a.length;const required=Object.values(STARTERS[sport]).reduce((n,v)=>n+v,0);const vacancies=Math.max(0,required-a.length);return avg-vacancies*1.8+(s.chemistry-70)*.075+(morale-70)*.035-(fatigue-20)*.08}
 function tacticBonus(s){const t=s.tactics,active=starters(s),avg=teamOvr(s),fit=(positions)=>{const group=active.filter(p=>positions.includes(p.pos));return group.length?(group.reduce((n,p)=>n+p.overall,0)/group.length-avg)*.3: -2};let b=0;
@@ -223,13 +323,13 @@ function finishMatch(s,pending,choice,silent=false){
  const diff=teamPower(s)+tacticBonus(s)+(pending.planBonus||0)+(s.preparation?.bonus||0)+choice[2]+choice[3]*.6-pending.oppOvr+swing;
  let [home,away]=resolveTie(pending.home+segmentScore(sport,diff),pending.away+segmentScore(sport,-diff));
  const win=home>away,draw=home===away,post=!!s.playoffs;
- if(!post){updateLeagueRound(s,pending.opponent,home,away);if(win)s.record.w++;else if(draw)s.record.d++;else s.record.l++;s.week++}
+ if(!post){updateLeagueRound(s,pending.opponent,home,away);if(win)s.record.w++;else if(draw)s.record.d++;else s.record.l++;s.week++;if(s.tradeNegotiation&&['accepted','counter'].includes(s.tradeNegotiation.status)&&s.week>s.tradeNegotiation.deadlineWeek){s.tradeNegotiation.status='expired';s.tradeNegotiation.message='The trade deadline passed before you confirmed the deal.';feed(s,'Trade talks with '+s.tradeNegotiation.targetTeam+' expired at the deadline.')}}
  const active=starters(s),activeIds=new Set(active.map(p=>p.id));
  const mvp=active.filter(p=>sport!=='nfl'||!['OL','K','P'].includes(p.pos)).map(p=>({p,score:p.overall+rand(0,12)})).sort((a,b)=>b.score-a.score)[0]?.p;
  s.roster.forEach(p=>{
   const played=activeIds.has(p.id);
   if(p.injured>0){p.injured--;if(!p.injured)feed(s,p.name+' cleared to return.');}
-  if(played){p.games++;p.careerPoints+=win?9:4;p.fatigue=Math.min(100,Math.max(0,p.fatigue+Math.floor(rand(5,11))+(choice[4]||0)*.3-6));p.morale=clamp(p.morale+(win?3:draw?1:-3),30,100)}
+  if(played){p.games++;recordPlayerGameStats(p,home,away,win,draw);p.careerPoints+=win?9:4;p.fatigue=Math.min(100,Math.max(0,p.fatigue+Math.floor(rand(5,11))+(choice[4]||0)*.3-6));p.morale=clamp(p.morale+(win?3:draw?1:-3),30,100)}
   else p.fatigue=Math.max(0,p.fatigue-12);
   if(played&&p.fatigue>65&&Math.random()<.04){p.injured=2+Math.floor(rand(0,3));p.starter=false;feed(s,p.name+' is out for '+p.injured+' games.');}
  });
@@ -246,19 +346,21 @@ function finishMatch(s,pending,choice,silent=false){
 }
 function completeSeason(s,title=false){
  if(s.offseason)return;
- const awards=[];
+ const awards=[],mvp=seasonMvp(s);
+ if(mvp){mvp.awards.push('Season MVP');mvp.careerPoints+=180;s.legacyPoints+=250;s.gmPoints+=100;s.awards=s.awards||[];s.awards.unshift({season:s.season,year:s.year,type:'MVP',player:mvp.name,position:mvp.pos,score:Math.round(mvpScore(mvp))});awards.push('SEASON MVP: '+mvp.name);feed(s,mvp.name+' won the Season MVP award.')}
+ evaluatePromises(s,title,awards);
  if(title){s.legacyPoints+=1500;s.gmPoints+=300;awards.push(sport==='soccer'?'LEAGUE CHAMPIONS':'ERA CUP CHAMPIONS');s.roster.forEach(p=>{p.careerPoints+=250;p.awards.push('Champion')})}
  const target=Math.ceil(SPORT[sport].games*.5),met=s.record.w>=target;
  if(met){s.gmPoints+=150;awards.push('Board objective achieved');feed(s,'Board objective met: +150 GM points.')}
- s.seasonHistory.unshift({season:s.season,year:s.year,record:s.record.w+'-'+s.record.l+(s.record.d?'-'+s.record.d:''),title,awards});
+ s.seasonHistory.unshift({season:s.season,year:s.year,record:s.record.w+'-'+s.record.l+(s.record.d?'-'+s.record.d:''),title,mvp:mvp?.name||null,awards});
  feed(s,'Season '+s.season+' complete. '+(title?'CHAMPIONS! ': '')+awards.join(' · '));
- s.offseason=true;s.pending=null;s.playoffs=null;
- s.roster.forEach(p=>{p.age++;p.contractYears=Math.max(0,p.contractYears-1);p.fatigue=0;p.injured=0;if(p.age>=39&&Math.random()<.45){p.retired=true;s.retired.push(p);feed(s,p.name+' announced retirement.')}});
+ s.offseason=true;s.pending=null;s.playoffs=null;s.tradeNegotiation=null;
+ s.roster.forEach(p=>{ensurePlayerStats(p);p.seasonHistory.unshift({season:s.season,year:s.year,stats:{...p.seasonStats}});p.seasonHistory=p.seasonHistory.slice(0,20);p.seasonStats=emptyPlayerStats();p.age++;p.contractYears=Math.max(0,p.contractYears-1);p.fatigue=0;p.injured=0;if(p.age>=39&&Math.random()<.45){p.retired=true;s.retired.push(p);feed(s,p.name+' announced retirement.')}});
  s.roster=s.roster.filter(p=>!p.retired);fillVacancies(s);
 }
 function advanceSeason(){
  const s=getSave();if(!s||!s.offseason)return;
- s.season++;s.year++;s.week=0;s.record={w:0,l:0,d:0};s.offseason=false;s.trainingPoints+=3;s.chemistry=Math.min(99,s.chemistry+4);s.preparation=null;s.playoffs=null;s.seasonDrafts=0;s.schedule=null;
+ s.season++;s.year++;s.week=0;s.record={w:0,l:0,d:0};s.offseason=false;s.draftPicks=makeDraftPicks(s.season);s.tradeNegotiation=null;s.trainingPoints+=3;s.chemistry=Math.min(99,s.chemistry+4);s.preparation=null;s.playoffs=null;s.seasonDrafts=0;s.schedule=null;
  s.roster.forEach(p=>{if(p.potential>p.overall&&p.age<30&&Math.random()<.65)p.overall++;if(p.age>32&&Math.random()<.4)p.overall=Math.max(55,p.overall-1);if(p.contractYears===0)p.morale=Math.max(35,p.morale-10)});
  Object.keys(s.standings).forEach(t=>s.standings[t]={w:0,l:0,d:0,ovr:t===s.team?teamOvr(s):clamp(s.standings[t].ovr+Math.round(rand(-2,2)),65,98)});
  ensureSeason(s);feed(s,'Season '+s.season+' begins. Review contracts and prepare your squad.');persist();render();notify('New season started.');
@@ -303,21 +405,19 @@ function signFromPool(name,pos,kind){
  const s=getSave();if(!s)return;const exists=s.roster.some(p=>p.name===name);if(exists){notify('That player is already on your roster.','bad');return}
  const source=(kind==='draft'?draftPool(s,pos):freeAgents(s,pos)).find(p=>p.name===name);if(!source)return;
  if(kind==='draft'&&s.seasonDrafts>=2){notify('You have used both draft picks this season.');return}
+ const draftPick=kind==='draft'?(s.draftPicks||[]).filter(x=>x.season===s.season).sort((a,b)=>a.round-b.round)[0]:null;
+ if(kind==='draft'&&!draftPick){notify('You have traded away your remaining draft picks.','bad');return}
  const p=makePlayer(source,pos,false,0);p.salary=Math.max(.7,Math.round(p.salary*.82*10)/10);p.contractYears=kind==='draft'?4:2;if(kind==='draft')p.age=19;p.potential=Math.min(99,Math.max(p.potential,p.overall+(kind==='draft'?10:5)));
  if(teamPayroll(s)+p.salary>capFor()){notify('Over the salary cap. Release or trade a player first.','bad');return}
- s.roster.push(p);if(kind==='draft'){s.draftClass.push(p.name);s.seasonDrafts++}s.released=(s.released||[]).filter(x=>x.name!==name);feed(s,(kind==='draft'?'Drafted ':'Signed free agent ')+p.name+' ('+pos+').');persist();render();notify(p.name+' added to the roster.');
+ s.roster.push(p);if(kind==='draft'){s.draftClass.push(p.name);s.seasonDrafts++;s.draftPicks=s.draftPicks.filter(x=>x.id!==draftPick.id)}s.released=(s.released||[]).filter(x=>x.name!==name);feed(s,(kind==='draft'?'Drafted ':'Signed free agent ')+p.name+' ('+pos+').');persist();render();notify(p.name+' added to the roster.');
 }
 function tradePlayers(){
- const s=getSave();if(!s)return;const a=$('tradeOutgoing')?.value,b=$('tradeIncoming')?.value;
- const out=s.roster.find(p=>p.id===a);if(!out||!b){notify('Choose a player to trade.','bad');return}
- const source=playerPools(out.pos,s.era).find(p=>p.name===b);if(!source){notify('Trade target unavailable.','bad');return}
- if(s.roster.some(p=>p.name===b)){notify('That player is already on your team.');return}
- const value=out.overall+Math.max(0,27-out.age)*.4+Math.max(0,out.potential-out.overall)*.25;
- if(value<source.base-3){notify('Trade rejected. Offer a player closer in value to '+source.name+'.','bad');return}
- const incoming=makePlayer(source,out.pos,out.starter,0);incoming.age=source.age||incoming.age;incoming.team=s.team;s.chemistry=Math.max(35,s.chemistry-3);
- const payroll=teamPayroll(s)-out.salary+incoming.salary;
- if(payroll>capFor()){notify('Trade would put the team over the cap.','bad');return}
- const partner=source.team;if(s.standings[partner]&&partner!==s.team)s.standings[partner].ovr=clamp(Math.round(s.standings[partner].ovr+(out.overall-incoming.overall)/Math.max(5,starters(s).length)),65,99);s.roster=s.roster.filter(p=>p.id!==out.id);s.roster.push(incoming);fillVacancies(s);feed(s,'Traded '+out.name+' for '+incoming.name+'.');persist();render();notify('Trade completed.');
+ const s=getSave();if(!s)return;
+ const outIds=Array.from(document.querySelectorAll?.('[data-trade-out]:checked')||[]).map(el=>el.value||el.dataset.tradeOut);
+ const pickIds=Array.from(document.querySelectorAll?.('[data-trade-pick]:checked')||[]).map(el=>el.value||el.dataset.tradePick);
+ const result=proposeTrade(s,outIds,$('tradeIncoming')?.value,pickIds);
+ if(result.error){notify(result.error,'bad');return}
+ persist();render();notify(result.message,result.status==='rejected'?'bad':'');
 }
 function createProspect(){
  const s=getSave();if(!s)return;const name=$('customName')?.value.trim(),pos=$('customPos')?.value,ovr=Number($('customOvr')?.value||72);
@@ -335,7 +435,7 @@ function renderTop(){
  $('slotTools').innerHTML=s?'<select id="slotSelect" aria-label="Career save slot">'+state.saves[sport].map((x,i)=>'<option value="'+x.id+'" '+(x.id===s.id?'selected':'')+'>SAVE '+(i+1)+' · '+esc(x.team)+'</option>').join('')+'</select><button class="top-new" data-action="new-save">+ NEW SAVE</button>':'';
 }
 function navHtml(){
- const tabs=[['dashboard','◈','DASHBOARD'],['roster','▦','ROSTER'],['tactics','⌁','TACTICS'],['matchday','◎','MATCHDAY'],['transactions','⇄','TRANSACTIONS'],['scouting','⌕','SCOUTING & DRAFT'],['standings','▤','STANDINGS'],['legacy','♛','HALL OF FAME'],['saves','↥','SAVES & ONLINE']];
+ const tabs=[['dashboard','◈','DASHBOARD'],['roster','▦','ROSTER'],['tactics','⌁','TACTICS'],['matchday','◎','MATCHDAY'],['transactions','⇄','TRANSACTIONS'],['scouting','⌕','SCOUTING & DRAFT'],['standings','▤','STANDINGS'],['records','▤','STATS & RECORDS'],['legacy','♛','HALL OF FAME'],['saves','↥','SAVES & ONLINE']];
  return tabs.map(t=>'<button class="nav-item '+(page===t[0]?'active':'')+'" data-page="'+t[0]+'"><span>'+t[1]+'</span>'+t[2]+'</button>').join('');
 }
 function stat(label,value,sub){return '<div class="stat-card"><span>'+label+'</span><strong>'+value+'</strong><small>'+sub+'</small></div>'}
@@ -347,7 +447,7 @@ function renderDashboard(s){
  return '<section class="welcome-panel" style="--club-color:'+clubColor(s.team)+'"><div><div class="eyebrow">'+SPORT[sport].emoji+' '+SPORT[sport].name+' · SEASON '+s.season+' / '+s.year+'</div><h1>'+esc(s.team)+'<br><em>FRONT OFFICE.</em></h1><p>General Manager: '+esc(s.manager)+' · '+s.era.toUpperCase()+' PLAYER ERA</p></div><div class="club-crest">'+clubBadge(s.team)+'</div><div class="team-grade"><b>'+ovr+'</b><small>TEAM OVR</small></div></section>'+
  '<div class="stats-grid">'+stat('RECORD',s.record.w+'-'+s.record.l+(s.record.d?'-'+s.record.d:''),s.week+' / '+SPORT[sport].games+' games played')+stat('TEAM OVR',ovr,'Starting lineup strength')+stat('PAYROLL',money(pay),money(capFor())+' salary cap')+stat('GM LEGACY',s.gmPoints.toLocaleString(),'Career management points')+'</div>'+
  (s.offseason?'<div class="offseason-banner"><b>OFFSEASON UNLOCKED</b><span>Review contracts, draft prospects and prepare for the next season.</span><button class="btn primary" data-action="advance-season">START SEASON '+(s.season+1)+' →</button></div>':'')+
- renderDecisionRoom(s)+'<div class="dashboard-grid"><section class="panel next-match"><div class="panel-top"><div><span class="eyebrow">NEXT MATCHDAY</span><h2>'+(s.offseason?'OFFSEASON':s.playoffs?playoffLabel(s):'GAME '+(s.playoffs?playoffLabel(s):(s.week+1)+' / '+SPORT[sport].games))+'</h2></div><span class="status-pill">'+(s.offseason?'BREAK':'UP NEXT')+'</span></div><div class="matchup"><div><small>YOUR TEAM</small><b>'+esc(s.team)+'</b><strong>'+ovr+'</strong></div><span class="vs">VS</span><div><small>OPPOSITION</small><b>'+esc(next)+'</b><strong>'+opponentPower(s)+'</strong></div></div><p class="muted">Your tactics, starters, chemistry and player fatigue affect the result. Make your decisions before the simulation.</p><div class="button-row"><button class="btn primary" data-page="matchday" '+(s.offseason?'disabled':'')+'>PREPARE MATCH ↗</button><button class="btn ghost" data-page="tactics">SET GAMEPLAN</button></div></section><section class="panel club-health"><span class="eyebrow">FRANCHISE HEALTH</span><h2>THE BOARDROOM</h2>'+meter('TEAM CHEMISTRY',s.chemistry)+meter('TEAM MORALE',s.morale)+meter('FAN SUPPORT',s.fanSupport)+meter('GM APPROVAL',s.gmRep)+'<div class="health-foot">Training points: <b>'+s.trainingPoints+'</b> · Retired legends: <b>'+s.retired.length+'</b></div></section></div>'+
+ renderDecisionRoom(s)+'<div class="dashboard-grid"><section class="panel next-match"><div class="panel-top"><div><span class="eyebrow">NEXT MATCHDAY</span><h2>'+(s.offseason?'OFFSEASON':s.playoffs?playoffLabel(s):'GAME '+(s.playoffs?playoffLabel(s):(s.week+1)+' / '+SPORT[sport].games))+'</h2></div><span class="status-pill">'+(s.offseason?'BREAK':'UP NEXT')+'</span></div><div class="matchup"><div><small>YOUR TEAM</small><b>'+esc(s.team)+'</b><strong>'+ovr+'</strong></div><span class="vs">VS</span><div><small>OPPOSITION</small><b>'+esc(next)+'</b><strong>'+opponentPower(s)+'</strong></div></div><p class="muted">Your tactics, starters, chemistry and player fatigue affect the result. Make your decisions before the simulation.</p><div class="button-row"><button class="btn primary" data-page="matchday" '+(s.offseason?'disabled':'')+'>PREPARE MATCH ↗</button><button class="btn ghost" data-page="tactics">SET GAMEPLAN</button><button class="btn ghost" data-page="records">PLAYER STATS ↗</button></div></section><section class="panel club-health"><span class="eyebrow">FRANCHISE HEALTH</span><h2>THE BOARDROOM</h2>'+meter('TEAM CHEMISTRY',s.chemistry)+meter('TEAM MORALE',s.morale)+meter('FAN SUPPORT',s.fanSupport)+meter('GM APPROVAL',s.gmRep)+'<div class="health-foot">Training points: <b>'+s.trainingPoints+'</b> · Retired legends: <b>'+s.retired.length+'</b></div></section></div>'+
  '<div class="dashboard-grid"><section class="panel"><div class="panel-top"><div><span class="eyebrow">RECENT NEWS</span><h2>LEAGUE FEED</h2></div><button class="text-btn" data-page="standings">VIEW TABLE ↗</button></div><div class="feed-list">'+s.feed.slice(0,7).map(x=>'<div class="feed-row"><span class="feed-dot"></span><p>'+esc(x)+'</p></div>').join('')+'</div></section><section class="panel quick-actions"><span class="eyebrow">YOUR NEXT DECISIONS</span><h2>RUN THE TEAM.</h2><button data-page="roster">01 · Set your starting lineup <b>→</b></button><button data-page="transactions">02 · Sign, trade or release players <b>→</b></button><button data-page="scouting">03 · Scout the next generation <b>→</b></button><button data-page="tactics">04 · Choose your tactics <b>→</b></button></section></div>';
 }
 function meter(label,v){return '<div class="meter"><div><span>'+label+'</span><b>'+Math.round(v)+'/100</b></div><i><em style="width:'+Math.max(0,Math.min(100,v))+'%"></em></i></div>'}
@@ -376,10 +476,14 @@ function renderMatchday(s){
 }
 
 function renderTransactions(s){
- const pos=SPORT[sport].positions[0],outgoing=s.roster[0]||null;
+ const pos=SPORT[sport].positions[0];
  const contracts=s.roster.filter(p=>p.contractYears<=1).slice(0,8).map(p=>'<div><b>'+esc(p.name)+'</b><small>'+p.pos+' · '+p.contractYears+' years left · '+money(p.salary)+'</small><button data-action="renew" data-id="'+p.id+'">EXTEND</button></div>').join('');
- return '<div class="page-heading"><div><span class="eyebrow">FRONT OFFICE / PLAYER MOVEMENT</span><h1>MAKE THE MOVE.</h1><p>Sign free agents, negotiate extensions and trade for a better fit.</p></div></div><div class="transaction-grid"><section class="panel"><span class="eyebrow">FREE AGENT MARKET</span><h2>AVAILABLE PLAYERS.</h2><label class="field">POSITION<select id="faPosition">'+SPORT[sport].positions.map(p=>'<option>'+p+'</option>').join('')+'</select></label><div id="freeAgentList">'+renderFreeAgents(s,pos)+'</div></section><section class="panel"><span class="eyebrow">TRADE CENTER</span><h2>TRADE BLOCK.</h2><label class="field">PLAYER TO MOVE<select id="tradeOutgoing">'+s.roster.map(p=>'<option value="'+p.id+'">'+esc(p.pos+' · '+p.name+' · '+p.overall+' OVR')+'</option>').join('')+'</select></label><label class="field">TRADE TARGET<select id="tradeIncoming">'+(outgoing?playerPools(outgoing.pos,s.era).filter(p=>!s.roster.some(x=>x.name===p.name)).slice(0,30).map(p=>'<option>'+esc(p.name)+'</option>').join(''):'')+'</select></label><button class="btn primary" data-action="trade">PROPOSE PLAYER SWAP</button><p class="fineprint">Offers must be close in talent and potential. Accepted trades cost 3 chemistry; salary limits still apply.</p></section></div><section class="panel"><span class="eyebrow">CONTRACT WATCH</span><h2>WHO NEEDS A NEW DEAL?</h2><div class="contract-list">'+(contracts||'<div class="empty-state">No urgent contract decisions.</div>')+'</div></section>';
+ const assets=s.roster.slice().sort((a,b)=>playerTradeValue(b)-playerTradeValue(a)).map(p=>'<label class="trade-asset"><input type="checkbox" data-trade-out value="'+esc(p.id)+'"><span><b>'+esc(p.name)+'</b><small>'+esc(p.pos)+' · '+p.overall+' OVR · '+money(p.salary)+'</small></span></label>').join('');
+ const picks=(s.draftPicks||[]).map(p=>'<label class="trade-asset pick-asset"><input type="checkbox" data-trade-pick value="'+esc(p.id)+'"><span><b>'+esc(p.label)+'</b><small>TRADE VALUE '+p.value+'</small></span></label>').join('');
+ const targets=SPORT[sport].positions.flatMap(p=>playerPools(p,s.era).filter(x=>x.team!==s.team&&x.team!=='ERA RIVALS ACADEMY'&&!s.roster.some(y=>y.name===x.name)).slice(0,10).map(x=>'<option value="'+esc(p+'|'+x.name)+'">'+esc(p+' · '+x.name+' · '+x.team+' · '+x.base+' OVR')+'</option>')).join('');
+ return '<div class="page-heading"><div><span class="eyebrow">FRONT OFFICE / PLAYER MOVEMENT</span><h1>MAKE THE MOVE.</h1><p>Sign free agents, negotiate extensions and build multi-asset trade offers.</p></div></div><div class="transaction-grid"><section class="panel"><span class="eyebrow">FREE AGENT MARKET</span><h2>AVAILABLE PLAYERS.</h2><label class="field">POSITION<select id="faPosition">'+SPORT[sport].positions.map(p=>'<option>'+p+'</option>').join('')+'</select></label><div id="freeAgentList">'+renderFreeAgents(s,pos)+'</div></section><section class="panel"><span class="eyebrow">TRADE CENTER / AI FRONT OFFICES</span><h2>NEGOTIATE A DEAL.</h2><label class="field">TRADE TARGET<select id="tradeIncoming"><option value="">Choose a player from another team</option>'+targets+'</select></label><div class="trade-asset-list"><b>PLAYERS YOU ARE OFFERING <small>SELECT 1–3</small></b>'+assets+'</div><div class="trade-asset-list"><b>DRAFT PICKS YOU ARE OFFERING</b>'+(picks||'<p class="fineprint">No draft picks available. You may have traded them away.</p>')+'</div><button class="btn primary" data-action="trade">SEND TRADE OFFER ↗</button><p class="fineprint">The other GM values age, potential, rating and draft capital. Offers can be accepted, countered or rejected. You have two games to close a deal.</p></section></div>'+renderTradeNegotiation(s)+'<section class="panel"><span class="eyebrow">CONTRACT WATCH</span><h2>WHO NEEDS A NEW DEAL?</h2><div class="contract-list">'+(contracts||'<div class="empty-state">No urgent contract decisions.</div>')+'</div></section>'+renderPromises(s);
 }
+
 function renderFreeAgents(s,pos){
  return freeAgents(s,pos).filter(p=>!s.roster.some(x=>x.name===p.name)).slice(0,8).map(p=>'<div class="market-row"><div><b>'+esc(p.name)+'</b><small>'+pos+' · '+esc(p.team)+' · '+p.base+' OVR</small></div><button data-sign="'+esc(p.name)+'" data-pos="'+pos+'">SIGN</button></div>').join('')||'<div class="empty-state">No players available at this position.</div>';
 }
@@ -398,6 +502,17 @@ function hallEntries(s,pos){
  s.retired.filter(p=>p.pos===pos).forEach(p=>list.push({name:p.name,team:s.team,score:p.careerPoints+(p.overall*7),ovr:p.overall,retired:true}));
  return list.sort((a,b)=>b.score-a.score);
 }
+function renderRecords(s){
+ const players=[...s.roster,...s.retired];players.forEach(ensurePlayerStats);
+ const categories={nba:[['POINTS','points'],['REBOUNDS','rebounds'],['ASSISTS','assists'],['STEALS','steals'],['BLOCKS','blocks']],nfl:[['PASS YARDS','passYards'],['PASS TDS','passTD'],['RUSH YARDS','rushYards'],['RUSH TDS','rushTD'],['RECEIVING YARDS','recYards'],['TACKLES','tackles'],['SACKS','sacks']],soccer:[['GOALS','goals'],['ASSISTS','assists'],['SHOTS','shots'],['TACKLES','tackles'],['KEEPER SAVES','keeperSaves'],['CLEAN SHEETS','cleanSheets']],mlb:[['HITS','hits'],['HOME RUNS','homeRuns'],['RBIS','rbi'],['RUNS','runs'],['PITCHER STRIKEOUTS','pitcherStrikeouts'],['PITCHER WINS','pitcherWins'],['SAVES','pitcherSaves']]}[sport];
+ const race=players.filter(p=>(p.seasonStats?.appearances||0)>0).sort((a,b)=>mvpScore(b)-mvpScore(a)).slice(0,5);
+ const raceRows=race.map((p,i)=>'<div class="record-row"><b>#'+(i+1)+'</b><span><strong>'+esc(p.name)+'</strong><small>'+esc(p.pos)+' · '+p.seasonStats.appearances+' appearances</small></span><strong>'+Math.round(mvpScore(p))+' MVP PTS</strong></div>').join('');
+ const leaders=categories.map(([label,key])=>{const rows=players.filter(p=>(p.seasonStats?.[key]||0)>0).sort((a,b)=>b.seasonStats[key]-a.seasonStats[key]).slice(0,4);return '<section class="panel record-card"><span class="eyebrow">'+label+'</span><div class="record-leaders">'+(rows.map((p,i)=>'<div class="record-row"><b>#'+(i+1)+'</b><span><strong>'+esc(p.name)+'</strong><small>'+esc(p.pos)+'</small></span><strong>'+Number(p.seasonStats[key]).toLocaleString()+'</strong></div>').join('')||'<p class="fineprint">Stats will appear after games are played.</p>')+'</div></section>'}).join('');
+ const career=players.slice().sort((a,b)=>b.careerPoints-a.careerPoints).slice(0,5).map((p,i)=>'<div class="record-row"><b>#'+(i+1)+'</b><span><strong>'+esc(p.name)+'</strong><small>'+esc(p.pos)+' · '+p.games+' career games · '+p.awards.length+' awards</small></span><strong>'+p.careerPoints.toLocaleString()+' PTS</strong></div>').join('');
+ const seasons=(s.seasonHistory||[]).slice(0,8).map(x=>'<div class="market-row"><div><b>SEASON '+x.season+' · '+x.record+'</b><small>'+(x.mvp?'MVP: '+esc(x.mvp):'No MVP recorded')+' · '+(x.title?'CHAMPIONS':'SEASON COMPLETE')+'</small></div><span class="badge">'+(x.title?'TITLE':'FINAL')+'</span></div>').join('');
+ return '<div class="page-heading"><div><span class="eyebrow">'+SPORT[sport].emoji+' '+SPORT[sport].name+' / RECORD BOOK</span><h1>THE NUMBERS NEVER LIE.</h1><p>Live season leaders, MVP race and career records. Player statistics are generated from your simulated match appearances.</p></div></div><section class="panel"><div class="panel-top"><div><span class="eyebrow">MOST VALUABLE PLAYER</span><h2>SEASON MVP RACE.</h2></div><span class="status-pill">SEASON '+s.season+'</span></div><div class="record-leaders">'+(raceRows||'<div class="empty-state">Play a match to start the MVP race.</div>')+'</div></section><div class="record-grid">'+leaders+'</div><section class="panel"><span class="eyebrow">FRANCHISE RECORD BOOK</span><h2>CAREER LEGENDS.</h2><div class="record-leaders">'+(career||'<div class="empty-state">Your first career record is waiting.</div>')+'</div></section><section class="panel"><span class="eyebrow">SEASON ARCHIVE</span><h2>PAST CAMPAIGNS.</h2>'+(seasons||'<p class="fineprint">Your season history will appear here.</p>')+'</section>';
+}
+
 function renderLegacy(s){
  const pos=hofPosition&&SPORT[sport].positions.includes(hofPosition)?hofPosition:SPORT[sport].positions[0];
  hofPosition=pos;
@@ -417,13 +532,13 @@ function render(){
  renderTop();
  const s=getSave();if(s)ensureSeason(s);
  $('sidebar').innerHTML=s?'<div class="side-label">FRONT OFFICE</div>'+navHtml()+'<div class="sidebar-bottom"><b>'+esc(s.manager)+'</b><small>GENERAL MANAGER · '+s.gmPoints+' PTS</small><button data-action="new-save">+ NEW SAVE SLOT</button><button data-action="delete-save">DELETE CURRENT SAVE</button></div>':'<div class="side-label">WELCOME</div><div class="side-welcome">Start a dynasty to unlock your front office.</div>';
- $('screen').innerHTML=(page==='setup'||!s)?renderSetup():({dashboard:()=>renderDashboard(s),roster:()=>renderRoster(s),tactics:()=>renderTactics(s),matchday:()=>renderMatchday(s),transactions:()=>renderTransactions(s),scouting:()=>renderScouting(s),standings:()=>renderStandings(s),legacy:()=>renderLegacy(s),saves:()=>renderSaveCenter(s)}[page]||(()=>renderDashboard(s)))();
+ $('screen').innerHTML=(page==='setup'||!s)?renderSetup():({dashboard:()=>renderDashboard(s),roster:()=>renderRoster(s),tactics:()=>renderTactics(s),matchday:()=>renderMatchday(s),transactions:()=>renderTransactions(s),scouting:()=>renderScouting(s),standings:()=>renderStandings(s),records:()=>renderRecords(s),legacy:()=>renderLegacy(s),saves:()=>renderSaveCenter(s)}[page]||(()=>renderDashboard(s)))();
 }
 function newSave(){page='setup';render()}
 function deleteSave(){const s=getSave();if(!s)return;if(!confirm('Delete this dynasty save? This cannot be undone.'))return;state.saves[sport]=state.saves[sport].filter(x=>x.id!==s.id);state.active[sport]=state.saves[sport][0]?.id||null;page='dashboard';persist();render();notify('Save deleted.')}
 function setPage(p){page=p;render()}
 function clickHandler(e){
- const locked=getSave();if(locked?.pending&&e.target.closest('[data-sign],[data-draft],[data-tactic],[data-action=trade],[data-action=renew],[data-action=release],[data-action=retire],[data-action=train-team],[data-action=create-player]')){notify('Finish the match before changing your squad.');return}
+ const locked=getSave();if(locked?.pending&&e.target.closest('[data-sign],[data-draft],[data-tactic],[data-action=trade],[data-action=renew],[data-action=release],[data-action=retire],[data-action=train-team],[data-action=create-player],[data-action=make-promise],[data-action=accept-trade],[data-action=accept-counter]')){notify('Finish the match before changing your squad.');return}
  let el=e.target.closest('[data-prep]');if(el){const s=getSave();if(s&&!s.pending&&!s.offseason&&!s.preparation){prepareTeam(s,el.dataset.prep);persist();render()}return}
  el=e.target.closest('[data-cloud-load]');if(el){cloudLoad(el.dataset.cloudLoad);return}
  el=e.target.closest('[data-sport]');if(el){sport=el.dataset.sport;page='dashboard';rosterFilter='ALL';hofPosition=null;render();return}
@@ -454,6 +569,10 @@ function clickHandler(e){
   else if(a==='release')releasePlayer(id);
   else if(a==='renew')renewPlayer(id);
   else if(a==='trade')tradePlayers();
+  else if(a==='make-promise'){const s=getSave(),result=makePromise(s,$('promiseType')?.value,$('promisePlayer')?.value);if(result?.error)notify(result.error,'bad');else{feed(s,'Made a '+result.type+' promise to '+result.playerName+'.');persist();render();notify('Promise recorded. Keep your word.')}}
+  else if(a==='accept-trade')acceptTrade(getSave(),false);
+  else if(a==='accept-counter')acceptTrade(getSave(),true);
+  else if(a==='reject-trade')rejectTrade(getSave());
   else if(a==='show-create-player'){$('createPlayerPanel').hidden=false}
   else if(a==='hide-create-player'){$('createPlayerPanel').hidden=true}
   else if(a==='create-player')createProspect();
@@ -543,7 +662,7 @@ function autoLineup(s){s.roster.forEach(p=>p.starter=false);fillVacancies(s)}
 function fillVacancies(s){Object.entries(STARTERS[sport]).forEach(([pos,count])=>{const active=s.roster.filter(p=>p.pos===pos&&p.starter&&!p.injured).length;s.roster.filter(p=>p.pos===pos&&!p.starter&&!p.injured).sort((a,b)=>(b.overall-b.fatigue*.15)-(a.overall-a.fatigue*.15)).slice(0,Math.max(0,count-active)).forEach(p=>p.starter=true)})}
 function clubRating(team,era){if(era==='alltime')return allTimeClubRating(team);const ps=clubData(team)?.players;if(!ps?.length)return 76;const top=[];Object.entries(STARTERS[sport]).forEach(([pos,n])=>top.push(...ps.filter(p=>p.pos===pos).sort((a,b)=>b.base-a.base).slice(0,n)));return top.length?Math.round(top.reduce((n,p)=>n+p.base,0)/top.length):76}
 function ensureSeason(s){
- s.matchHistory=s.matchHistory||[];s.seasonDrafts=s.seasonDrafts||0;
+ s.matchHistory=s.matchHistory||[];s.seasonDrafts=s.seasonDrafts||0;s.promises=Array.isArray(s.promises)?s.promises:[];s.tradeHistory=Array.isArray(s.tradeHistory)?s.tradeHistory:[];if(!Array.isArray(s.draftPicks))s.draftPicks=makeDraftPicks(s.season);s.roster.forEach(ensurePlayerStats);s.retired.forEach(ensurePlayerStats);
  if(!s.schedule){
   let rotation=Object.keys(s.standings);if(!rotation.includes(s.team))rotation.push(s.team);if(rotation.length%2)rotation.push(null);
   const cycle=[];for(let round=0;round<rotation.length-1;round++){const fixtures=[];for(let i=0;i<rotation.length/2;i++){const a=rotation[i],b=rotation[rotation.length-1-i];if(a&&b)fixtures.push(round%2?[b,a]:[a,b])}cycle.push(fixtures);rotation=[rotation[0],rotation[rotation.length-1],...rotation.slice(1,-1)]}
@@ -602,7 +721,9 @@ function validateSave(v){
  for(const key of ['w','l','d'])if(!Number.isInteger(v.record[key])||v.record[key]<0)throw Error('Invalid record.');
  if(v.record.w+v.record.l+v.record.d!==v.week)throw Error('Record does not match games played.');
  for(const key of ['retired','seasonHistory','feed','draftClass'])if(!Array.isArray(v[key]))throw Error('Incomplete save.');
+ v.promises=Array.isArray(v.promises)?v.promises:[];v.tradeHistory=Array.isArray(v.tradeHistory)?v.tradeHistory:[];v.draftPicks=Array.isArray(v.draftPicks)?v.draftPicks:makeDraftPicks(v.season);
  for(const p of [...v.roster,...v.retired]){
+  ensurePlayerStats(p);
   if(typeof p.name!=='string'||!SPORT[v.sport].positions.includes(p.pos)||typeof p.id!=='string'||!/^[a-z0-9-]+$/i.test(p.id))throw Error('Invalid player.');
   for(const key of ['overall','potential','age','salary','contractYears','fatigue','morale','careerPoints','games','injured'])if(!Number.isFinite(p[key])||p[key]<0)throw Error('Invalid player values.');
   if(p.overall>100||p.fatigue>100||p.morale>100||!Array.isArray(p.awards))throw Error('Invalid player rating.');
