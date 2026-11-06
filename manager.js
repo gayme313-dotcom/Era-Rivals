@@ -252,6 +252,17 @@ function acceptTrade(s,useCounter=false){
  persist();render();notify('Trade accepted and completed.');return true;
 }
 function rejectTrade(s){if(!s?.tradeNegotiation)return false;feed(s,'Trade talks with '+s.tradeNegotiation.targetTeam+' ended without a deal.');s.tradeNegotiation=null;persist();render();notify('Negotiations closed.');return true}
+function counterTrade(s,outIds,pickIds){
+ const previous=s?.tradeNegotiation;if(!previous||previous.status!=='counter')return false;
+ const outgoing=outIds||Array.from(document.querySelectorAll?.('[data-trade-out]:checked')||[]).map(el=>el.value||el.dataset.tradeOut);
+ const picks=pickIds||Array.from(document.querySelectorAll?.('[data-trade-pick]:checked')||[]).map(el=>el.value||el.dataset.tradePick);
+ s.tradeNegotiation=null;
+ const result=proposeTrade(s,outgoing,previous.targetPos+'|'+previous.targetName,picks);
+ if(result.error){s.tradeNegotiation=previous;notify(result.error,'bad');return false}
+ result.round=previous.round+1;result.deadlineWeek=previous.deadlineWeek;
+ if(result.status==='counter'&&result.round>=3){result.status='rejected';result.message='They ended negotiations after three rounds.'}
+ feed(s,'Sent a revised counteroffer to '+previous.targetTeam+'.');persist();render();notify(result.message,result.status==='rejected'?'bad':'');return true;
+}
 function makePromise(s,type,playerId){
  if(!s||s.pending||s.offseason||s.playoffs)return {error:'Promises can only be made during the regular season between games.'};
  s.promises=s.promises||[];if(s.promises.filter(p=>p.status==='active').length>=3)return {error:'You can manage up to three active promises.'};
@@ -283,7 +294,7 @@ function renderPromises(s){
 function renderTradeNegotiation(s){
  const n=s.tradeNegotiation;if(!n)return '';const counter=n.status==='counter',accepted=n.status==='accepted',done=n.status==='rejected'||n.status==='expired';
  const status=accepted?'OFFER ACCEPTED':counter?'COUNTEROFFER RECEIVED':n.status==='expired'?'DEADLINE PASSED':'OFFER DECLINED';
- return '<section class="panel trade-response"><div class="panel-top"><div><span class="eyebrow">TRADE NEGOTIATION · ROUND '+n.round+'</span><h2>'+status+'</h2></div><span class="status-pill">WEEK '+s.week+' / '+n.deadlineWeek+' DEADLINE</span></div><p class="muted">'+esc(n.message)+'</p><div class="market-row"><b>'+esc(n.targetTeam)+' · '+esc(n.targetName)+'</b><strong>'+n.offerValue+' / '+n.targetValue+' VALUE</strong></div>'+(counter?'<p class="fineprint">Their request: '+esc(s.draftPicks.find(p=>p.id===n.counterPick)?.label||'additional draft capital')+'</p>':'')+'<div class="button-row">'+(accepted?'<button class="btn primary" data-action="accept-trade">CONFIRM TRADE</button>':counter?'<button class="btn primary" data-action="accept-counter">ACCEPT COUNTER</button>':'')+'<button class="btn ghost" data-action="reject-trade">'+(done?'DISMISS':'WALK AWAY')+'</button></div></section>';
+ return '<section class="panel trade-response"><div class="panel-top"><div><span class="eyebrow">TRADE NEGOTIATION · ROUND '+n.round+'</span><h2>'+status+'</h2></div><span class="status-pill">WEEK '+s.week+' / '+n.deadlineWeek+' DEADLINE</span></div><p class="muted">'+esc(n.message)+'</p><div class="market-row"><b>'+esc(n.targetTeam)+' · '+esc(n.targetName)+'</b><strong>'+n.offerValue+' / '+n.targetValue+' VALUE</strong></div>'+(counter?'<p class="fineprint">Their request: '+esc(s.draftPicks.find(p=>p.id===n.counterPick)?.label||'additional draft capital')+'. You can change the checked players and picks above, then send a counteroffer.</p>':'')+'<div class="button-row">'+(accepted?'<button class="btn primary" data-action="accept-trade">CONFIRM TRADE</button>':counter?'<button class="btn primary" data-action="accept-counter">ACCEPT COUNTER</button><button class="btn ghost" data-action="counter-trade">COUNTER BACK</button>':'')+'<button class="btn ghost" data-action="reject-trade">'+(done?'DISMISS':'WALK AWAY')+'</button></div></section>';
 }
 
 function starters(s){return s.roster.filter(p=>p.starter&&!p.injured)}
@@ -539,7 +550,7 @@ function newSave(){page='setup';render()}
 function deleteSave(){const s=getSave();if(!s)return;if(!confirm('Delete this dynasty save? This cannot be undone.'))return;state.saves[sport]=state.saves[sport].filter(x=>x.id!==s.id);state.active[sport]=state.saves[sport][0]?.id||null;page='dashboard';persist();render();notify('Save deleted.')}
 function setPage(p){page=p;render()}
 function clickHandler(e){
- const locked=getSave();if(locked?.pending&&e.target.closest('[data-sign],[data-draft],[data-tactic],[data-action=trade],[data-action=renew],[data-action=release],[data-action=retire],[data-action=train-team],[data-action=create-player],[data-action=make-promise],[data-action=accept-trade],[data-action=accept-counter]')){notify('Finish the match before changing your squad.');return}
+ const locked=getSave();if(locked?.pending&&e.target.closest('[data-sign],[data-draft],[data-tactic],[data-action=trade],[data-action=renew],[data-action=release],[data-action=retire],[data-action=train-team],[data-action=create-player],[data-action=make-promise],[data-action=accept-trade],[data-action=accept-counter],[data-action=counter-trade]')){notify('Finish the match before changing your squad.');return}
  let el=e.target.closest('[data-prep]');if(el){const s=getSave();if(s&&!s.pending&&!s.offseason&&!s.preparation){prepareTeam(s,el.dataset.prep);persist();render()}return}
  el=e.target.closest('[data-cloud-load]');if(el){cloudLoad(el.dataset.cloudLoad);return}
  el=e.target.closest('[data-sport]');if(el){sport=el.dataset.sport;page='dashboard';rosterFilter='ALL';hofPosition=null;render();return}
@@ -573,6 +584,7 @@ function clickHandler(e){
   else if(a==='make-promise'){const s=getSave(),result=makePromise(s,$('promiseType')?.value,$('promisePlayer')?.value);if(result?.error)notify(result.error,'bad');else{feed(s,'Made a '+result.type+' promise to '+result.playerName+'.');persist();render();notify('Promise recorded. Keep your word.')}}
   else if(a==='accept-trade')acceptTrade(getSave(),false);
   else if(a==='accept-counter')acceptTrade(getSave(),true);
+  else if(a==='counter-trade')counterTrade(getSave());
   else if(a==='reject-trade')rejectTrade(getSave());
   else if(a==='show-create-player'){$('createPlayerPanel').hidden=false}
   else if(a==='hide-create-player'){$('createPlayerPanel').hidden=true}
