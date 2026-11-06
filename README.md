@@ -19,6 +19,9 @@ Open `manager.html` directly or choose a sport from the Legends homepage.
 - Scouting and drafting prospects.
 - Team training and player development based on potential.
 - Player career legacy points, retirement and Hall of Fame rankings by exact position.
+- Sport-specific player box scores, season and career stat totals, a live MVP race, season MVP awards and an archived record book.
+- Player promises for starting roles, playoff qualification and championships, with morale and GM-approval consequences when promises are kept or broken.
+- Multi-player trade offers, tradable draft picks, AI acceptance/counteroffers, a two-game negotiation deadline and a saved trade history.
 
 The match engine uses team ratings, lineup choices, chemistry, morale, fatigue, tactics and matchday decisions. Results and ratings are original game simulations, not official league statistics.
 
@@ -53,7 +56,7 @@ The fantasy draft targets 100 unique players for every selectable role across ba
 
 The generated `draft-player-pools.js` file is refreshed during the GitHub Pages publishing workflow. Some player records may have incomplete team or portrait data. Generated fallback prospects are cached by sport, era and position during a session so scouting pools and opponent ratings stay consistent.
 
-## Front Office v2 (November 5, 2026)
+## Front Office v3 (November 6, 2026)
 
 - 112 club roster snapshots from ESPN (30 NBA, 32 NFL, 30 MLB and 20 soccer clubs), with logos and player portraits. NBA/NFL/MLB depth charts inform initial roles. Soccer uses simplified game roles. Includes reserves and practice-squad players; this is not a league eligibility simulator.
 - Start a **new current-era save** to use the new club rosters. Existing save rosters are preserved.
@@ -72,7 +75,7 @@ Run `python scripts/build-team-rosters.py`, then `python scripts/refresh-depth-c
 
 ### Validation
 
-Run `node --check manager.js` and `node tests/manager.test.cjs`. Tests cover all four sports, full current and all-time depth charts, prime-age legends, payroll limits, franchise aliases, era-specific opponent ratings, overtime scoring, full seasons, consistent fixture accounting, opponent identity, injury recovery, pending-game protection, backups and season rollover. The GitHub Pages workflow runs these checks.
+Run `node --check manager.js` and `node tests/manager.test.cjs`. Tests cover all four sports, full current and all-time depth charts, prime-age legends, payroll limits, franchise aliases, era-specific opponent ratings, overtime scoring, per-sport box scores, MVP records, player promises, negotiated multi-asset trades, full seasons, consistent fixture accounting, opponent identity, injury recovery, pending-game protection, backups and season rollover. The GitHub Pages workflow runs these checks.
 
 `database/schema.sql` documents the deployed schema. Database verification used rolled-back test users and confirmed owner-only saves, blocked cross-owner writes, public-field-only leaderboard reads, and own-score updates. Security advisors reported no issues. Browser smoke testing covered creation, preparation, a complete match and a live empty leaderboard response.
 
