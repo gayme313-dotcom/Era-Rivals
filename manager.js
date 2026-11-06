@@ -219,6 +219,7 @@ function playerTradeValue(p){const overall=Number(p.overall||p.base||70),potenti
 function tradeTargetFromKey(key){const raw=String(key||''),i=raw.indexOf('|');return i<0?null:{pos:raw.slice(0,i),name:raw.slice(i+1)}}
 function proposeTrade(s,outIds,targetKey,pickIds){
  if(!s||s.pending)return {error:'Finish your current match before negotiating.'};
+ if(s.tradeNegotiation&&['accepted','counter'].includes(s.tradeNegotiation.status))return {error:'Finish or walk away from the current negotiation first.'};
  const ids=Array.from(new Set(outIds||[])),picks=Array.from(new Set(pickIds||[]));
  if(!ids.length||ids.length>3)return {error:'Choose one to three players to offer.'};
  const outgoing=ids.map(id=>s.roster.find(p=>p.id===id));if(outgoing.some(p=>!p))return {error:'One of those players is no longer on your roster.'};
@@ -252,7 +253,7 @@ function acceptTrade(s,useCounter=false){
 }
 function rejectTrade(s){if(!s?.tradeNegotiation)return false;feed(s,'Trade talks with '+s.tradeNegotiation.targetTeam+' ended without a deal.');s.tradeNegotiation=null;persist();render();notify('Negotiations closed.');return true}
 function makePromise(s,type,playerId){
- if(!s||s.pending||s.offseason)return {error:'Promises can only be made between games.'};
+ if(!s||s.pending||s.offseason||s.playoffs)return {error:'Promises can only be made during the regular season between games.'};
  s.promises=s.promises||[];if(s.promises.filter(p=>p.status==='active').length>=3)return {error:'You can manage up to three active promises.'};
  const player=playerId?s.roster.find(p=>p.id===playerId):null;
  if(type==='starter'&&!player)return {error:'Choose the player you are promising a starting role.'};
