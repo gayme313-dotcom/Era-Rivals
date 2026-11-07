@@ -48,7 +48,11 @@ jobs:
           node --check draft-player-pools.js
           node --check manager.js
           node --check team-rosters.js
-          node tests/manager.test.cjs
+          node --check franchise-engine.js
+          node --check franchise-ui.js
+          node --check friends-league.js
+          node tests/franchise.test.cjs
+          node tests/friends-client.test.cjs
       - name: Save generated player database
         run: |
           git config user.name "github-actions[bot]"

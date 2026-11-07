@@ -153,7 +153,8 @@ function playerPools(pos,era){
  let n=1;while(list.length<100){list.push({name:'ER Prospect '+pos+' '+String(n++).padStart(3,'0'),team:'ERA RIVALS ACADEMY',base:68+Math.floor(rand(0,15)),source:'Generated Prospect'})}
  const sorted=list.sort((a,b)=>b.base-a.base);playerPoolCache.set(cacheKey,sorted);return sorted;
 }
-function capFor(){return SPORT[sport].cap}
+function capFor(){return getSave()?.fo?.rules?.cap||SPORT[sport].cap}
+function gamesIn(s){return s?.fo?.rules?.games||SPORT[sport].games}
 function salaryFor(ovr){const mult={nba:.42,nfl:.31,soccer:.36,mlb:.34}[sport];return Math.max(.7,Math.round((ovr-55)*mult*10)/10)}
 function makePlayer(source,pos,starter,index){
  const overall=Math.max(62,Math.min(99,Math.round(source.base+rand(-3,2))));
@@ -171,7 +172,7 @@ function makeRoster(era){
  });
  return roster;
 }
-function teamOvr(s){const a=s.roster.filter(p=>p.starter&&!p.injured);if(!a.length)return 65;return Math.round(a.reduce((n,p)=>n+p.overall,0)/a.length)}
+function teamOvr(s){const a=s.roster.filter(p=>p.starter&&!p.injured&&!p.development);if(!a.length)return 65;return Math.round(a.reduce((n,p)=>n+p.overall,0)/a.length)}
 function teamPayroll(s){return s.roster.reduce((n,p)=>n+p.salary,0)}
 function teamChem(s){return Math.round(s.chemistry||70)}
 function createSave(form){
@@ -181,6 +182,7 @@ function createSave(form){
  TEAMS[sport].forEach((t,i)=>s.standings[t]={w:0,l:0,d:0,ovr:68+((i*7+Math.floor(rand(0,12)))%23)});
  s.standings[team]={w:0,l:0,d:0,ovr:teamOvr(s)};
  ensureSeason(s);initialLineup(s);Object.keys(s.standings).forEach(t=>s.standings[t].ovr=clubRating(t,era));s.standings[team].ovr=teamOvr(s);
+ window.ERFranchise.newCareer(s,form,franchiseEnv(s));s.schedule=null;ensureSeason(s);
  const arr=state.saves[sport];if(arr.length>=5){notify('All five save slots are full. Delete one first.','bad');return}
  arr.push(s);state.active[sport]=s.id;page='dashboard';persist();render();notify('Dynasty created. You are in charge.');
 }
@@ -277,8 +279,8 @@ function evaluatePromises(s,title,awards){
  s.promises=s.promises||[];const rank=rankedTeams(s).indexOf(s.team)+1;
  s.promises.filter(p=>p.status==='active'&&p.season===s.season).forEach(p=>{
   const player=p.playerId?[...s.roster,...s.retired].find(x=>x.id===p.playerId):null;let fulfilled=false;
-  if(p.type==='starter'){const appearances=(player?.seasonStats?.appearances||0)-p.startAppearances,remaining=Math.max(0,SPORT[sport].games-p.week);fulfilled=!!player&&appearances>=Math.ceil(remaining*.7)}
-  if(p.type==='playoffs')fulfilled=rank<=8||!!title;if(p.type==='championship')fulfilled=!!title;
+  if(p.type==='starter'){const appearances=(player?.seasonStats?.appearances||0)-p.startAppearances,remaining=Math.max(0,gamesIn(s)-p.week);fulfilled=!!player&&appearances>=Math.ceil(remaining*.7)}
+  if(p.type==='playoffs')fulfilled=rank<=(s.fo?.rules.playoffTeams||1)||!!title;if(p.type==='championship')fulfilled=!!title;
   p.status=fulfilled?'fulfilled':'broken';p.resolvedSeason=s.season;
   if(player)player.morale=clamp(player.morale+(fulfilled?12:-15),30,100);
   s.gmRep=clamp(s.gmRep+(fulfilled?4:-7),0,100);s.gmPoints+=fulfilled?75:-35;s.morale=clamp(s.morale+(fulfilled?3:-7),30,100);
@@ -297,8 +299,8 @@ function renderTradeNegotiation(s){
  return '<section class="panel trade-response"><div class="panel-top"><div><span class="eyebrow">TRADE NEGOTIATION · ROUND '+n.round+'</span><h2>'+status+'</h2></div><span class="status-pill">WEEK '+s.week+' / '+n.deadlineWeek+' DEADLINE</span></div><p class="muted">'+esc(n.message)+'</p><div class="market-row"><b>'+esc(n.targetTeam)+' · '+esc(n.targetName)+'</b><strong>'+n.offerValue+' / '+n.targetValue+' VALUE</strong></div>'+(counter?'<p class="fineprint">Their request: '+esc(s.draftPicks.find(p=>p.id===n.counterPick)?.label||'additional draft capital')+'. You can change the checked players and picks above, then send a counteroffer.</p>':'')+'<div class="button-row">'+(accepted?'<button class="btn primary" data-action="accept-trade">CONFIRM TRADE</button>':counter?'<button class="btn primary" data-action="accept-counter">ACCEPT COUNTER</button><button class="btn ghost" data-action="counter-trade">COUNTER BACK</button>':'')+'<button class="btn ghost" data-action="reject-trade">'+(done?'DISMISS':'WALK AWAY')+'</button></div></section>';
 }
 
-function starters(s){return s.roster.filter(p=>p.starter&&!p.injured)}
-function teamPower(s){const a=starters(s);if(!a.length)return 60;const avg=a.reduce((n,p)=>n+p.overall,0)/a.length;const morale=s.roster.reduce((n,p)=>n+p.morale,0)/Math.max(1,s.roster.length);const fatigue=a.reduce((n,p)=>n+p.fatigue,0)/a.length;const required=Object.values(STARTERS[sport]).reduce((n,v)=>n+v,0);const vacancies=Math.max(0,required-a.length);return avg-vacancies*1.8+(s.chemistry-70)*.075+(morale-70)*.035-(fatigue-20)*.08}
+function starters(s){return s.roster.filter(p=>p.starter&&!p.injured&&!p.development)}
+function teamPower(s){const a=starters(s);if(!a.length)return 60;const avg=a.reduce((n,p)=>n+p.overall,0)/a.length;const morale=s.roster.reduce((n,p)=>n+p.morale,0)/Math.max(1,s.roster.length);const fatigue=a.reduce((n,p)=>n+p.fatigue,0)/a.length;const required=Object.values(STARTERS[sport]).reduce((n,v)=>n+v,0);const vacancies=Math.max(0,required-a.length);return avg-vacancies*1.8+(s.chemistry-70)*.075+(morale-70)*.035-(fatigue-20)*.08+(window.ERFranchise.bonus(s)||0)}
 function tacticBonus(s){const t=s.tactics,active=starters(s),avg=teamOvr(s),fit=(positions)=>{const group=active.filter(p=>positions.includes(p.pos));return group.length?(group.reduce((n,p)=>n+p.overall,0)/group.length-avg)*.3: -2};let b=0;
  if(/Air Raid|West Coast/.test(t.off))b+=fit(['QB','WR','TE']);
  if(/Ground & Pound|Inside Game/.test(t.off))b+=fit(sport==='nfl'?['RB','OL']:['PF','C']);
@@ -323,6 +325,7 @@ function segmentScore(sp,diff){
 function matchDecisionOptions(){return TACTICS[sport].decisions}
 function beginMatch(){
  const s=getSave();if(!s||s.offseason)return;
+ if(s.fo?.expansion?.active){page='franchise';franchiseView.tab='overview';render();notify('Complete your expansion draft first.');return}
  if(s.pending){page='matchday';render();return}
  if(!s.preparation){page='dashboard';render();notify('Choose your preparation in the decision room first.');return}
  const opponent=nextOpponent(s),opp=opponentPower(s),diff=teamPower(s)+tacticBonus(s)+planBonus(s)+(s.preparation.bonus||0)-opp;
@@ -331,17 +334,23 @@ function beginMatch(){
 }
 function finishMatch(s,pending,choice,silent=false){
  if(!pending||s.offseason)return;
+ if(!silent&&pending.stage!=='clutch'){
+  const diff=teamPower(s)+tacticBonus(s)+(pending.planBonus||0)+(s.preparation?.bonus||0)+choice[2]+choice[3]*.6-pending.oppOvr;
+  pending.previewScore=[pending.home+segmentScore(sport,diff),pending.away+segmentScore(sport,-diff)];pending.halftimeChoice=choice;pending.home=pending.previewScore[0];pending.away=pending.previewScore[1];pending.stage='clutch';pending.options=clutchOptions();persist();render();return;
+ }
  const swing=(s.tactics.risk==='Aggressive'?rand(-5,5):s.tactics.risk==='Conservative'?rand(-1,1):rand(-3,3));
  const diff=teamPower(s)+tacticBonus(s)+(pending.planBonus||0)+(s.preparation?.bonus||0)+choice[2]+choice[3]*.6-pending.oppOvr+swing;
- let [home,away]=resolveTie(pending.home+segmentScore(sport,diff),pending.away+segmentScore(sport,-diff));
+ let [home,away]=pending.stage==='clutch'?pending.previewScore.slice():[pending.home+segmentScore(sport,diff),pending.away+segmentScore(sport,-diff)];
+ if(pending.stage==='clutch'){const risk=choice[5]||.5,success=Math.random()<clamp(.5+diff*.015,.2,.8),points=sport==='nfl'?(risk>.6?7:3):sport==='nba'?(risk>.6?3:2):1;if(risk<=.3){if(!success)away+=points}else if(success)home+=points;else if(risk>.6)away+=points;}
+ [home,away]=resolveTie(home,away);
  const win=home>away,draw=home===away,post=!!s.playoffs;
  if(!post){updateLeagueRound(s,pending.opponent,home,away);if(win)s.record.w++;else if(draw)s.record.d++;else s.record.l++;s.week++;if(s.tradeNegotiation&&['accepted','counter'].includes(s.tradeNegotiation.status)&&s.week>s.tradeNegotiation.deadlineWeek){s.tradeNegotiation.status='expired';s.tradeNegotiation.message='The trade deadline passed before you confirmed the deal.';feed(s,'Trade talks with '+s.tradeNegotiation.targetTeam+' expired at the deadline.')}}
- const active=starters(s),activeIds=new Set(active.map(p=>p.id));
+  const active=starters(s),activeIds=new Set(active.map(p=>p.id)),availableIds=s.roster.filter(p=>!p.injured&&!p.development).map(p=>p.id);
  const mvp=active.filter(p=>sport!=='nfl'||!['OL','K','P'].includes(p.pos)).map(p=>({p,score:p.overall+rand(0,12)})).sort((a,b)=>b.score-a.score)[0]?.p;
  s.roster.forEach(p=>{
   const played=activeIds.has(p.id);
   if(p.injured>0){p.injured--;if(!p.injured)feed(s,p.name+' cleared to return.');}
-  if(played){p.games++;recordPlayerGameStats(p,home,away,win,draw);p.careerPoints+=win?9:4;p.fatigue=Math.min(100,Math.max(0,p.fatigue+Math.floor(rand(5,11))+(choice[4]||0)*.3-6));p.morale=clamp(p.morale+(win?3:draw?1:-3),30,100)}
+  if(played){p.games++;if(!s.fo)recordPlayerGameStats(p,home,away,win,draw);p.careerPoints+=win?9:4;p.fatigue=Math.min(100,Math.max(0,p.fatigue+Math.floor(rand(5,11))+(choice[4]||0)*.3-6));p.morale=clamp(p.morale+(win?3:draw?1:-3),30,100)}
   else p.fatigue=Math.max(0,p.fatigue-12);
   if(played&&p.fatigue>65&&Math.random()<.04){p.injured=2+Math.floor(rand(0,3));p.starter=false;feed(s,p.name+' is out for '+p.injured+' games.');}
  });
@@ -352,40 +361,42 @@ function finishMatch(s,pending,choice,silent=false){
  s.lastMatch={opponent:pending.opponent,home,away,result,decision:choice[0],mvp:mvp?.name||'Team effort',preparation:s.preparation?.label||'Balanced preparation',phase:post?playoffLabel(s):'Game '+s.week};
  s.matchHistory.unshift({...s.lastMatch,season:s.season});s.matchHistory=s.matchHistory.slice(0,200);
  feed(s,result+' '+home+'–'+away+' vs '+pending.opponent+'. '+s.lastMatch.mvp+' led the team. Call: '+choice[0]+'.');
+ window.ERFranchise.afterMatch(s,{post,results:s.lastRoundResults||[],activeIds:[...activeIds],availableIds},franchiseEnv(s));s.lastRoundResults=[];
  s.pending=null;s.preparation=null;fillVacancies(s);
- if(post)advancePlayoffs(s,win);else if(s.week>=SPORT[sport].games)endRegularSeason(s);
+ if(post)advancePlayoffs(s,win);else if(s.week>=gamesIn(s))endRegularSeason(s);
  if(!silent){persist();render();notify(result+' · '+home+'–'+away)}
 }
 function completeSeason(s,title=false){
  if(s.offseason)return;
- const awards=[],mvp=seasonMvp(s);
+ const awards=[],mvp=s.fo?null:seasonMvp(s);
  if(mvp){mvp.awards.push('Season MVP');mvp.careerPoints+=180;s.legacyPoints+=250;s.gmPoints+=100;s.awards=s.awards||[];s.awards.unshift({season:s.season,year:s.year,type:'MVP',player:mvp.name,position:mvp.pos,score:Math.round(mvpScore(mvp))});awards.push('SEASON MVP: '+mvp.name);feed(s,mvp.name+' won the Season MVP award.')}
  evaluatePromises(s,title,awards);
  if(title){s.legacyPoints+=1500;s.gmPoints+=300;awards.push(sport==='soccer'?'LEAGUE CHAMPIONS':'ERA CUP CHAMPIONS');s.roster.forEach(p=>{p.careerPoints+=250;p.awards.push('Champion')})}
- const target=Math.ceil(SPORT[sport].games*.5),met=s.record.w>=target;
+ const target=Math.ceil(gamesIn(s)*.5),met=s.record.w>=target;
  if(met){s.gmPoints+=150;awards.push('Board objective achieved');feed(s,'Board objective met: +150 GM points.')}
  s.seasonHistory.unshift({season:s.season,year:s.year,record:s.record.w+'-'+s.record.l+(s.record.d?'-'+s.record.d:''),title,mvp:mvp?.name||null,awards});
  feed(s,'Season '+s.season+' complete. '+(title?'CHAMPIONS! ': '')+awards.join(' · '));
+ window.ERFranchise.onSeasonEnd(s,title,franchiseEnv(s));
  s.offseason=true;s.pending=null;s.playoffs=null;s.tradeNegotiation=null;
- s.roster.forEach(p=>{ensurePlayerStats(p);p.seasonHistory.unshift({season:s.season,year:s.year,stats:{...p.seasonStats}});p.seasonHistory=p.seasonHistory.slice(0,20);p.seasonStats=emptyPlayerStats();p.age++;p.contractYears=Math.max(0,p.contractYears-1);p.fatigue=0;p.injured=0;if(p.age>=39&&Math.random()<.45){p.retired=true;s.retired.push(p);feed(s,p.name+' announced retirement.')}});
+ s.roster.forEach(p=>{ensurePlayerStats(p);p.seasonHistory.unshift({season:s.season,year:s.year,stats:{...p.seasonStats}});p.seasonHistory=p.seasonHistory.slice(0,20);p.age++;p.contractYears=Math.max(0,p.contractYears-1);p.fatigue=0;p.injured=0;if(p.age>=39&&Math.random()<.45){p.retired=true;s.retired.push(p);feed(s,p.name+' announced retirement.')}});
  s.roster=s.roster.filter(p=>!p.retired);fillVacancies(s);
 }
 function advanceSeason(){
- const s=getSave();if(!s||!s.offseason)return;
- s.season++;s.year++;s.week=0;s.record={w:0,l:0,d:0};s.offseason=false;s.draftPicks=makeDraftPicks(s.season);s.tradeNegotiation=null;s.trainingPoints+=3;s.chemistry=Math.min(99,s.chemistry+4);s.preparation=null;s.playoffs=null;s.seasonDrafts=0;s.schedule=null;
+ const s=getSave();if(!s||!s.offseason)return;if(s.fo?.owner.status==='fired'){page='franchise';franchiseView.tab='overview';render();notify('Accept a job offer before next season.');return}
+ s.draftPicks=makeDraftPicks(s.season+1);s.tradeNegotiation=null;s.season++;s.year++;s.week=0;s.leagueChampion=null;s.record={w:0,l:0,d:0};s.offseason=false;s.trainingPoints+=3;s.chemistry=Math.min(99,s.chemistry+4);s.preparation=null;s.playoffs=null;s.seasonDrafts=0;s.schedule=null;
  s.roster.forEach(p=>{if(p.potential>p.overall&&p.age<30&&Math.random()<.65)p.overall++;if(p.age>32&&Math.random()<.4)p.overall=Math.max(55,p.overall-1);if(p.contractYears===0)p.morale=Math.max(35,p.morale-10)});
  Object.keys(s.standings).forEach(t=>s.standings[t]={w:0,l:0,d:0,ovr:t===s.team?teamOvr(s):clamp(s.standings[t].ovr+Math.round(rand(-2,2)),65,98)});
- ensureSeason(s);feed(s,'Season '+s.season+' begins. Review contracts and prepare your squad.');persist();render();notify('New season started.');
+ window.ERFranchise.nextSeason(s,franchiseEnv(s));ensureSeason(s);feed(s,'Season '+s.season+' begins. Review contracts and prepare your squad.');persist();render();notify('New season started.');
 }
 function simAuto(s){
- if(s.offseason||s.pending)return;
+ if(s.offseason||s.pending||s.fo?.expansion?.active)return;
  if(!s.preparation)prepareTeam(s,'recover');
  const diff=teamPower(s)+tacticBonus(s)+planBonus(s)-opponentPower(s);
  const pending={opponent:nextOpponent(s),oppOvr:opponentPower(s),home:segmentScore(sport,diff),away:segmentScore(sport,-diff),planBonus:planBonus(s)};
  finishMatch(s,pending,matchDecisionOptions()[1],true);
 }
-function simFive(){const s=getSave();if(!s||s.offseason)return;if(s.pending){notify('Finish your current match first.');return}let n=0;while(n<5&&!s.offseason){simAuto(s);n++}feed(s,'Assistant simulated '+n+' fixtures with recovery preparation.');persist();render();notify(n+' games simulated.')}
-function simRest(){const s=getSave();if(!s||s.offseason)return;if(s.pending){notify('Finish your current match first.');return}for(let i=0;i<SPORT[sport].games+4&&!s.offseason;i++)simAuto(s);feed(s,'Assistant completed the season with recovery preparation.');persist();render();notify('Season complete.')}
+function simFive(){const s=getSave();if(!s||s.offseason)return;if(s.fo?.expansion?.active){notify('Finish the expansion draft first.');return}if(s.pending){notify('Finish your current match first.');return}let n=0;while(n<5&&!s.offseason){simAuto(s);n++}feed(s,'Assistant simulated '+n+' fixtures with recovery preparation.');persist();render();notify(n+' games simulated.')}
+function simRest(){const s=getSave();if(!s||s.offseason)return;if(s.fo?.expansion?.active){notify('Finish the expansion draft first.');return}if(s.pending){notify('Finish your current match first.');return}for(let i=0;i<gamesIn(s)+4&&!s.offseason;i++)simAuto(s);feed(s,'Assistant completed the season with recovery preparation.');persist();render();notify('Season complete.')}
 function trainTeam(){
  const s=getSave();if(!s||s.trainingPoints<1){notify('You need a training point.','bad');return}
  const focus=s.tactics.training;let improved=0;
@@ -395,6 +406,7 @@ function trainTeam(){
 }
 function toggleStarter(id){
  const s=getSave();if(!s||s.pending)return;const p=s.roster.find(x=>x.id===id);if(!p)return;
+ if(p.development){notify('Recall this player from development first.');return}
  if(p.injured){notify('This player needs '+p.injured+' more games to recover.');return}
  if(p.starter)p.starter=false;else{const same=s.roster.filter(x=>x.pos===p.pos&&x.starter).sort((a,b)=>a.overall-b.overall);if(same.length>=(STARTERS[sport][p.pos]||1))same[0].starter=false;p.starter=true}
  persist();render();
@@ -406,14 +418,14 @@ function retirePlayer(id){
 }
 function releasePlayer(id){
  const s=getSave();if(!s)return;const p=s.roster.find(x=>x.id===id);if(!p)return;
- s.released=s.released||[];s.released.push({...p,base:p.overall,team:'Free Agent'});s.roster=s.roster.filter(x=>x.id!==id);fillVacancies(s);feed(s,'Released '+p.name+'. Payroll cleared: '+money(p.salary)+'.');persist();render();notify('Player released.');
+ s.released=s.released||[];s.released.push({...p,base:p.overall,team:'Free Agent'});if(s.fo&&!s.fo.market.some(x=>x.id===p.id)){p.starter=false;p.development=false;s.fo.market.unshift(p)}s.roster=s.roster.filter(x=>x.id!==id);fillVacancies(s);feed(s,'Released '+p.name+'. Payroll cleared: '+money(p.salary)+'.');persist();render();notify('Player released.');
 }
-function renewPlayer(id){
+function renewPlayer(id){franchiseView={tab:'people',player:id};page='franchise';render();return;
  const s=getSave();if(!s)return;const p=s.roster.find(x=>x.id===id);if(!p)return;
  const next=p.salary*1.14;if(teamPayroll(s)-p.salary+next>capFor()){notify('Not enough salary cap room for this extension.','bad');return}
  p.salary=Math.round(next*10)/10;p.contractYears=3;p.morale=Math.min(100,p.morale+6);feed(s,'Extended '+p.name+' for three seasons at '+money(p.salary)+' per year.');persist();render();notify('Contract extension signed.');
 }
-function signFromPool(name,pos,kind){
+function signFromPool(name,pos,kind){franchiseView.tab=kind==='draft'?'scouting':'market';page='franchise';render();return;
  const s=getSave();if(!s)return;const exists=s.roster.some(p=>p.name===name);if(exists){notify('That player is already on your roster.','bad');return}
  const source=(kind==='draft'?draftPool(s,pos):freeAgents(s,pos)).find(p=>p.name===name);if(!source)return;
  if(kind==='draft'&&s.seasonDrafts>=2){notify('You have used both draft picks this season.');return}
@@ -447,25 +459,25 @@ function renderTop(){
  $('slotTools').innerHTML=s?'<select id="slotSelect" aria-label="Career save slot">'+state.saves[sport].map((x,i)=>'<option value="'+x.id+'" '+(x.id===s.id?'selected':'')+'>SAVE '+(i+1)+' · '+esc(x.team)+'</option>').join('')+'</select><button class="top-new" data-action="new-save">+ NEW SAVE</button>':'';
 }
 function navHtml(){
- const tabs=[['dashboard','◈','DASHBOARD'],['roster','▦','ROSTER'],['tactics','⌁','TACTICS'],['matchday','◎','MATCHDAY'],['transactions','⇄','TRANSACTIONS'],['scouting','⌕','SCOUTING & DRAFT'],['standings','▤','STANDINGS'],['records','▤','STATS & RECORDS'],['legacy','♛','HALL OF FAME'],['saves','↥','SAVES & ONLINE']];
+ const tabs=[['dashboard','◈','DASHBOARD'],['franchise','✦','DYNASTY HQ'],['roster','▦','ROSTER'],['tactics','⌁','TACTICS'],['matchday','◎','MATCHDAY'],['transactions','⇄','TRANSACTIONS'],['scouting','⌕','SCOUTING & DRAFT'],['standings','▤','STANDINGS'],['records','▤','STATS & RECORDS'],['legacy','♛','HALL OF FAME'],['saves','↥','SAVES & ONLINE']];
  return tabs.map(t=>'<button class="nav-item '+(page===t[0]?'active':'')+'" data-page="'+t[0]+'"><span>'+t[1]+'</span>'+t[2]+'</button>').join('');
 }
 function stat(label,value,sub){return '<div class="stat-card"><span>'+label+'</span><strong>'+value+'</strong><small>'+sub+'</small></div>'}
 function renderSetup(){
- return '<section class="setup-hero"><div class="eyebrow">ERA RIVALS · FRONT OFFICE SIMULATOR</div><h1>YOU CALL<br><em>THE SHOTS.</em></h1><p>No controller skills. No running around the field. Build the roster, set the tactics, make the calls and watch your decisions shape the season.</p><div class="setup-card"><div class="setup-head"><span class="eyebrow">START A NEW DYNASTY</span><b>01 / FRANCHISE SETUP</b></div><div class="setup-grid"><label>GENERAL MANAGER<input id="setupManager" value="Xavier Matos" maxlength="28"></label><label>CHOOSE YOUR TEAM<select id="setupTeam">'+TEAMS[sport].map(t=>'<option>'+esc(t)+'</option>').join('')+'</select></label><label>PLAYER ERA<select id="setupEra"><option value="current">REAL CLUB ROSTERS · DATED SNAPSHOT</option><option value="alltime">ALL-TIME LEGENDS · GOLD</option></select></label><label>DIFFICULTY<select id="setupDifficulty"><option value="normal">FRONT OFFICE · NORMAL</option><option value="hard">CHAMPIONSHIP CHALLENGE</option></select></label></div><div class="era-explain"><span class="era-dot"></span><div><b>CURRENT</b><small>Start with your club’s actual roster snapshot.</small></div><span class="era-dot gold"></span><div><b>ALL-TIME</b><small>Draft legends from every generation.</small></div></div><button class="btn primary large" data-action="create-save">START DYNASTY ↗</button><p class="fineprint">Five save slots per sport · Automatic local saves · Rosters: ESPN, November 5, 2026. Ratings, salaries and schedules are game estimates; this is a custom league.</p></div><div class="setup-slots"><h3>YOUR SAVES</h3>'+(state.saves[sport].length?state.saves[sport].map((x,i)=>'<div class="saved-line"><span>SAVE '+(i+1)+'</span><b>'+esc(x.team)+'</b><small>'+x.era.toUpperCase()+' · SEASON '+x.season+'</small><button data-load="'+x.id+'">LOAD</button></div>').join(''):'<div class="empty-state">No dynasty yet. Your front office is waiting.</div>')+'</div></section>';
+ return '<section class="setup-hero"><div class="eyebrow">ERA RIVALS · FRONT OFFICE SIMULATOR</div><h1>YOU CALL<br><em>THE SHOTS.</em></h1><p>No controller skills. No running around the field. Build the roster, set the tactics, make the calls and watch your decisions shape the season.</p><div class="setup-card"><div class="setup-head"><span class="eyebrow">START A NEW DYNASTY</span><b>01 / FRANCHISE SETUP</b></div><div class="setup-grid"><label>GENERAL MANAGER<input id="setupManager" value="Xavier Matos" maxlength="28"></label><label>CHOOSE YOUR TEAM<select id="setupTeam">'+TEAMS[sport].map(t=>'<option>'+esc(t)+'</option>').join('')+'</select></label><label>PLAYER ERA<select id="setupEra"><option value="current">REAL CLUB ROSTERS · DATED SNAPSHOT</option><option value="alltime">ALL-TIME LEGENDS · GOLD</option></select></label><label>DIFFICULTY<select id="setupDifficulty"><option value="normal">FRONT OFFICE · NORMAL</option><option value="hard">CHAMPIONSHIP CHALLENGE</option></select></label></div><div class="era-explain"><span class="era-dot"></span><div><b>CURRENT</b><small>Start with your club’s actual roster snapshot.</small></div><span class="era-dot gold"></span><div><b>ALL-TIME</b><small>Draft legends from every generation.</small></div></div>'+window.ERFranchiseUI.setup(sport,SPORT[sport].games)+'<button class="btn primary large" data-action="create-save">START DYNASTY ↗</button><p class="fineprint">Five save slots per sport · Automatic local saves · Rosters: ESPN, November 5, 2026. Ratings, salaries and schedules are game estimates; this is a custom league.</p></div><div class="setup-slots"><h3>YOUR SAVES</h3>'+(state.saves[sport].length?state.saves[sport].map((x,i)=>'<div class="saved-line"><span>SAVE '+(i+1)+'</span><b>'+esc(x.team)+'</b><small>'+x.era.toUpperCase()+' · SEASON '+x.season+'</small><button data-load="'+x.id+'">LOAD</button></div>').join(''):'<div class="empty-state">No dynasty yet. Your front office is waiting.</div>')+'</div></section>';
 }
 function renderDashboard(s){
  const ovr=teamOvr(s),pay=teamPayroll(s),pct=s.week?Math.round(s.record.w/s.week*100):0,next=nextOpponent(s);
- return '<section class="welcome-panel" style="--club-color:'+clubColor(s.team)+'"><div><div class="eyebrow">'+SPORT[sport].emoji+' '+SPORT[sport].name+' · SEASON '+s.season+' / '+s.year+'</div><h1>'+esc(s.team)+'<br><em>FRONT OFFICE.</em></h1><p>General Manager: '+esc(s.manager)+' · '+s.era.toUpperCase()+' PLAYER ERA</p></div><div class="club-crest">'+clubBadge(s.team)+'</div><div class="team-grade"><b>'+ovr+'</b><small>TEAM OVR</small></div></section>'+
- '<div class="stats-grid">'+stat('RECORD',s.record.w+'-'+s.record.l+(s.record.d?'-'+s.record.d:''),s.week+' / '+SPORT[sport].games+' games played')+stat('TEAM OVR',ovr,'Starting lineup strength')+stat('PAYROLL',money(pay),money(capFor())+' salary cap')+stat('GM LEGACY',s.gmPoints.toLocaleString(),'Career management points')+'</div>'+
+ return '<div class="fo-launch"><div><span class="eyebrow">DYNASTY SYSTEMS</span><b>Decisions have a long memory.</b><small>Promises · Negotiations · Scouting · League history</small></div><button class="btn primary" data-page="franchise">OPEN DYNASTY HQ →</button></div><section class="welcome-panel" style="--club-color:'+clubColor(s.team)+'"><div><div class="eyebrow">'+SPORT[sport].emoji+' '+SPORT[sport].name+' · SEASON '+s.season+' / '+s.year+'</div><h1>'+esc(s.team)+'<br><em>FRONT OFFICE.</em></h1><p>General Manager: '+esc(s.manager)+' · '+s.era.toUpperCase()+' PLAYER ERA</p></div><div class="club-crest">'+clubBadge(s.team)+'</div><div class="team-grade"><b>'+ovr+'</b><small>TEAM OVR</small></div></section>'+
+ '<div class="stats-grid">'+stat('RECORD',s.record.w+'-'+s.record.l+(s.record.d?'-'+s.record.d:''),s.week+' / '+gamesIn(s)+' games played')+stat('TEAM OVR',ovr,'Starting lineup strength')+stat('PAYROLL',money(pay),money(capFor())+' salary cap')+stat('GM LEGACY',s.gmPoints.toLocaleString(),'Career management points')+'</div>'+
  (s.offseason?'<div class="offseason-banner"><b>OFFSEASON UNLOCKED</b><span>Review contracts, draft prospects and prepare for the next season.</span><button class="btn primary" data-action="advance-season">START SEASON '+(s.season+1)+' →</button></div>':'')+
- renderDecisionRoom(s)+'<div class="dashboard-grid"><section class="panel next-match"><div class="panel-top"><div><span class="eyebrow">NEXT MATCHDAY</span><h2>'+(s.offseason?'OFFSEASON':s.playoffs?playoffLabel(s):'GAME '+(s.playoffs?playoffLabel(s):(s.week+1)+' / '+SPORT[sport].games))+'</h2></div><span class="status-pill">'+(s.offseason?'BREAK':'UP NEXT')+'</span></div><div class="matchup"><div><small>YOUR TEAM</small><b>'+esc(s.team)+'</b><strong>'+ovr+'</strong></div><span class="vs">VS</span><div><small>OPPOSITION</small><b>'+esc(next)+'</b><strong>'+opponentPower(s)+'</strong></div></div><p class="muted">Your tactics, starters, chemistry and player fatigue affect the result. Make your decisions before the simulation.</p><div class="button-row"><button class="btn primary" data-page="matchday" '+(s.offseason?'disabled':'')+'>PREPARE MATCH ↗</button><button class="btn ghost" data-page="tactics">SET GAMEPLAN</button><button class="btn ghost" data-page="records">PLAYER STATS ↗</button></div></section><section class="panel club-health"><span class="eyebrow">FRANCHISE HEALTH</span><h2>THE BOARDROOM</h2>'+meter('TEAM CHEMISTRY',s.chemistry)+meter('TEAM MORALE',s.morale)+meter('FAN SUPPORT',s.fanSupport)+meter('GM APPROVAL',s.gmRep)+'<div class="health-foot">Training points: <b>'+s.trainingPoints+'</b> · Retired legends: <b>'+s.retired.length+'</b></div></section></div>'+
+ renderDecisionRoom(s)+'<div class="dashboard-grid"><section class="panel next-match"><div class="panel-top"><div><span class="eyebrow">NEXT MATCHDAY</span><h2>'+(s.offseason?'OFFSEASON':s.playoffs?playoffLabel(s):'GAME '+(s.playoffs?playoffLabel(s):(s.week+1)+' / '+gamesIn(s)))+'</h2></div><span class="status-pill">'+(s.offseason?'BREAK':'UP NEXT')+'</span></div><div class="matchup"><div><small>YOUR TEAM</small><b>'+esc(s.team)+'</b><strong>'+ovr+'</strong></div><span class="vs">VS</span><div><small>OPPOSITION</small><b>'+esc(next)+'</b><strong>'+opponentPower(s)+'</strong></div></div><p class="muted">Your tactics, starters, chemistry and player fatigue affect the result. Make your decisions before the simulation.</p><div class="button-row"><button class="btn primary" data-page="matchday" '+(s.offseason?'disabled':'')+'>PREPARE MATCH ↗</button><button class="btn ghost" data-page="tactics">SET GAMEPLAN</button><button class="btn ghost" data-page="records">PLAYER STATS ↗</button></div></section><section class="panel club-health"><span class="eyebrow">FRANCHISE HEALTH</span><h2>THE BOARDROOM</h2>'+meter('TEAM CHEMISTRY',s.chemistry)+meter('TEAM MORALE',s.morale)+meter('FAN SUPPORT',s.fanSupport)+meter('GM APPROVAL',s.gmRep)+'<div class="health-foot">Training points: <b>'+s.trainingPoints+'</b> · Retired legends: <b>'+s.retired.length+'</b></div></section></div>'+
  '<div class="dashboard-grid"><section class="panel"><div class="panel-top"><div><span class="eyebrow">RECENT NEWS</span><h2>LEAGUE FEED</h2></div><button class="text-btn" data-page="standings">VIEW TABLE ↗</button></div><div class="feed-list">'+s.feed.slice(0,7).map(x=>'<div class="feed-row"><span class="feed-dot"></span><p>'+esc(x)+'</p></div>').join('')+'</div></section><section class="panel quick-actions"><span class="eyebrow">YOUR NEXT DECISIONS</span><h2>RUN THE TEAM.</h2><button data-page="roster">01 · Set your starting lineup <b>→</b></button><button data-page="transactions">02 · Sign, trade or release players <b>→</b></button><button data-page="scouting">03 · Scout the next generation <b>→</b></button><button data-page="tactics">04 · Choose your tactics <b>→</b></button></section></div>';
 }
 function meter(label,v){return '<div class="meter"><div><span>'+label+'</span><b>'+Math.round(v)+'/100</b></div><i><em style="width:'+Math.max(0,Math.min(100,v))+'%"></em></i></div>'}
 function renderRoster(s){
  const list=s.roster.filter(p=>rosterFilter==='ALL'||p.pos===rosterFilter);
- return '<div class="page-heading"><div><span class="eyebrow">SQUAD MANAGEMENT</span><h1>THE ROSTER.</h1><p>Club roster snapshot: 2026-11-05. Includes reserves. Ratings and salaries are game estimates. Choose starters and manage contracts.</p></div><button class="btn ghost" data-action="auto-lineup">BEST LINEUP</button><button class="btn primary" data-action="show-create-player">+ CREATE PROSPECT</button></div><div class="roster-summary">'+stat('PLAYERS',s.roster.length,'Squad size')+stat('STARTERS',starters(s).length,'Active lineup')+stat('PAYROLL',money(teamPayroll(s)),'Annual salary')+stat('CAP SPACE',money(capFor()-teamPayroll(s)),'Available budget')+'</div><div class="filter-row"><button class="filter '+(rosterFilter==='ALL'?'active':'')+'" data-filter="ALL">ALL PLAYERS</button>'+SPORT[sport].positions.map(p=>'<button class="filter '+(rosterFilter===p?'active':'')+'" data-filter="'+p+'">'+p+'</button>').join('')+'</div><div class="roster-list">'+list.map(p=>'<div class="player-row '+(p.starter?'is-starter':'')+'"><div class="player-pos">'+(p.photo?'<img class="player-photo" src="'+esc(p.photo)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+p.pos+'</div><div class="player-main"><b>'+esc(p.name)+'</b><small>'+p.age+' YRS · '+p.contractYears+' YR CONTRACT · '+(p.injured?'OUT · '+p.injured+' GAMES':'FIT')+'</small></div><div class="player-rating"><b>'+p.overall+'</b><small>OVR</small></div><div class="player-meta"><span>'+money(p.salary)+'</span><small>'+esc(p.source)+'</small></div><div class="player-bars"><span>MORALE '+p.morale+'%</span><i><em style="width:'+p.morale+'%"></em></i><span>FATIGUE '+p.fatigue+'%</span><i><em class="fatigue" style="width:'+p.fatigue+'%"></em></i></div><div class="player-actions"><button data-action="toggle-starter" data-id="'+p.id+'">'+(p.starter?'BENCH':'START')+'</button><button data-action="renew" data-id="'+p.id+'">EXTEND</button><button data-action="retire" data-id="'+p.id+'">RETIRE</button><button class="danger-text" data-action="release" data-id="'+p.id+'">RELEASE</button></div></div>').join('')+'</div><div id="createPlayerPanel" class="panel create-player" hidden><div class="panel-top"><h2>CREATE A PROSPECT</h2><button class="text-btn" data-action="hide-create-player">CLOSE ✕</button></div><div class="setup-grid"><label>PLAYER NAME<input id="customName" placeholder="Xavier Matos"></label><label>POSITION<select id="customPos">'+SPORT[sport].positions.map(p=>'<option>'+p+'</option>').join('')+'</select></label><label>STARTING OVR<input id="customOvr" type="number" min="55" max="95" value="72"></label></div><button class="btn primary" data-action="create-player">ADD PLAYER TO ROSTER</button></div>';
+ return '<div class="page-heading"><div><span class="eyebrow">SQUAD MANAGEMENT</span><h1>THE ROSTER.</h1><p>Club roster snapshot: 2026-11-05. Includes reserves. Ratings and salaries are game estimates. Choose starters and manage contracts.</p></div><button class="btn ghost" data-action="auto-lineup">BEST LINEUP</button><button class="btn primary" data-action="show-create-player">+ CREATE PROSPECT</button></div><div class="roster-summary">'+stat('PLAYERS',s.roster.length,'Squad size')+stat('STARTERS',starters(s).length,'Active lineup')+stat('PAYROLL',money(teamPayroll(s)),'Annual salary')+stat('CAP SPACE',money(capFor()-teamPayroll(s)),'Available budget')+'</div><div class="filter-row"><button class="filter '+(rosterFilter==='ALL'?'active':'')+'" data-filter="ALL">ALL PLAYERS</button>'+SPORT[sport].positions.map(p=>'<button class="filter '+(rosterFilter===p?'active':'')+'" data-filter="'+p+'">'+p+'</button>').join('')+'</div><div class="roster-list">'+list.map(p=>'<div class="player-row '+(p.starter?'is-starter':'')+'"><div class="player-pos">'+(p.photo?'<img class="player-photo" src="'+esc(p.photo)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+p.pos+'</div><div class="player-main"><b>'+esc(p.name)+'</b><small>'+p.age+' YRS · '+p.contractYears+' YR CONTRACT · '+(p.injured?'OUT · '+p.injured+' GAMES':'FIT')+'</small></div><div class="player-rating"><b>'+p.overall+'</b><small>OVR</small></div><div class="player-meta"><span>'+money(p.salary)+'</span><small>'+esc(p.source)+'</small></div><div class="player-bars"><span>MORALE '+p.morale+'%</span><i><em style="width:'+p.morale+'%"></em></i><span>FATIGUE '+p.fatigue+'%</span><i><em class="fatigue" style="width:'+p.fatigue+'%"></em></i></div><div class="player-actions"><button data-fo-player="'+p.id+'">MANAGE</button><button data-action="toggle-starter" data-id="'+p.id+'">'+(p.starter?'BENCH':'START')+'</button><button data-action="renew" data-id="'+p.id+'">EXTEND</button><button data-action="retire" data-id="'+p.id+'">RETIRE</button><button class="danger-text" data-action="release" data-id="'+p.id+'">RELEASE</button></div></div>').join('')+'</div><div id="createPlayerPanel" class="panel create-player" hidden><div class="panel-top"><h2>CREATE A PROSPECT</h2><button class="text-btn" data-action="hide-create-player">CLOSE ✕</button></div><div class="setup-grid"><label>PLAYER NAME<input id="customName" placeholder="Xavier Matos"></label><label>POSITION<select id="customPos">'+SPORT[sport].positions.map(p=>'<option>'+p+'</option>').join('')+'</select></label><label>STARTING OVR<input id="customOvr" type="number" min="55" max="95" value="72"></label></div><button class="btn primary" data-action="create-player">ADD PLAYER TO ROSTER</button></div>';
 }
 function renderTactics(s){
  const t=s.tactics;
@@ -477,14 +489,14 @@ function renderMatchday(s){
  if(s.pending){
   const p=s.pending;
   const cards=p.options.map((o,i)=>'<button class="decision-card" data-decision="'+i+'"><span>OPTION 0'+(i+1)+'</span><b>'+esc(o[0])+'</b><small>'+esc(o[1])+'</small><em>SELECT THIS DECISION →</em></button>').join('');
-  return '<div class="page-heading"><div><span class="eyebrow">MATCHDAY / '+(sport==='mlb'?'MIDDLE INNINGS':'HALFTIME')+' DECISION</span><h1>YOUR CALL.</h1><p>The opening stage is over. Read the score and make your adjustment.</p></div><span class="status-pill live">DECISION REQUIRED</span></div><section class="panel halftime"><div class="halftime-title"><span>'+esc(s.team)+'</span><b>'+p.home+' : '+p.away+'</b><span>'+esc(p.opponent)+'</span></div><div class="eyebrow">'+(sport==='mlb'?'MIDDLE INNINGS':'HALFTIME')+' · '+esc(p.plan)+'</div><h2>WHAT IS THE ADJUSTMENT?</h2><p class="muted">Your decision changes the second-half simulation. Aggressive calls can win games, but they can also cost energy.</p><div class="decision-grid">'+cards+'</div></section>';
+  return '<div class="page-heading"><div><span class="eyebrow">MATCHDAY / '+(p.stage==='clutch'?'CLOSING MOMENT':sport==='mlb'?'MIDDLE INNINGS':'HALFTIME')+' DECISION</span><h1>YOUR CALL.</h1><p>'+(p.stage==='clutch'?'One final decision. Protect the result or take a risk.':'The opening stage is over. Read the score and make your adjustment.')+'</p></div><span class="status-pill live">DECISION REQUIRED</span></div><section class="panel halftime"><div class="halftime-title"><span>'+esc(s.team)+'</span><b>'+p.home+' : '+p.away+'</b><span>'+esc(p.opponent)+'</span></div><div class="eyebrow">'+(p.stage==='clutch'?'CLOSING MOMENT':sport==='mlb'?'MIDDLE INNINGS':'HALFTIME')+' · '+esc(p.plan)+'</div><h2>WHAT IS THE ADJUSTMENT?</h2><p class="muted">Your decision changes the second-half simulation. Aggressive calls can win games, but they can also cost energy.</p><div class="decision-grid">'+cards+'</div></section>';
  }
  const opp=nextOpponent(s);
  const oppGrade=opponentPower(s);
  const last=s.lastMatch?'<section class="panel last-result"><span class="eyebrow">LAST MATCH · '+s.lastMatch.result+'</span><h2>'+s.lastMatch.home+' - '+s.lastMatch.away+' vs '+esc(s.lastMatch.opponent)+'</h2><p class="muted">Your call: '+esc(s.lastMatch.decision)+' · Player of the match: '+esc(s.lastMatch.mvp)+'</p></section>':'';
  const plans=['Balanced approach','Attack from the start','Protect the lead','Play through your best player','Exploit the wings / weak side','Control possession'];
  const planOptions=plans.map(x=>'<option '+(s.matchPlan===x?'selected':'')+'>'+x+'</option>').join('');
- return last+(!s.preparation&&!s.offseason?renderDecisionRoom(s):'')+'<div class="page-heading"><div><span class="eyebrow">MATCHDAY / '+(s.playoffs?playoffLabel(s):'GAME PREPARATION')+'</span><h1>'+(s.offseason?'SEASON COMPLETE.':'THE NEXT GAME.')+'</h1><p>Set your plan, then let the simulation decide how it plays out.</p></div><span class="status-pill">'+(s.playoffs?playoffLabel(s):(s.week+1)+' / '+SPORT[sport].games)+'</span></div><section class="panel match-preview"><div class="matchup large"><div><small>HOME</small><b>'+esc(s.team)+'</b><strong>'+teamOvr(s)+'</strong></div><span class="vs">VS</span><div><small>AWAY</small><b>'+esc(opp)+'</b><strong>'+oppGrade+' OVR</strong></div></div><div class="pre-match-grid"><label class="field">MATCH PLAN<select id="matchPlan">'+planOptions+'</select></label><div class="match-note"><b>YOUR GAMEPLAN</b><span>'+esc(s.tactics.off)+' · '+esc(s.tactics.def)+' · '+esc(s.tactics.tempo)+' tempo</span></div></div><div class="button-row"><button class="btn primary large" data-action="start-match" '+(s.offseason?'disabled':'')+'>START MATCH SIMULATION ↗</button><button class="btn ghost" data-page="roster">CHECK LINEUP</button><button class="btn ghost" data-page="tactics">CHANGE TACTICS</button></div></section><section class="panel"><span class="eyebrow">MATCHDAY RULES</span><h2>YOU ARE THE MANAGER.</h2><div class="rules-grid"><div><b>01 · PREPARE</b><p>Set your lineup, tactics, pace and risk level.</p></div><div><b>02 · RESPOND</b><p>At halftime, choose a tactical adjustment based on the match.</p></div><div><b>03 · SIMULATE</b><p>Your roster quality, chemistry, morale and decisions determine the result.</p></div></div></section>';
+ return last+(!s.preparation&&!s.offseason?renderDecisionRoom(s):'')+'<div class="page-heading"><div><span class="eyebrow">MATCHDAY / '+(s.playoffs?playoffLabel(s):'GAME PREPARATION')+'</span><h1>'+(s.offseason?'SEASON COMPLETE.':'THE NEXT GAME.')+'</h1><p>Set your plan, then let the simulation decide how it plays out.</p></div><span class="status-pill">'+(s.playoffs?playoffLabel(s):(s.week+1)+' / '+gamesIn(s))+'</span></div><section class="panel match-preview"><div class="matchup large"><div><small>HOME</small><b>'+esc(s.team)+'</b><strong>'+teamOvr(s)+'</strong></div><span class="vs">VS</span><div><small>AWAY</small><b>'+esc(opp)+'</b><strong>'+oppGrade+' OVR</strong></div></div><div class="pre-match-grid"><label class="field">MATCH PLAN<select id="matchPlan">'+planOptions+'</select></label><div class="match-note"><b>YOUR GAMEPLAN</b><span>'+esc(s.tactics.off)+' · '+esc(s.tactics.def)+' · '+esc(s.tactics.tempo)+' tempo</span></div></div><div class="button-row"><button class="btn primary large" data-action="start-match" '+(s.offseason?'disabled':'')+'>START MATCH SIMULATION ↗</button><button class="btn ghost" data-page="roster">CHECK LINEUP</button><button class="btn ghost" data-page="tactics">CHANGE TACTICS</button></div></section><section class="panel"><span class="eyebrow">MATCHDAY RULES</span><h2>YOU ARE THE MANAGER.</h2><div class="rules-grid"><div><b>01 · PREPARE</b><p>Set your lineup, tactics, pace and risk level.</p></div><div><b>02 · RESPOND</b><p>At halftime, choose a tactical adjustment based on the match.</p></div><div><b>03 · SIMULATE</b><p>Your roster quality, chemistry, morale and decisions determine the result.</p></div></div></section>';
 }
 
 function renderTransactions(s){
@@ -544,14 +556,19 @@ function renderLegacy(s){
 
 function render(){
  renderTop();
- const s=getSave();if(s)ensureSeason(s);
+ const s=getSave();if(s){window.ERFranchise.init(s,franchiseEnv(s));ensureSeason(s)}
  $('sidebar').innerHTML=s?'<div class="side-label">FRONT OFFICE</div>'+navHtml()+'<div class="sidebar-bottom"><b>'+esc(s.manager)+'</b><small>GENERAL MANAGER · '+s.gmPoints+' PTS</small><button data-action="new-save">+ NEW SAVE SLOT</button><button data-action="delete-save">DELETE CURRENT SAVE</button></div>':'<div class="side-label">WELCOME</div><div class="side-welcome">Start a dynasty to unlock your front office.</div>';
- $('screen').innerHTML=(page==='setup'||!s)?renderSetup():({dashboard:()=>renderDashboard(s),roster:()=>renderRoster(s),tactics:()=>renderTactics(s),matchday:()=>renderMatchday(s),transactions:()=>renderTransactions(s),scouting:()=>renderScouting(s),standings:()=>renderStandings(s),records:()=>renderRecords(s),legacy:()=>renderLegacy(s),saves:()=>renderSaveCenter(s)}[page]||(()=>renderDashboard(s)))();
+ $('screen').innerHTML=(page==='setup'||!s)?renderSetup():({dashboard:()=>renderDashboard(s),roster:()=>renderRoster(s),tactics:()=>renderTactics(s),matchday:()=>renderMatchday(s),transactions:()=>window.ERFranchiseUI.render(s,franchiseEnv(s),{...franchiseView,tab:'market'}),scouting:()=>window.ERFranchiseUI.render(s,franchiseEnv(s),{...franchiseView,tab:'scouting'}),standings:()=>renderStandings(s),'legacy-trades':()=>renderTransactions(s),records:()=>renderRecords(s),legacy:()=>renderLegacy(s),saves:()=>renderSaveCenter(s),franchise:()=>window.ERFranchiseUI.render(s,franchiseEnv(s),franchiseView)}[page]||(()=>renderDashboard(s)))();
 }
 function newSave(){page='setup';render()}
 function deleteSave(){const s=getSave();if(!s)return;if(!confirm('Delete this dynasty save? This cannot be undone.'))return;state.saves[sport]=state.saves[sport].filter(x=>x.id!==s.id);state.active[sport]=state.saves[sport][0]?.id||null;page='dashboard';persist();render();notify('Save deleted.')}
 function setPage(p){page=p;render()}
 function clickHandler(e){
+ let fx=e.target.closest('[data-fo-tab]');if(fx){page='franchise';franchiseView.tab=fx.dataset.foTab;render();return}
+ fx=e.target.closest('[data-fo-player]');if(fx){page='franchise';franchiseView.tab='people';franchiseView.player=fx.dataset.foPlayer;render();return}
+ fx=e.target.closest('[data-friends-action]');if(fx){window.ERFriendsUI.run(fx.dataset.friendsAction,{...readFranchiseFields(fx),...JSON.parse(fx.dataset.friendsArgs||'{}')},franchiseEnv(getSave()));return}
+ fx=e.target.closest('[data-fo]');if(fx){const s=getSave();try{const args={...readFranchiseFields(fx),...JSON.parse(fx.dataset.foArgs||'{}')};const result=window.ERFranchise.action(s,fx.dataset.fo,args,franchiseEnv(s));if(result.fork)addImportedSave(validateSave(result.fork));persist();render();notify(result.message||'Decision saved.')}catch(err){notify(err.message,'bad')}return}
+
  const locked=getSave();if(locked?.pending&&e.target.closest('[data-sign],[data-draft],[data-tactic],[data-action=trade],[data-action=renew],[data-action=release],[data-action=retire],[data-action=train-team],[data-action=create-player],[data-action=make-promise],[data-action=accept-trade],[data-action=accept-counter],[data-action=counter-trade]')){notify('Finish the match before changing your squad.');return}
  let el=e.target.closest('[data-prep]');if(el){const s=getSave();if(s&&!s.pending&&!s.offseason&&!s.preparation){prepareTeam(s,el.dataset.prep);persist();render()}return}
  el=e.target.closest('[data-cloud-load]');if(el){cloudLoad(el.dataset.cloudLoad);return}
@@ -560,7 +577,7 @@ function clickHandler(e){
  el=e.target.closest('[data-filter]');if(el){rosterFilter=el.dataset.filter;render();return}
  el=e.target.closest('[data-load]');if(el){state.active[sport]=el.dataset.load;page='dashboard';persist();render();return}
  el=e.target.closest('[data-action]');if(el){const a=el.dataset.action,id=el.dataset.id;
-  if(a==='create-save'){createSave({manager:$('setupManager')?.value,team:$('setupTeam')?.value,era:$('setupEra')?.value,difficulty:$('setupDifficulty')?.value})}
+  if(a==='create-save'){try{createSave({...readFranchiseFields(document.querySelector('.fo-setup'),true),manager:$('setupManager')?.value,team:$('setupTeam')?.value,era:$('setupEra')?.value,difficulty:$('setupDifficulty')?.value})}catch(err){notify(err.message)}}
   else if(a==='auto-lineup'){const s=getSave();if(s&&!s.pending){autoLineup(s);persist();render();notify('Best available lineup selected.')}}
   else if(a==='export-save')exportSave();
   else if(a==='import-save')$('importFile').click();
@@ -647,7 +664,7 @@ function allTimeClubRating(team){
  });
  return ratings.length?Math.round(ratings.reduce((a,b)=>a+b,0)/ratings.length):76;
 }
-function clubColor(team){return /^#[a-f0-9]{6}$/i.test(clubData(team)?.color||'')?clubData(team).color:'#254d47'}
+function clubColor(team){if(getSave()?.team===team&&getSave()?.fo?.expansion)return getSave().fo.expansion.color;return /^#[a-f0-9]{6}$/i.test(clubData(team)?.color||'')?clubData(team).color:'#254d47'}
 function clubBadge(team){const c=clubData(team);return c?.logo?'<img src="'+esc(c.logo)+'" alt="'+esc(team)+' crest" loading="lazy">':'<b>ER</b>'}
 function makeClubRoster(team,era){
  if(era==='alltime'){
@@ -672,22 +689,22 @@ function makeClubRoster(team,era){
  const players=club.players.map((p,i)=>({...makePlayer(p,p.pos,false,i),overall:p.base,potential:Math.min(99,p.base+(p.age<25?8:p.age<29?3:0)),age:p.age||25,photo:p.photo,jersey:p.jersey,listedPosition:p.listedPosition,team,originalTeam:team,depthRank:p.depthRank??9,source:'ESPN snapshot · '+(window.ERTeamRosters?.fetchedAt||'').slice(0,10)}));
  const budget=players.reduce((n,p)=>n+p.salary,0),scale=Math.min(1,capFor()*.87/Math.max(1,budget));players.forEach(p=>p.salary=Math.max(.4,Math.round(p.salary*scale*10)/10));return players;
 }
-function initialLineup(s){s.roster.forEach(p=>p.starter=false);Object.entries(STARTERS[sport]).forEach(([pos,n])=>s.roster.filter(p=>p.pos===pos&&!p.injured).sort((a,b)=>(a.depthRank??9)-(b.depthRank??9)||b.overall-a.overall).slice(0,n).forEach(p=>p.starter=true))}
+function initialLineup(s){s.roster.forEach(p=>p.starter=false);Object.entries(STARTERS[sport]).forEach(([pos,n])=>s.roster.filter(p=>p.pos===pos&&!p.injured&&!p.development).sort((a,b)=>(a.depthRank??9)-(b.depthRank??9)||b.overall-a.overall).slice(0,n).forEach(p=>p.starter=true))}
 function autoLineup(s){s.roster.forEach(p=>p.starter=false);fillVacancies(s)}
-function fillVacancies(s){Object.entries(STARTERS[sport]).forEach(([pos,count])=>{const active=s.roster.filter(p=>p.pos===pos&&p.starter&&!p.injured).length;s.roster.filter(p=>p.pos===pos&&!p.starter&&!p.injured).sort((a,b)=>(b.overall-b.fatigue*.15)-(a.overall-a.fatigue*.15)).slice(0,Math.max(0,count-active)).forEach(p=>p.starter=true)})}
+function fillVacancies(s){Object.entries(STARTERS[sport]).forEach(([pos,count])=>{const active=s.roster.filter(p=>p.pos===pos&&p.starter&&!p.injured&&!p.development).length;s.roster.filter(p=>p.pos===pos&&!p.starter&&!p.injured&&!p.development).sort((a,b)=>(b.overall-b.fatigue*.15)-(a.overall-a.fatigue*.15)).slice(0,Math.max(0,count-active)).forEach(p=>p.starter=true)})}
 function clubRating(team,era){if(era==='alltime')return allTimeClubRating(team);const ps=clubData(team)?.players;if(!ps?.length)return 76;const top=[];Object.entries(STARTERS[sport]).forEach(([pos,n])=>top.push(...ps.filter(p=>p.pos===pos).sort((a,b)=>b.base-a.base).slice(0,n)));return top.length?Math.round(top.reduce((n,p)=>n+p.base,0)/top.length):76}
 function ensureSeason(s){
  s.matchHistory=s.matchHistory||[];s.seasonDrafts=s.seasonDrafts||0;s.promises=Array.isArray(s.promises)?s.promises:[];s.tradeHistory=Array.isArray(s.tradeHistory)?s.tradeHistory:[];if(!Array.isArray(s.draftPicks))s.draftPicks=makeDraftPicks(s.season);s.roster.forEach(ensurePlayerStats);s.retired.forEach(ensurePlayerStats);
  if(!s.schedule){
   let rotation=Object.keys(s.standings);if(!rotation.includes(s.team))rotation.push(s.team);if(rotation.length%2)rotation.push(null);
   const cycle=[];for(let round=0;round<rotation.length-1;round++){const fixtures=[];for(let i=0;i<rotation.length/2;i++){const a=rotation[i],b=rotation[rotation.length-1-i];if(a&&b)fixtures.push(round%2?[b,a]:[a,b])}cycle.push(fixtures);rotation=[rotation[0],rotation[rotation.length-1],...rotation.slice(1,-1)]}
-  s.schedule=Array.from({length:SPORT[sport].games},(_,i)=>cycle[i%cycle.length].map(pair=>Math.floor(i/cycle.length)%2?pair.slice().reverse():pair.slice()));
+  s.schedule=Array.from({length:gamesIn(s)},(_,i)=>cycle[i%cycle.length].map(pair=>Math.floor(i/cycle.length)%2?pair.slice().reverse():pair.slice()));
  }
  // Existing careers retain their roster and record; only missing v2 fields are added.
  if(!s.engineVersion){s.engineVersion=2;Object.entries(s.standings).forEach(([t,r])=>{if(t===s.team)return;const games=r.w+r.l+r.d,rate=games?r.w/games:.5;r.w=Math.round(rate*s.week);r.d=0;r.l=s.week-r.w});}
 }
 function nextOpponent(s){if(s.offseason)return 'Season complete';if(s.playoffs){const pair=s.playoffs.pairs.find(p=>p.includes(s.team));return pair?.find(t=>t!==s.team)||'Final'}const pair=s.schedule?.[s.week]?.find(p=>p.includes(s.team));return pair?.find(t=>t!==s.team)||Object.keys(s.standings).find(t=>t!==s.team)}
-function leagueResult(s,a,b,x,y){const ra=s.standings[a],rb=s.standings[b];if(x>y){ra.w++;rb.l++}else if(x<y){ra.l++;rb.w++}else{ra.d++;rb.d++}}
+function leagueResult(s,a,b,x,y){s.lastRoundResults=s.lastRoundResults||[];s.lastRoundResults.push({a,b,x,y});const ra=s.standings[a],rb=s.standings[b];if(x>y){ra.w++;rb.l++}else if(x<y){ra.l++;rb.w++}else{ra.d++;rb.d++}}
 function resolveTie(x,y){
  if(sport==='soccer'||x!==y)return [x,y];
  const bonus=sport==='nfl'?(Math.random()<.72?3:7):sport==='nba'?(Math.random()<.65?2:3):1;
@@ -698,20 +715,21 @@ function simulatePair(s,a,b){
  const diff=(s.standings[a]?.ovr||78)-(s.standings[b]?.ovr||78);
  return resolveTie(segmentScore(sport,diff)*2,segmentScore(sport,-diff)*2);
 }
-function updateLeagueRound(s,opponent,home,away){
+function updateLeagueRound(s,opponent,home,away){s.lastRoundResults=[];
  for(const [a,b] of s.schedule[s.week]||[]){if(a===s.team)leagueResult(s,a,b,home,away);else if(b===s.team)leagueResult(s,a,b,away,home);else{const [x,y]=simulatePair(s,a,b);leagueResult(s,a,b,x,y)}}s.standings[s.team].ovr=teamOvr(s);
 }
 function rankedTeams(s){return Object.keys(s.standings).sort((a,b)=>{const x=s.standings[a],y=s.standings[b];return (sport==='soccer'?(y.w*3+y.d)-(x.w*3+x.d):y.w-x.w)||x.l-y.l||y.ovr-x.ovr||a.localeCompare(b)})}
-function playoffLabel(s){return ['QUARTERFINAL','SEMIFINAL','CHAMPIONSHIP'][s.playoffs?.round||0]}
+function playoffLabel(s){return s.playoffs?.pairs?.length===1?'CHAMPIONSHIP':s.playoffs?.pairs?.length===2?'SEMIFINAL':'QUARTERFINAL'}
 function endRegularSeason(s){
- const table=rankedTeams(s);if(sport==='soccer'){completeSeason(s,table[0]===s.team);return}
- const top=table.slice(0,8);if(!top.includes(s.team)){feed(s,'Finished #'+(table.indexOf(s.team)+1)+'. Top eight advance; your season ends here.');completeSeason(s,false);return}
- s.playoffs={round:0,pairs:[[top[0],top[7]],[top[3],top[4]],[top[1],top[6]],[top[2],top[5]]]};feed(s,'PLAYOFF BERTH! You are seed #'+(top.indexOf(s.team)+1)+'. Three knockout wins earn the ERA Cup.');
+ const table=rankedTeams(s),count=s.fo?.rules?.playoffTeams??(sport==='soccer'?0:8);if(!count){s.leagueChampion=table[0];completeSeason(s,table[0]===s.team);return}
+ const top=table.slice(0,count);if(!top.includes(s.team)){feed(s,'Finished #'+(table.indexOf(s.team)+1)+'. Top '+count+' advance; your season ends here.');s.leagueChampion=simulateTitle(s,top);completeSeason(s,false);return}
+ s.playoffs={round:0,pairs:count===4?[[top[0],top[3]],[top[1],top[2]]]:[[top[0],top[7]],[top[3],top[4]],[top[1],top[6]],[top[2],top[5]]]};feed(s,'PLAYOFF BERTH! Seed #'+(top.indexOf(s.team)+1)+'. Win the knockout rounds for the ERA Cup.');
 }
+function simulateTitle(s,teams){let remaining=teams.slice();while(remaining.length>1){const next=[];for(let i=0;i<remaining.length;i+=2){const [a,b]=[remaining[i],remaining[i+1]],[x,y]=simulatePair(s,a,b);next.push(x>=y?a:b)}remaining=next}return remaining[0]}
 function advancePlayoffs(s,win){
  const bracket=s.playoffs,winners=bracket.pairs.map(([a,b])=>{if(a===s.team||b===s.team)return win?s.team:(a===s.team?b:a);const [x,y]=simulatePair(s,a,b);return x>=y?a:b});
- if(!win){feed(s,'Eliminated in the '+playoffLabel(s).toLowerCase()+'.');completeSeason(s,false);return}
- if(winners.length===1){completeSeason(s,true);return}bracket.round++;bracket.pairs=[];for(let i=0;i<winners.length;i+=2)bracket.pairs.push([winners[i],winners[i+1]]);feed(s,'Advanced to the '+playoffLabel(s).toLowerCase()+'.');
+ if(!win){feed(s,'Eliminated in the '+playoffLabel(s).toLowerCase()+'.');s.leagueChampion=simulateTitle(s,winners);completeSeason(s,false);return}
+ if(winners.length===1){s.leagueChampion=s.team;completeSeason(s,true);return}bracket.round++;bracket.pairs=[];for(let i=0;i<winners.length;i+=2)bracket.pairs.push([winners[i],winners[i+1]]);feed(s,'Advanced to the '+playoffLabel(s).toLowerCase()+'.');
 }
 function prepareTeam(s,key){
  if(s.preparation||s.pending||s.offseason)return;
@@ -725,14 +743,14 @@ function renderDecisionRoom(s){
  if(s.offseason)return renderSeasonPath(s);
  const avg=Math.round(starters(s).reduce((a,p)=>a+p.fatigue,0)/Math.max(1,starters(s).length));
  const cards=[['recover','Recovery day','−18 fatigue','Rest the squad. No extra match boost.'],['chemistry','Team meeting','+3 chemistry · +2 morale','Build trust. +1 strength for this game.'],['intense','Intense practice','+3 match strength · +10 fatigue','Sharper execution, but tired players risk injury.']];
- return '<section class="panel decision-room"><div class="panel-top"><div><span class="eyebrow">'+(s.playoffs?playoffLabel(s):'GAME '+(s.week+1))+' / DECISION ROOM</span><h2>EVERY CALL HAS A COST.</h2></div><span class="status-pill">SQUAD FATIGUE '+avg+'%</span></div><p class="muted">'+(s.preparation?'Preparation locked: '+esc(s.preparation.label)+'. Next, set your lineup and head to matchday.':'Choose one preparation before your next game. Your choice lasts for one match.')+'</p><div class="decision-grid">'+cards.map(([key,label,effect,desc])=>'<button class="decision-card '+(s.preparation?.label===label?'chosen':'')+'" data-prep="'+key+'" '+(s.preparation||s.pending?'disabled':'')+'><span>'+effect+'</span><b>'+label+'</b><small>'+desc+'</small></button>').join('')+'</div><div class="season-progress"><span>BOARD TARGET · '+s.record.w+' / '+Math.ceil(SPORT[sport].games*.5)+' WINS</span><progress max="'+Math.ceil(SPORT[sport].games*.5)+'" value="'+s.record.w+'"></progress><span>+150 GM points</span></div>'+(s.preparation?'<button class="btn primary" data-page="matchday">'+(s.pending?'RESUME MATCH':'GO TO MATCHDAY')+' →</button>':'')+'</section>';
+ return '<section class="panel decision-room"><div class="panel-top"><div><span class="eyebrow">'+(s.playoffs?playoffLabel(s):'GAME '+(s.week+1))+' / DECISION ROOM</span><h2>EVERY CALL HAS A COST.</h2></div><span class="status-pill">SQUAD FATIGUE '+avg+'%</span></div><p class="muted">'+(s.preparation?'Preparation locked: '+esc(s.preparation.label)+'. Next, set your lineup and head to matchday.':'Choose one preparation before your next game. Your choice lasts for one match.')+'</p><div class="decision-grid">'+cards.map(([key,label,effect,desc])=>'<button class="decision-card '+(s.preparation?.label===label?'chosen':'')+'" data-prep="'+key+'" '+(s.preparation||s.pending?'disabled':'')+'><span>'+effect+'</span><b>'+label+'</b><small>'+desc+'</small></button>').join('')+'</div><div class="season-progress"><span>BOARD TARGET · '+s.record.w+' / '+Math.ceil(gamesIn(s)*.5)+' WINS</span><progress max="'+Math.ceil(gamesIn(s)*.5)+'" value="'+s.record.w+'"></progress><span>+150 GM points</span></div>'+(s.preparation?'<button class="btn primary" data-page="matchday">'+(s.pending?'RESUME MATCH':'GO TO MATCHDAY')+' →</button>':'')+'</section>';
 }
-function renderSeasonPath(s){const rank=rankedTeams(s).indexOf(s.team)+1;return '<section class="panel season-path"><span class="eyebrow">THE ROAD TO A DYNASTY</span><h2>'+(s.offseason?'SEASON '+s.season+' COMPLETE':s.playoffs?'ERA CUP · '+playoffLabel(s):'LEAGUE POSITION #'+rank)+'</h2><p class="muted">'+(sport==='soccer'?'Three points for a win, one for a draw. First place wins this custom 20-club league.':'Top eight qualify for the ERA Cup: quarterfinal, semifinal, final. Single-game knockouts in this custom league.')+' Ties in the table: fewer losses, then team rating.</p>'+(s.playoffs?s.playoffs.pairs.map(([a,b])=>'<div class="bracket-pair '+([a,b].includes(s.team)?'your-player':'')+'"><b>'+esc(a)+'</b><span>VS</span><b>'+esc(b)+'</b></div>').join(''):'')+(s.offseason&&s.seasonHistory[0]?'<div class="season-awards">'+esc(s.seasonHistory[0].awards.join(' · ')||'Reload. Rebuild. Run it back.')+'</div>':'')+'</section>'}
+function renderSeasonPath(s){const rank=rankedTeams(s).indexOf(s.team)+1;return '<section class="panel season-path"><span class="eyebrow">THE ROAD TO A DYNASTY</span><h2>'+(s.offseason?'SEASON '+s.season+' COMPLETE':s.playoffs?'ERA CUP · '+playoffLabel(s):'LEAGUE POSITION #'+rank)+'</h2><p class="muted">'+((s.fo?.rules.playoffTeams??8)?'Top '+s.fo.rules.playoffTeams+' qualify for the ERA Cup. Single-game knockouts.':'First place wins this '+Object.keys(s.standings).length+'-club league.')+' Ties in the table: fewer losses, then team rating.</p>'+(s.playoffs?s.playoffs.pairs.map(([a,b])=>'<div class="bracket-pair '+([a,b].includes(s.team)?'your-player':'')+'"><b>'+esc(a)+'</b><span>VS</span><b>'+esc(b)+'</b></div>').join(''):'')+(s.offseason&&s.seasonHistory[0]?'<div class="season-awards">'+esc(s.seasonHistory[0].awards.join(' · ')||'Reload. Rebuild. Run it back.')+'</div>':'')+'</section>'}
 // Save backup validation also applies to data downloaded from the cloud.
 function validateSave(v){
  if(!v||typeof v!=='object'||!SPORT[v.sport]||!['current','alltime'].includes(v.era)||typeof v.team!=='string'||typeof v.manager!=='string'||!Array.isArray(v.roster)||v.roster.length>120)throw Error('This is not a valid Era Rivals save.');
  for(const key of ['season','year','week','chemistry','morale','fanSupport','gmRep','gmPoints','trainingPoints','legacyPoints'])if(!Number.isFinite(v[key])||v[key]<0)throw Error('Invalid save values.');
- if(v.week>SPORT[v.sport].games||!v.tactics||typeof v.tactics.off!=='string'||!v.record||!v.standings||!v.standings[v.team])throw Error('Invalid season data.');
+ if(v.week>(v.fo?.rules?.games||SPORT[v.sport].games)||!v.tactics||typeof v.tactics.off!=='string'||!v.record||!v.standings||!v.standings[v.team])throw Error('Invalid season data.');
  for(const key of ['w','l','d'])if(!Number.isInteger(v.record[key])||v.record[key]<0)throw Error('Invalid record.');
  if(v.record.w+v.record.l+v.record.d!==v.week)throw Error('Record does not match games played.');
  for(const key of ['retired','seasonHistory','feed','draftClass'])if(!Array.isArray(v[key]))throw Error('Incomplete save.');
@@ -747,12 +765,12 @@ function validateSave(v){
  if(typeof v.id!=='string'||!/^[a-z0-9-]+$/i.test(v.id))throw Error('Invalid save identity.');
  // Schedules are rebuilt from the selected universe, never trusted as executable input.
  v.schedule=null;
- if(v.pending){const q=v.pending;if(typeof q.opponent!=='string'||!v.standings[q.opponent]||![q.home,q.away,q.oppOvr].every(Number.isFinite)||!Array.isArray(q.options)||q.options.length!==3)throw Error('Invalid match data.');for(const o of q.options)if(!Array.isArray(o)||typeof o[0]!=='string'||typeof o[1]!=='string'||!o.slice(2,5).every(Number.isFinite))throw Error('Invalid decision.');}
- if(v.playoffs){const q=v.playoffs;if(!Number.isInteger(q.round)||q.round<0||q.round>2||!Array.isArray(q.pairs)||q.pairs.length!==[4,2,1][q.round]||q.pairs.some(pair=>!Array.isArray(pair)||pair.length!==2||pair.some(t=>!v.standings[t])))throw Error('Invalid playoff bracket.');}
- return v;
+ if(v.pending){const q=v.pending;if(q.stage==='clutch'&&(!Array.isArray(q.previewScore)||q.previewScore.length!==2||!q.previewScore.every(Number.isFinite)))throw Error('Invalid closing-moment score.');if(typeof q.opponent!=='string'||!v.standings[q.opponent]||![q.home,q.away,q.oppOvr].every(Number.isFinite)||!Array.isArray(q.options)||q.options.length!==3)throw Error('Invalid match data.');for(const o of q.options)if(!Array.isArray(o)||typeof o[0]!=='string'||typeof o[1]!=='string'||!o.slice(2,5).every(Number.isFinite))throw Error('Invalid decision.');}
+ if(v.playoffs){const q=v.playoffs;if(!Number.isInteger(q.round)||q.round<0||q.round>2||!Array.isArray(q.pairs)||q.pairs.length!==(v.fo?.rules?.playoffTeams===4?[2,1]:[4,2,1])[q.round]||q.pairs.some(pair=>!Array.isArray(pair)||pair.length!==2||pair.some(t=>!v.standings[t])))throw Error('Invalid playoff bracket.');}
+ if(v.fo){if(v.fo.version!==3||!Array.isArray(v.fo.promises)||!v.fo.teams||!Number.isFinite(v.fo.rules?.games)||v.fo.rules.games<8||v.fo.rules.games>162||!Number.isFinite(v.fo.rules.cap)||v.fo.rules.cap<1)throw Error('Invalid franchise data.');}return v;
 }
 function exportSave(){const s=getSave();if(!s)return;const blob=new Blob([JSON.stringify({format:'era-rivals-save',version:2,save:s},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='era-rivals-'+sport+'-season-'+s.season+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);notify('Save backup downloaded.');}
-function addImportedSave(v){const target=state.saves[v.sport];if(target.length>=5)throw Error('All five slots for this sport are full. Delete one first.');v.id='save-'+Date.now()+'-'+Math.random().toString(36).slice(2,6);target.push(v);sport=v.sport;state.active[sport]=v.id;ensureSeason(v);if(!v.offseason&&!v.playoffs&&v.week>=SPORT[sport].games)endRegularSeason(v);page='dashboard';persist();render()}
+function addImportedSave(v){const target=state.saves[v.sport];if(target.length>=5)throw Error('All five slots for this sport are full. Delete one first.');v.id='save-'+Date.now()+'-'+Math.random().toString(36).slice(2,6);target.push(v);sport=v.sport;state.active[sport]=v.id;ensureSeason(v);if(!v.offseason&&!v.playoffs&&v.week>=gamesIn(v))endRegularSeason(v);page='dashboard';persist();render()}
 async function importSave(file){try{if(!file)return;if(file.size>1500000)throw Error('Save file is too large.');const raw=JSON.parse(await file.text());addImportedSave(validateSave(raw.save||raw));notify('Backup loaded in a new slot.')}catch(e){notify(e.message,'bad')}}
 let cloudClient=null,cloudUser=null,cloudBusy=false,cloudMessage='',cloudRows=[],scoreRows=[];
 function cloud(){if(!cloudClient&&window.supabase)cloudClient=window.supabase.createClient('https://blfivhuhlcawgmrchzeu.supabase.co','sb_publishable_vkADCw0MqIJTZr1XXCLDoA_b_0wnPdw');if(!cloudClient)throw Error('Online services did not load. Local saves still work.');return cloudClient}
@@ -767,12 +785,24 @@ async function cloudLoad(id){await cloudRun(async()=>{await requireUser();const 
 async function publishScore(){const s=getSave(),nickname=$('scoreNickname')?.value.trim();if(!nickname||nickname.length>24){cloudStatus('Choose a public nickname (1–24 characters).');return}await cloudRun(async()=>{const u=await requireUser();const values={nickname,team:s.team,score:Math.round(s.gmPoints),titles:s.seasonHistory.filter(x=>x.title).length,updated_at:new Date().toISOString()};const updated=await cloud().from('dynasty_scores').update(values).eq('sport',sport).eq('era',s.era).select('score');if(updated.error)throw updated.error;if(!updated.data.length){const {error}=await cloud().from('dynasty_scores').insert({...values,user_id:u.id,sport,era:s.era});if(error)throw error}cloudStatus('Published to the casual leaderboard. Your save and email stay private.');})}
 async function loadScores(){const s=getSave();await cloudRun(async()=>{const {data,error}=await cloud().from('dynasty_scores').select('nickname,team,score,titles').eq('sport',sport).eq('era',s.era).order('score',{ascending:false}).limit(30);if(error)throw error;scoreRows=data;cloudStatus(data.length?'Leaderboard refreshed.':'No scores yet for this sport and era.');})}
 function renderSaveCenter(s){return '<div class="page-heading"><div><span class="eyebrow">YOUR DYNASTY / ANY DEVICE</span><h1>KEEP YOUR LEGACY.</h1><p>Local saves are automatic. Upload a cloud snapshot whenever you want to carry it to another device.</p></div></div><div class="dashboard-grid"><section class="panel"><span class="eyebrow">LOCAL BACKUPS</span><h2>YOUR SAVE. YOUR FILE.</h2><p class="muted">Download a backup or import one into a new slot. Existing local dynasties are kept.</p><div class="button-row"><button class="btn primary" data-action="export-save">DOWNLOAD BACKUP</button><button class="btn ghost" data-action="import-save">IMPORT BACKUP</button><input id="importFile" type="file" accept=".json,application/json" hidden></div></section><section class="panel"><span class="eyebrow">PRIVATE CLOUD SAVES</span><h2>'+(cloudUser?'SIGNED IN.':'TAKE IT WITH YOU.')+'</h2>'+(cloudUser?'<p class="muted">Cloud snapshots are private to your account.</p><div class="button-row"><button class="btn primary" data-action="cloud-save">UPLOAD THIS DYNASTY</button><button class="btn ghost" data-action="cloud-list">MY CLOUD SAVES</button><button class="text-btn" data-action="cloud-logout">SIGN OUT</button></div>':'<label class="field">EMAIL<input id="cloudEmail" type="email" autocomplete="email" placeholder="Your email"></label><label class="field">PASSWORD<input id="cloudPassword" type="password" autocomplete="current-password" placeholder="At least 8 characters"></label><div class="button-row"><button class="btn primary" data-action="cloud-login">SIGN IN</button><button class="btn ghost" data-action="cloud-signup">CREATE ACCOUNT</button></div><p class="fineprint">Creating an account sends a confirmation email. Confirm it, then return here to sign in.</p>')+'</section></div><p class="cloud-status" role="status">'+esc(cloudMessage||'Cloud uploads and leaderboard publishing happen only when you choose them.')+'</p>'+cloudRows.map(r=>'<div class="panel market-row"><div><b>'+esc(r.team)+'</b><small>'+esc(r.sport.toUpperCase())+' · '+esc(new Date(r.updated_at).toLocaleString())+'</small></div><button class="btn" data-cloud-load="'+esc(r.slot_id)+'">LOAD COPY</button></div>').join('')+'<section class="panel leaderboard"><span class="eyebrow">'+SPORT[sport].name+' · '+s.era.toUpperCase()+' ERA</span><h2>COMMUNITY LEADERBOARD.</h2><p class="muted">Casual, self-reported GM scores. These are not verified competitive records. Only your chosen nickname, team, titles and score are public.</p><label class="field">PUBLIC NICKNAME<input id="scoreNickname" maxlength="24" placeholder="Choose a nickname"></label><div class="button-row"><button class="btn primary" data-action="publish-score">PUBLISH MY SCORE</button><button class="btn ghost" data-action="load-scores">VIEW LEADERBOARD</button></div>'+scoreRows.map((r,i)=>'<div class="market-row"><b>#'+(i+1)+' '+esc(r.nickname)+'</b><span>'+esc(r.team)+' · '+r.titles+' titles</span><strong>'+Number(r.score).toLocaleString()+' PTS</strong></div>').join('')+'</section>'}
+
+let franchiseView={tab:'overview'};
+function franchiseEnv(s){return {save:s,sport,positions:SPORT[sport].positions,starters:STARTERS[sport],games:SPORT[sport].games,maxGames:SPORT[sport].games,cap:SPORT[sport].cap,make:makePlayer,makeRoster:makeClubRoster,payroll:teamPayroll,lineup:autoLineup,feed,ranked:rankedTeams,nextOpponent,marketSalary:p=>Math.max(.5,salaryFor(p.overall)*.55),render:()=>render(),notify,cloud,requireUser,teams:TEAMS[sport],clubData};}
+function readFranchiseFields(el,direct=false){const scope=direct?el:el.closest('[data-fo-form]');const data={};if(!scope)return data;scope.querySelectorAll('[data-fo-field]').forEach(input=>{data[input.dataset.foField]=input.multiple?Array.from(input.selectedOptions).map(o=>o.value):input.value});return data;}
+function clutchOptions(){return ({
+ nba:[['Go for three','A bigger shot; a miss can open a counterattack.',5,0,4,.8],['Attack the rim','Create a closer shot without forcing the three.',2,2,2,.5],['Defend the last possession','Stay disciplined and reduce counterattack risk.',0,4,1,.3]],
+ nfl:[['Go for it on fourth down','Commit to the drive. Failure can hand over points.',5,0,5,.85],['Take the field goal','Choose points over the bigger gamble.',2,2,2,.5],['Pin them deep','Trust your defense and protect field position.',0,4,1,.3]],
+ soccer:[['Send everyone forward','Risk a counterattack for one last chance.',5,0,6,.85],['Keep your shape','Create a chance without abandoning the middle.',2,2,2,.5],['Protect the result','Slow the match and keep defenders behind the ball.',0,4,1,.3]],
+ mlb:[['Pitch to the slugger','Challenge their best hitter. High-risk finish.',5,0,3,.8],['Intentional walk','Face the next hitter with a runner on base.',2,2,2,.5],['Use your closer','Trust your bullpen in the final inning.',0,4,1,.3]]})[sport];}
+
 // Auth recovery is optional; an unavailable network never blocks the local game.
 Promise.resolve().then(async()=>{try{const {data}=await cloud().auth.getSession();cloudUser=data.session?.user||null;cloud().auth.onAuthStateChange((_event,session)=>{cloudUser=session?.user||null;});}catch(e){/* Local play remains available. */}});
 
 document.addEventListener('click',clickHandler);
 document.addEventListener('change',e=>{
  const s=getSave();
+ if(e.target.dataset.foSelect){franchiseView[e.target.dataset.foSelect]=e.target.value;if(page==='transactions')franchiseView.tab='market';if(page==='scouting')franchiseView.tab='scouting';page='franchise';render();return}
+ if(e.target.dataset.friendsSelect){window.ERFriendsUI.select(e.target.dataset.friendsSelect,e.target.value,franchiseEnv(s));return}
  if(e.target.id==='importFile'){importSave(e.target.files[0]);return}
  if(e.target.id==='slotSelect'){state.active[sport]=e.target.value;page='dashboard';persist();render()}
  if(!s)return;if(s.pending&&['tempoSelect','riskSelect','rotationSelect','trainingSelect','matchPlan'].includes(e.target.id)){render();notify('Your match is already in progress.');return}

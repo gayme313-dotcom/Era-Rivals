@@ -86,3 +86,7 @@ The backend and game integration are configured. Email delivery/sign-in has not 
 ### Third-party dependency
 
 `vendor/supabase-2.57.4.js` is the pinned Supabase JavaScript UMD distribution from jsDelivr's npm mirror. Its MIT license is in `vendor/SUPABASE-LICENSE`. The game runs locally without this optional online client.
+
+## Dynasty HQ update
+
+The Front Office now includes 32 connected franchise features and invite-only friends' leagues. Open **Dynasty HQ** in a career, or expand **Career options** when starting a new save for rebuilds, historical-inspired scenarios, expansion and custom rules. See [the feature guide](FRANCHISE-FEATURES.md) for controls, behavior, shared-league limits and verification.
