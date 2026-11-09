@@ -72,3 +72,51 @@
 /* Dynasty HQ */
 .fo-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0}.fo-tabs .filter{white-space:normal}.fo-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}.fo-panel{margin:18px 0;min-width:0;padding:24px}.fo-panel h2{font-size:23px;margin:10px 0 16px}.fo-panel .muted{line-height:1.6;color:#a9b9cc;font-size:13px}.fo-panel .field,.fo-setup .field{display:flex;flex-direction:column;gap:8px;margin:14px 0;font-size:11px;letter-spacing:.06em;color:#a9b9cc}.fo-panel input,.fo-panel select,.fo-setup input,.fo-setup select{width:100%;box-sizing:border-box;background:#101d2e;border:1px solid #30445e;border-radius:8px;color:#f1f5ff;padding:12px;font:inherit;font-size:14px;letter-spacing:normal}.fo-panel select[multiple]{min-height:160px}.fo-panel button{margin:4px 6px 4px 0;white-space:normal}.fo-row{display:flex;gap:16px;align-items:center;justify-content:space-between;border-bottom:1px solid #243247;padding:14px 0;overflow-wrap:anywhere}.fo-row>div:first-child{flex:1;min-width:0}.fo-row small{display:block;color:#a9b9cc;font-size:12px;line-height:1.5;margin-top:6px}.fo-row b{font-size:14px}.fo-row>span,.fo-row>strong{font-size:12px;flex-shrink:0}.fo-story{border:1px solid #30445e;background:#101d2e;border-radius:12px;padding:18px;margin:14px 0}.fo-story h3{font-size:17px}.fo-story.resolved{opacity:.75}.fo-choice-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}.fo-counter,.fo-notice,.fo-invite{border-left:3px solid #55d6af;background:#17312f;padding:14px;margin:14px 0;overflow-wrap:anywhere}.fo-expansion-list{max-height:520px;overflow-y:auto;padding-right:8px}.fo-setup{margin:20px 0;border:1px solid #30445e;border-radius:10px;padding:16px}.fo-setup summary{cursor:pointer;font-weight:700;font-size:12px;line-height:1.6}.fo-setup .setup-grid{margin-top:15px}.fo-panel progress{width:100%;accent-color:#55d6af}.fo-panel .button-row{display:flex;flex-wrap:wrap}.fo-panel button:disabled{opacity:.45;cursor:not-allowed}.fo-panel button:focus-visible,.fo-tabs button:focus-visible,.fo-panel input:focus-visible,.fo-panel select:focus-visible{outline:3px solid #55d6af;outline-offset:3px}
 @media(max-width:780px){.fo-grid,.fo-choice-row{grid-template-columns:1fr;gap:0}.fo-panel{padding:18px}.fo-row{flex-wrap:wrap}.fo-row>div:first-child{flex-basis:100%}.fo-tabs{gap:6px}.fo-tabs .filter{font-size:10px;padding:10px}.fo-panel .btn{font-size:11px}.fo-expansion-list{max-height:440px}}
+
+/* Matchday 2.0: broadcast-style live presentation and postgame reporting. */
+.live-scoreboard{overflow:hidden;border-color:#385b52;background:radial-gradient(ellipse at 50% 0%,#254b3c88,transparent 65%),linear-gradient(135deg,#14252b,#0d171f);margin:14px 0}
+.live-score-top,.postgame-heading,.postgame-meta{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.live-indicator{font-size:10px;font-weight:900;letter-spacing:.12em;color:#ff858b}
+.live-score-grid{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:16px;align-items:center;padding:24px 5px 18px}
+.live-side{display:flex;flex-direction:column;gap:7px;min-width:0}
+.live-side.away{text-align:right;align-items:flex-end}
+.live-side small,.opponent-intel-grid small{font-size:9px;letter-spacing:.12em;color:var(--muted);font-weight:800}
+.live-side b{font-size:clamp(13px,2vw,20px);overflow-wrap:anywhere}
+.live-side strong{font:900 clamp(44px,8vw,72px)/.9 var(--display);color:var(--lime)}
+.live-side span{font-size:10px;color:var(--muted)}
+.live-center{display:flex;flex-direction:column;align-items:center;gap:7px;color:var(--muted)}
+.live-center span{font-size:9px;letter-spacing:.12em;font-weight:900;color:var(--gold)}
+.live-center b{font:900 18px var(--display);color:var(--ink)}
+.live-center small{font-size:8px;letter-spacing:.08em}
+.match-progress{height:4px;background:#263b43;border-radius:8px;overflow:hidden}
+.match-progress i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--lime));border-radius:8px;transition:width .3s ease}
+.matchday-columns{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:14px;align-items:start}
+.match-timeline{min-width:0}
+.match-event-list{display:grid;gap:0}
+.match-event{display:grid;grid-template-columns:86px minmax(0,1fr);gap:12px;padding:13px 0;border-bottom:1px solid #263943}
+.match-event:last-child{border-bottom:0}
+.match-event-time{font-size:9px;letter-spacing:.08em;color:var(--teal);font-weight:900;padding-top:2px}
+.match-event>div{min-width:0}
+.match-event b{display:block;font-size:11px;line-height:1.55}
+.match-event small{display:block;color:var(--gold);font-size:10px;font-weight:800;margin-top:4px}
+.match-event.decision{background:#c9fb6808}
+.match-event.final b{color:var(--lime)}
+.opponent-report{margin:14px 0;border-color:#405263;background:linear-gradient(120deg,#172633,#111a23)}
+.opponent-intel-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}
+.opponent-intel-grid>div{display:flex;flex-direction:column;gap:7px;min-width:0;padding:12px;border:1px solid #2b414e;border-radius:9px;background:#0c151d}
+.opponent-intel-grid b{font-size:11px;line-height:1.4;overflow-wrap:anywhere}
+.postgame-report{margin:14px 0;border-color:#4d6847;background:linear-gradient(120deg,#1a2b25,#111b23)}
+.postgame-heading{align-items:flex-start}
+.postgame-heading h2{font-size:clamp(23px,4vw,36px);margin:7px 0}
+.postgame-result{font:900 18px var(--display);letter-spacing:.1em;color:var(--lime);border:1px solid #607d48;border-radius:8px;padding:9px 12px}
+.postgame-meta{justify-content:flex-start;flex-wrap:wrap;margin:12px 0;padding:11px 0;border-top:1px solid #30443e;border-bottom:1px solid #30443e}
+.postgame-meta span{font-size:9px;color:#b5c6c1;letter-spacing:.08em;font-weight:800}
+.postgame-columns{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.performer-row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid #2a3c3b}
+.performer-row>b{font:900 13px var(--display);color:var(--gold)}
+.performer-row span{min-width:0}
+.performer-row span strong{display:block;font-size:10px}
+.performer-row span small{display:block;color:var(--muted);font-size:8px;margin-top:3px}
+.performer-row>strong{grid-column:2;color:var(--lime);font-size:9px;line-height:1.5}
+@media(max-width:850px){.matchday-columns{grid-template-columns:1fr}.opponent-intel-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.live-score-grid{gap:8px;padding:20px 0 14px}.live-side strong{font-size:44px}.live-side b{font-size:12px}.live-center b{font-size:14px}.live-center span{font-size:8px}.match-event{grid-template-columns:72px minmax(0,1fr);gap:8px}.postgame-heading{flex-direction:column}.postgame-columns{grid-template-columns:1fr}.postgame-meta{align-items:flex-start;flex-direction:column;gap:8px}}
