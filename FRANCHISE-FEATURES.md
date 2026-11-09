@@ -38,6 +38,9 @@ These are lightweight management simulations across basketball, football, baseba
 | What-if mode | Your legacy; checkpoint and fork into a separate save slot. Trades and draft picks also store a turning point. Five local slots per sport. |
 | Season recap | Your legacy; biggest result, breakout player, lowest-value trade and GM grade. |
 | Custom league rules | Career options; 8/16/standard game schedule (bounded by sport), salary budget, league title or four/eight-team knockout. Expansion adds two clubs. |
+| Player personalities | Players & staff; eight fictional archetypes. Leaders, competitors, loyal teammates, hotheads, workhorses, mentors, showmen and calm closers affect match outcomes, morale, fatigue, development and fan support. |
+| Adaptive AI managers | League & records; rival GMs react to the previous standings, adopt contender or rebuild identities, draft for positional needs, sign free agents and complete value-checked rival trades. |
+| Matchday 2.0 | Matchday; live-style scoreboard, play-by-play timeline, opponent manager/star/weakness report, halftime and closing decisions, postgame recap and top player stat lines. |
 
 ## Shared league details
 
