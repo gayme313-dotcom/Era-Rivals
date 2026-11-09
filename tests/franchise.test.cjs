@@ -27,7 +27,7 @@ test('Player personalities persist and influence chemistry, clutch play and fati
   assert(F.bonus(s)>before,sp+' competitor adds closing-stage strength');
   active[2].personality='workhorse';assert.equal(F.fatigueCost(active[2],8),6,sp+' workhorse reduces fatigue');
   const vibe=F.personality(active[2]);assert.equal(vibe.label,'Relentless worker');
-  const html=U.render(s,e,{tab:'people',player:active[2].id});assert(html.includes('PERSONALITY & LOCKER-ROOM IMPACT'));
+  const html=U.render(s,e,{tab:'people',player:active[2].id});assert(html.toLowerCase().includes('personality & locker-room impact'));
   const copy=JSON.parse(JSON.stringify(s));delete copy.roster[0].personality;F.init(copy,e);assert(F.personality(copy.roster[0]).label,'legacy players receive a stable personality');
  }
 });
