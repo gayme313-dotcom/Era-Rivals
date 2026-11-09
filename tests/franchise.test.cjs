@@ -17,4 +17,33 @@ test('Injured players receive no box score while recovering',()=>{const {s}=fres
 test('Season recap, MVP, records, owner firing, offers and jersey ceremony',()=>{const {s,e,do:act}=fresh();s.fo.owner.trust=0;s.fo.owner.years=0;while(!s.offseason)t.simAuto(s);assert(s.fo.recaps.length);assert(s.fo.history[0].mvp!=='—');assert(Object.keys(s.fo.records).length);assert.equal(s.fo.owner.status,'fired');const season=s.season;t.advanceSeason();assert.equal(s.season,season);const p=s.roster.pop();s.retired.push(p);act('jersey',{id:p.id});assert.equal(s.fo.jerseys[0].name,p.name);assert.throws(()=>act('jersey',{id:p.id}));act('job',{team:s.fo.jobs[0].team});assert.equal(s.fo.owner.status,'employed');t.advanceSeason();assert.equal(s.season,2);assert.equal(s.fo.history.length,1);assert(s.roster.every(p=>p.stats.season.gp===0))});
 test('Deadline offers, boom/bust development and evolving league',()=>{const {s,e}=fresh();while(s.week<3)t.simAuto(s);assert.equal(s.fo.offers.length,3);for(const team of Object.keys(s.fo.teams))for(const p of F.roster(s,team)){p.age=22;p.overall=75;p.potential=99;p.contractYears=4}const original=new Map(Object.keys(s.fo.teams).flatMap(t=>F.roster(s,t)).map(p=>[p.id,p.overall]));s.season=2;F.nextSeason(s,e);const ps=Object.keys(s.fo.teams).flatMap(t=>F.roster(s,t));assert(ps.some(p=>p.overall-original.get(p.id)>=4));assert(ps.some(p=>p.overall-original.get(p.id)<0));assert.equal(new Set(ps.map(p=>p.id)).size,ps.length);assert(ps.every(p=>p.stats.season.gp===0))});
 test('Four-team knockout ends with a recorded actual champion',()=>{const {s}=fresh('soccer',{playoffs:4});while(!s.offseason)t.simAuto(s);assert(s.leagueChampion);assert.equal(s.fo.history[0].champion,s.leagueChampion);assert.equal(s.record.w+s.record.l+s.record.d,8)});
+
+test('Player personalities persist and influence chemistry, clutch play and fatigue',()=>{
+ for(const sp of ['nba','nfl','mlb','soccer']){
+  const {s,e}=fresh(sp),active=s.roster.filter(p=>p.starter);
+  assert(active.length>=3,sp+' has enough starters for personality tests');
+  active[0].personality='leader';const before=F.bonus(s);
+  active[1].personality='competitor';s.pending={stage:'clutch'};
+  assert(F.bonus(s)>before,sp+' competitor adds closing-stage strength');
+  active[2].personality='workhorse';assert.equal(F.fatigueCost(active[2],8),6,sp+' workhorse reduces fatigue');
+  const vibe=F.personality(active[2]);assert.equal(vibe.label,'Relentless worker');
+  const html=U.render(s,e,{tab:'people',player:active[2].id});assert(html.includes('PERSONALITY & LOCKER-ROOM IMPACT'));
+  const copy=JSON.parse(JSON.stringify(s));delete copy.roster[0].personality;F.init(copy,e);assert(F.personality(copy.roster[0]).label,'legacy players receive a stable personality');
+ }
+});
+test('AI front offices react to standings, sign for roster needs and draft by fit',()=>{
+ const {s,e}=fresh('nba'),clubs=Object.keys(s.fo.teams).filter(team=>team!==s.team),top=clubs[0],bottom=clubs[clubs.length-1];
+ s.fo.history=[{standings:clubs.map(team=>({team}))}];s.fo.teams[top].roster=[];
+ const need=F.teamNeeds([],e)[0].pos;
+ const candidate={id:'ai-free-agent-test',name:'AI Need Filler',team:'Free Agent',originalTeam:'Free Agent',pos:need,overall:76,potential:87,age:22,salary:1.2,contractYears:3,morale:75,fatigue:0,careerPoints:0,games:0,awards:[],starter:false,injured:0,stats:{career:{gp:0},season:{gp:0}}};
+ F.ensurePlayer(candidate);s.fo.market=[candidate];F.runAIManagers(s,e);
+ assert(s.fo.teams[top].roster.some(p=>p.id===candidate.id),'AI signs a player to fill its biggest roster need');
+ assert.equal(s.fo.teams[top].identity,'Contender','top-ranked club adopts a win-now identity');
+ assert.equal(s.fo.teams[bottom].identity,'Youth movement','bottom-ranked club shifts to development');
+ assert(s.fo.aiLog.length,'AI decisions appear in the front-office wire');
+ const report=F.teamReport(s,top,e);assert(report.manager&&report.star&&report.weakPosition,'opponent report exposes manager, star and weak unit');
+ const before=clubs.reduce((n,team)=>n+F.roster(s,team).length,0);s.fo.draftNight={taken:[],log:[]};F.aiDraft(s,e,1);
+ const after=clubs.reduce((n,team)=>n+F.roster(s,team).length,0);assert.equal(after,before+1,'AI draft adds one player to a rival roster');assert(s.fo.draftNight.log[0].includes('selected'));
+});
+
 console.log(cases+' FRANCHISE TEST GROUPS PASSED');
