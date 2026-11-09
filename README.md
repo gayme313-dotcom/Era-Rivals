@@ -22,6 +22,9 @@ Open `manager.html` directly or choose a sport from the Legends homepage.
 - Sport-specific player box scores, season and career stat totals, a live MVP race, season MVP awards and an archived record book.
 - Player promises for starting roles, playoff qualification and championships, with morale and GM-approval consequences when promises are kept or broken.
 - Multi-player trade offers, tradable draft picks, AI acceptance/counteroffers, counter-back rounds, a two-game negotiation deadline and a saved trade history.
+- Player personalities: eight fictional archetypes with effects on clutch performance, morale, fatigue, loyalty, development, chemistry and fan support.
+- Adaptive rival front offices: AI managers react to standings, draft for positional needs, sign free agents and make value-checked trades with other clubs.
+- Matchday 2.0: live-style scoreboards, play-by-play timeline, opponent manager scouting, halftime/closing decisions, postgame narrative and player performance lines.
 
 The match engine uses team ratings, lineup choices, chemistry, morale, fatigue, tactics and matchday decisions. Results and ratings are original game simulations, not official league statistics.
 
