@@ -74,6 +74,21 @@ const titlePromise=t.makePromise(promiseSave,'championship','');t.evaluatePromis
 assert.equal(titlePromise.status,'fulfilled','championship promise is kept by winning the title');
 assert(promisedPlayer.morale>60,'kept promise improves player morale');
 
+
+for(const [sp,team] of [['nba','Boston Celtics'],['nfl','New England Patriots'],['mlb','Boston Red Sox'],['soccer','Real Madrid']]){
+ t.setSport(sp);t.createSave({team,era:'current',games:8,playoffs:0});const matchSave=t.getSave();
+ assert(t.renderMatchday(matchSave).includes('OPPOSITION INTELLIGENCE'),sp+' pregame scouting report renders');
+ t.prepareTeam(matchSave,'recover');t.beginMatch();
+ let live=t.renderMatchday(matchSave);assert(live.includes('LIVE MATCH CENTER'),sp+' live scoreboard renders');assert(live.includes('MATCH TIMELINE'),sp+' live timeline renders');
+ t.finishMatch(matchSave,matchSave.pending,matchSave.pending.options[0]);
+ assert.equal(matchSave.pending.stage,'clutch',sp+' halftime moves to closing decision');
+ live=t.renderMatchday(matchSave);assert(live.includes('CLOSING MOMENTS'),sp+' closing-stage scoreboard renders');
+ t.finishMatch(matchSave,matchSave.pending,matchSave.pending.options[0]);
+ assert(matchSave.lastMatch.timeline.length>=7,sp+' match report keeps a play-by-play timeline');
+ assert(Array.isArray(matchSave.lastMatch.performers),sp+' postgame player lines are captured');
+ assert(t.renderMatchday(matchSave).includes('POSTGAME REPORT'),sp+' postgame report renders');
+}
+
 console.log('ALL CHECKS PASSED');
 
 module.exports={t,context,doc};
