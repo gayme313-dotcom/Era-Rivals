@@ -90,6 +90,7 @@ for(const [sp,team] of [['nba','Boston Celtics'],['nfl','New England Patriots'],
 }
 
 
+context.window.ERResetUniverse.reset();for(const sp of ['nba','nfl','mlb','soccer']){t.state.saves[sp]=[];t.state.active[sp]=null}
 assert.equal(storage.has('era_rivals_universe_v2'),false,'legacy front-office saves are cleared');
 assert.equal(storage.has('era_rivals_pro_v1'),false,'legacy player-career saves are cleared');
 assert.equal(JSON.parse(storage.get('era_rivals_universe_v3')).saves.nba.length,0,'new universe starts with empty save slots');
