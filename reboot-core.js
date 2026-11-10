@@ -148,7 +148,7 @@ function story(s,tag,headline,team){
  return {id:ID(),week:s.week,season:s.season,tag,headline,team:team||s.team,date:s.year+' · WEEK '+(s.week+1)};
 }
 function publish(s,tag,text,team){s.news.unshift(story(s,tag,text,team));s.news=s.news.slice(0,120)}
-function fixture(s,week=s.week){return (s.schedule[week]||[]).find(m=>m.home===s.team||m.away===s.team)||null}
+function fixture(s,week=s.week){const games=s.phase==='playoffs'?(s.playoffs?.fixtures||[]):(s.schedule[week]||[]);return games.find(m=>m.home===s.team||m.away===s.team)||null}
 function opponent(s){const m=fixture(s);return m?(m.home===s.team?m.away:m.home):null}
 function getTeam(s){return s.league[s.team]}
 function payroll(t){return Math.round(t.roster.reduce((n,p)=>n+p.salary,0)*10)/10}
