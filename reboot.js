@@ -190,7 +190,7 @@ function renderRoster(s){
  return statBlock([['SQUAD SIZE',r.length],['STARTERS',r.filter(p=>p.starter).length],['INJURIES',r.filter(p=>p.injury).length],['PAYROLL',money(E.payroll(t))]])+
  pane('PLAYER DEVELOPMENT','MANAGE YOUR LOCKER ROOM.',
    '<div class="two-col">'+(demands?'<div>'+demands+'</div>':'<p class="muted">Your locker room is stable. Relationships, roles and personality traits affect chemistry.</p>')+
-   '<div class="stack"><label class="field">VETERAN MENTOR<select id="mentorFrom">'+promisePeople+'</select></label><label class="field">YOUNG PROSPECT<select id="mentorTo">'+young+'</select></label>'+button('PAIR MENTOR & ROOKIE','mentor','secondary')+'</div></div>')+
+   '<div class="stack"><label class="field">VETERAN MENTOR<select id="mentorFrom">'+promisePeople+'</select></label><label class="field">YOUNG PROSPECT<select id="mentorTo">'+young+'</select></label>'+button('PAIR MENTOR & ROOKIE','mentor','secondary')+button('RESOLVE LOCKER-ROOM DRAMA · $2M','mediate','secondary')+'</div></div>')+
  pane('ALL PLAYERS · PERSONALITIES','MY ROSTER.','<div class="stack">'+rows+'</div>');
 }
 
@@ -419,6 +419,7 @@ function doAction(action,el,event){
  if(action==='starter'){apply(s=>E.setStarter(s,id));return}
  if(action==='train'){apply(s=>E.train(s,id,'skill development'));return}
  if(action==='mentor'){apply(s=>E.mentor(s,$('mentorFrom')?.value,$('mentorTo')?.value));return}
+ if(action==='mediate'){apply(s=>E.mediate(s));return}
  if(action==='sign'){apply(s=>E.signFreeAgent(s,id));return}
  if(action==='release'){apply(s=>E.releasePlayer(s,id));return}
  if(action==='make-promise'){apply(s=>E.makePromise(s,$('promiseType')?.value,$('promisePlayer')?.value));return}
