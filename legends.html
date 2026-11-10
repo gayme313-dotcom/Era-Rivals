@@ -6,6 +6,7 @@
 <meta name="description" content="ERA RIVALS — Four sports. Four legendary athletes. One champion. Enter basketball, football, soccer or baseball.">
 <title>ERA RIVALS | Every Era. One Champion.</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
+<script src="universe-reset.js?v=1"></script>
 <link rel="preconnect" href="https://upload.wikimedia.org" crossorigin>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -51,6 +52,16 @@ body.modal-open{overflow:hidden}
 .rebuild-central{margin:0 clamp(9px,1vw,18px) 18px;border:1px solid #2a3b45;border-radius:11px;background:linear-gradient(100deg,#121e27,#0d141c);padding:16px 20px}.rebuild-central-head{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:9px;letter-spacing:.15em;font-weight:900}.rebuild-central-head span{color:var(--teal)}.rebuild-central-head b{color:#8fa2ac}.rebuild-news{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:13px}.rebuild-news>div{border-left:2px solid var(--lime);padding-left:10px;display:flex;flex-direction:column;gap:5px}.rebuild-news small{font-size:8px;color:var(--teal);letter-spacing:.14em;font-weight:900}.rebuild-news b{font-size:10px;line-height:1.4}
 .opening{display:none}.legend-top-five{display:none!important}.legend-grid{height:clamp(350px,51vh,600px)}.landing-bar{min-height:56px}.landing-bar .muted-bar{display:none}
 @media(max-width:760px){.rebuild-hero{min-height:340px;background-position:63% center}.rebuild-copy h1{font-size:67px}.rebuild-hero-tag{right:4%;bottom:6%;font-size:42px}.rebuild-news{grid-template-columns:1fr;gap:9px}.rebuild-central-head b{display:none}.legend-grid{height:auto}.legend-card{min-height:390px}}
+
+.rebuild-hero{background:#101820!important}
+.rebuild-hero-art{position:absolute;inset:0;display:grid;grid-template-columns:repeat(4,1fr);z-index:0}
+.rebuild-hero-art img{width:100%;height:100%;object-fit:cover;filter:saturate(.72) contrast(1.12) brightness(.58);border-right:1px solid #ffffff20}
+.rebuild-hero-art img:nth-child(4){filter:grayscale(.8) contrast(1.1) brightness(.6)}
+.rebuild-hero:after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,#070b12 0%,#09111be8 32%,#09111b82 68%,#09111b35 100%),linear-gradient(0deg,#070b12d9,transparent 58%)}
+.rebuild-copy{z-index:2}.rebuild-hero-tag{z-index:2}
+#resetHistory{border:0;background:none;color:#83939c;font-size:8px;font-weight:900;letter-spacing:.12em;cursor:pointer}
+#resetHistory:hover{color:var(--lime)}
+@media(max-width:760px){.rebuild-hero-art{grid-template-columns:repeat(4,1fr)}.rebuild-news{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -65,12 +76,13 @@ body.modal-open{overflow:hidden}
 
   <main>
     <section class="rebuild-hero">
+      <div class="rebuild-hero-art" aria-hidden="true"><img src="https://upload.wikimedia.org/wikipedia/commons/f/f0/Jordan_by_Lipofsky_16577_%28high_quality%29.jpg" alt=""><img src="https://upload.wikimedia.org/wikipedia/commons/3/3b/Tom_Brady_2015.JPG" alt=""><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Lionel-Messi-Argentina-2022-FIFA-World-Cup_sharpness.jpg/960px-Lionel-Messi-Argentina-2022-FIFA-World-Cup_sharpness.jpg" alt=""><img src="https://upload.wikimedia.org/wikipedia/commons/7/79/Babe_Ruth%2C_full-length_portrait%2C_standing%2C_facing_front%2C_holding_up_bat%2C_in_baseball_uniform%2C_on_field_LCCN89714713.jpg" alt=""></div>
       <div class="rebuild-copy"><span class="overline"><i></i> A NEW SPORTS UNIVERSE</span><h1>BUILD YOUR<br><span>DYNASTY.</span></h1><p>Four sports. One living universe.</p><div class="rebuild-actions"><a class="rebuild-cta" id="continueCareer" href="#sports">CHOOSE YOUR SPORT ↗</a><a class="rebuild-ghost" href="#sports">CHOOSE SPORT</a></div></div>
       <div class="rebuild-hero-tag"><b>ERA</b><span>RIVALS</span><small>EVERY ERA. ONE CHAMPION.</small></div>
     </section>
     <section class="rebuild-central" aria-label="League Central">
       <div class="rebuild-central-head"><span>● LEAGUE CENTRAL</span><b>THE WORLD NEVER STOPS</b></div>
-      <div class="rebuild-news"><div><small>TRADE DESK</small><b>Blockbuster deals can change a season.</b></div><div><small>ROOKIE WATCH</small><b>Tomorrow's legends start somewhere.</b></div><div><small>RIVALRY WATCH</small><b>Every playoff battle adds history.</b></div></div>
+      <div class="rebuild-news" id="homeNews"><div><small>NEW UNIVERSE</small><b>History starts now.</b></div><div><small>ROOKIE WATCH</small><b>Find the next legend.</b></div><div><small>RIVALRY WATCH</small><b>Write the first chapter.</b></div></div>
     </section>
     <section class="opening" aria-label="Era Rivals introduction">
       <div class="intro-left"><span class="overline"><i></i> CHOOSE YOUR DYNASTY <b>01 — 04</b></span>
@@ -113,7 +125,7 @@ body.modal-open{overflow:hidden}
     </section>
     <div class="landing-bar"><div><span class="accent-icon">↖</span><strong>THE ALL-TIME GREATS</strong><span class="muted-bar">Top five legends in every sport. Pick a sport to enter.</span></div><div class="mini-feature">FRONT OFFICE <i>•</i> MATCH SIM <i>•</i> PLAYER DEVELOPMENT <i>•</i> FANTASY DRAFT</div><div class="right-end">ER / SEASON 26</div></div>
   </main>
-  <footer class="site-footer"><span>ERA <b>RIVALS</b> © 2026 · CREATED BY XAVIER MATOS</span><span>INDEPENDENT FAN-MADE GAME PROTOTYPE · NO OFFICIAL ENDORSEMENT</span><button type="button" id="creditsToggle" aria-expanded="false" aria-controls="photoCredits">PHOTO CREDITS ↗</button></footer>
+  <footer class="site-footer"><span>ERA <b>RIVALS</b> © 2026 · CREATED BY XAVIER MATOS</span><span>INDEPENDENT FAN-MADE GAME PROTOTYPE · NO OFFICIAL ENDORSEMENT</span><button type="button" id="creditsToggle" aria-expanded="false" aria-controls="photoCredits">PHOTO CREDITS ↗</button><button type="button" id="resetHistory">RESET ALL GAME HISTORY</button></footer>
   <aside class="photo-credits" id="photoCredits" hidden aria-label="Photograph credits"><h2>Photo credits &amp; licenses</h2><p>Photos are displayed with crop, color and shadow overlays. ERA RIVALS is an independent prototype and is not endorsed by the athletes or leagues.</p>
   <ul><li><a href="https://commons.wikimedia.org/wiki/File:Jordan_by_Lipofsky_16577_(high_quality).jpg" target="_blank" rel="noopener">Michael Jordan</a> · Steve Lipofsky, <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener">CC BY-SA 3.0</a></li>
   <li><a href="https://commons.wikimedia.org/wiki/File:Tom_Brady_2015.JPG" target="_blank" rel="noopener">Tom Brady</a> · Jeffrey Beall, <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener">CC BY 3.0</a></li>
@@ -150,7 +162,18 @@ const modes={
 };
 const $=id=>document.getElementById(id);
 const continueLink=$('continueCareer');
-try{const saved=JSON.parse(localStorage.getItem('era_rivals_universe_v2')||'null');const all=Object.entries(saved?.saves||{}).flatMap(([sp,list])=>(list||[]).map(x=>({sp,save:x})));const active=all[0];if(active){continueLink.href='manager.html?sport='+active.sp;continueLink.textContent='CONTINUE '+String(active.save.team||'DYNASTY').toUpperCase()+' ↗'}}catch(e){}
+function readUniverse(){try{return JSON.parse(localStorage.getItem('era_rivals_universe_v3')||'null')||{saves:{},active:{}}}catch(e){return {saves:{},active:{}}}}
+function renderHome(){
+ const data=readUniverse(),all=Object.entries(data.saves||{}).flatMap(([sp,list])=>(Array.isArray(list)?list:[]).map(save=>({sp,save})));
+ const active=Object.entries(data.active||{}).map(([sp,id])=>({sp,save:(data.saves?.[sp]||[]).find(x=>x.id===id)})).find(x=>x.save)||all[0];
+ if(active){continueLink.href='manager.html?sport='+active.sp;continueLink.textContent='CONTINUE '+String(active.save.team||'DYNASTY').toUpperCase()+' ↗'}
+ const stories=all.flatMap(({sp,save})=>(save.fo?.living?.news||[]).map(item=>({...item,sp}))).sort((a,b)=>(b.year||0)-(a.year||0)||(b.season||0)-(a.season||0)||(b.week||0)-(a.week||0)).slice(0,3);
+ const news=$('homeNews'),safe=v=>String(v??'').replace(/[&<>"]/g,'');
+ if(stories.length)news.innerHTML=stories.map(x=>'<div><small>'+safe(x.sp).toUpperCase()+' · '+safe(x.category).toUpperCase()+'</small><b>'+safe(x.title)+'</b></div>').join('');
+ else if(all.length)news.innerHTML='<div><small>YOUR UNIVERSE</small><b>THE FIRST SEASON IS UNDERWAY.</b></div><div><small>DYNASTY</small><b>'+all.length+' CAREER'+(all.length===1?'':'S')+' CREATED.</b></div><div><small>HISTORY</small><b>THE RECORD BOOK IS OPEN.</b></div>';
+}
+renderHome();
+try{const saved=JSON.parse(localStorage.getItem('era_rivals_universe_v3')||'null');const all=Object.entries(saved?.saves||{}).flatMap(([sp,list])=>(list||[]).map(x=>({sp,save:x})));const active=all[0];if(active){continueLink.href='manager.html?sport='+active.sp;continueLink.textContent='CONTINUE '+String(active.save.team||'DYNASTY').toUpperCase()+' ↗'}}catch(e){}
 const overlay=$('sportOverlay');
 let previousFocus=null;
 function chooseSport(sp){
@@ -192,6 +215,10 @@ $('creditsToggle').addEventListener('click',()=>{
  const el=$('photoCredits');el.hidden=!el.hidden;
  $('creditsToggle').setAttribute('aria-expanded',String(!el.hidden));
  if(!el.hidden)el.scrollIntoView({behavior:'smooth',block:'nearest'});
+});
+$('resetHistory').addEventListener('click',()=>{
+ if(!confirm('Reset every local ERA RIVALS game? This deletes saved careers, awards, champions and histories across all four sports and older game modes. This cannot be undone.'))return;
+ if(window.ERResetUniverse?.reset())location.href='index.html';else alert('Browser storage could not be cleared.');
 });
 
 </script>
