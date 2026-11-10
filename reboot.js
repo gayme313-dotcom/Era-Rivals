@@ -21,7 +21,27 @@ function readStore(){try{const x=JSON.parse(localStorage.getItem(KEY)||'null');r
 let db=readStore(),selectedSport=E.SPORT[requested]?requested:'nfl';
 const ui={page:'home',tab:'overview',modal:E.SPORT[requested]&&!db.saves.length?'new':null,selectedSport,era:'current',year:2026,selectedPosition:null,scout:'Any',seasonTab:'standings',marketPos:null,transferTeam:null,feedLimit:9};
 function active(){return db.saves.find(x=>x.id===db.active)||null}
-function dataSave(){try{localStorage.setItem(KEY,JSON.stringify(db));return true}catch(e){notify('Storage is full. Export a backup in Settings.','error');return false}}
+function saveIndexedDB(){
+ if(!root.indexedDB)return;
+ try{const open=indexedDB.open('era_rivals_reborn_storage',1);
+  open.onupgradeneeded=()=>open.result.createObjectStore('saves');
+  open.onsuccess=()=>{const d=open.result,tx=d.transaction('saves','readwrite');tx.objectStore('saves').put(JSON.stringify(db),'current');tx.oncomplete=()=>d.close();tx.onerror=()=>d.close()}}
+ catch(e){console.warn('Browser database unavailable',e)}
+}
+function restoreIndexedDB(){
+ if(!root.indexedDB)return;
+ try{const open=indexedDB.open('era_rivals_reborn_storage',1);
+  open.onupgradeneeded=()=>open.result.createObjectStore('saves');
+  open.onsuccess=()=>{const d=open.result,tx=d.transaction('saves'),req=tx.objectStore('saves').get('current');
+   req.onsuccess=()=>{try{const x=JSON.parse(req.result||'null');if(x?.version===1&&Array.isArray(x.saves)&&Number(x.updatedAt||0)>Number(db.updatedAt||0)){db=x;render()}}catch(e){console.warn('Cannot restore browser backup',e)}};
+   tx.oncomplete=()=>d.close();tx.onerror=()=>d.close()}}
+ catch(e){console.warn('Browser database unavailable',e)}
+}
+function dataSave(){
+ db.updatedAt=Date.now();let savedLocal=true;try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){savedLocal=false}
+ saveIndexedDB();if(!savedLocal)notify('Browser storage is crowded. Download a backup in Settings.',true);
+ return true
+}
 function notify(text,error=false){const n=$('notice');if(!n)return;n.hidden=false;n.className='notice'+(error?' error':'');n.textContent=String(text);clearTimeout(notify.timer);notify.timer=setTimeout(()=>n.hidden=true,4800)}
 function sportTitle(sp){return ICONS[sp]+' '+NAMES[sp]}
 function stat(v){return Number(v||0).toLocaleString()}
@@ -33,7 +53,7 @@ function sportTile(sp,large=false){
  return '<button class="'+(large?'sport-cover ':'art-tile ')+'art-'+sp+'" type="button" data-action="choose-sport" data-sport="'+sp+'">'+image(sp)+'<span class="art-shade"></span><span class="art-content"><span><small>'+ICONS[sp]+' · '+LABELS[sp]+'</small><strong>'+NAMES[sp]+'</strong></span><span class="art-arrow">↗</span></span></button>';
 }
 function pane(label,title,body,extra=''){return '<section class="panel '+extra+'"><div class="eyebrow"><i></i>'+h(label)+'</div>'+(title?'<h2>'+title+'</h2>':'')+body+'</section>'}
-function button(text,action,style='secondary',attrs=''){return '<button class="btn '+style+'" data-action="'+action+'" '+attrs+'>'+text+'</button>'}
+function button(text,action,style='secondary',attrs=''){return '<button type="button" class="btn '+style+'" data-action="'+action+'" '+attrs+'>'+text+'</button>'}
 function navigation(page){ui.page=page||'home';ui.modal=null;render();window.scrollTo?.(0,0)}
 function resume(id){if(id&&!db.saves.some(x=>x.id===id))return;db.active=id||db.active;dataSave();ui.page='hub';ui.tab='overview';ui.modal=null;render();window.scrollTo?.(0,0)}
 function openNew(sp){ui.modal='new';if(E.SPORT[sp])ui.selectedSport=sp;render()}
@@ -335,7 +355,97 @@ function apply(fn){
  if(r?.error){resultMessage(r);return}
  dataSave();render();resultMessage(r);
 }
-function doAction(action,el,event){return false}
+
+function exportBackup(){
+ const body=JSON.stringify({version:1,exportedAt:new Date().toISOString(),app:'ERA RIVALS REBORN',saves:db.saves,active:db.active});
+ const blob=new Blob([body],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+ a.href=url;a.download='era-rivals-reborn-backup.json';document.body.append(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1800);notify('Save backup downloaded.');
+}
+function importBackup(file){
+ if(!file||file.size>25000000)return notify('Select a Reborn backup smaller than 25 MB.',true);
+ const reader=new FileReader();reader.onload=()=>{
+  try{const x=JSON.parse(reader.result);if(x?.app!=='ERA RIVALS REBORN'||!Array.isArray(x.saves))throw new Error('This is not an Era Rivals Reborn backup');
+   const saves=x.saves.filter(v=>E.SPORT[v.sport]&&v.league&&v.clubs&&Array.isArray(v.history)).slice(0,20);
+   if(!saves.length)throw new Error('No valid universe saves found');
+   db={version:1,saves,active:saves[0].id,updatedAt:Date.now()};dataSave();ui.modal=null;ui.page='hub';ui.tab='overview';render();notify('Backup imported successfully.');
+  }catch(e){notify('Import failed: '+e.message,true)}
+ };reader.readAsText(file);
+}
+function clearLegacy(){
+ const keys=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k!==KEY&&(/era[_-]?rivals/i.test(k)||/^er_franchise/i.test(k)))keys.push(k)}
+ if(!keys.length)return notify('No older Era Rivals browser saves were found.');
+ if(!confirm('Delete '+keys.length+' older Era Rivals browser save records on this device? This cannot be undone.'))return;
+ for(const key of keys)localStorage.removeItem(key);notify('Older Era Rivals browser histories deleted on this device.');
+}
+function doAction(action,el,event){
+ const id=el.dataset.id;
+ if(action==='new'){openNew();return}
+ if(action==='choose-sport'){openNew(el.dataset.sport);return}
+ if(action==='close'){ui.modal=null;render();return}
+ if(action==='settings'){ui.modal='settings';render();return}
+ if(action==='resume'){resume(id);return}
+ if(action==='launch'){
+  const form=$('createUniverse');if(!form)return;const manager=form.elements.manager.value.trim(),sport=ui.selectedSport,team=form.elements.team.value,era=form.elements.era.value,year=Number(form.elements.year.value),difficulty=form.elements.difficulty.value;
+  if(!manager)return notify('Enter your manager name.',true);
+  resultMessage(newGame({name:manager,sport,team,era,year,difficulty}));return;
+ }
+ if(action==='delete-save'){
+  const save=db.saves.find(x=>x.id===id);if(!save)return;
+  if(!confirm('Permanently delete '+save.team+' universe and all its titles and records?'))return;
+  db.saves=db.saves.filter(x=>x.id!==id);if(db.active===id)db.active=db.saves[0]?.id||null;
+  dataSave();render();notify('Universe deleted.');return
+ }
+ if(action==='reset-old'){clearLegacy();return}
+ if(action==='reset-all'){
+  if(!confirm('Permanently delete ALL ERA RIVALS REBORN saves on this device?'))return;
+  if(!confirm('LAST CONFIRMATION: all your new champions, trades and careers will be erased.'))return;
+  db={version:1,saves:[],active:null,updatedAt:Date.now()};try{localStorage.removeItem(KEY);root.indexedDB?.deleteDatabase('era_rivals_reborn_storage')}catch{}
+  ui.page='home';ui.modal=null;render();notify('Full Reborn reset complete.');return
+ }
+ if(action==='export'){exportBackup();return}
+ if(action==='import'){$('importFile')?.click();return}
+ if(action==='add-friend'){
+  apply(s=>{const name=$('friendName')?.value.trim(),team=$('friendTeam')?.value;if(!name||!team)return {error:'Enter a friend name and team'};
+   s.friendManagers=s.friendManagers||[];if(s.friendManagers.length>=4)return {error:'Four local managers maximum'};
+   s.friendManagers.push({name:name.slice(0,30),team});return {message:'Local manager '+name+' joined.'}});return
+ }
+ if(action==='switch-control'){apply(s=>{const team=el.dataset.team;if(!s.league[team])return {error:'Team is unavailable'};s.team=team;ui.page='hub';ui.tab='overview';ui.modal=null;return {message:'You now manage '+team+'.'}});return}
+ if(gameTabs.some(x=>x[0]===action)){ui.page='hub';ui.tab=action;render();return}
+ if(action==='start-match'){apply(s=>E.startMatch(s,document.querySelector('input[name="pregamePlan"]:checked')?.value||'Balanced'));return}
+ if(action==='match-decision'){apply(s=>s.match?.stage==='halftime'?E.halftime(s,el.dataset.choice):E.closing(s,el.dataset.choice));return}
+ if(action==='press'){apply(s=>E.press(s,el.dataset.choice));return}
+ if(action==='next-season'){apply(s=>E.advanceSeason(s));return}
+ if(action==='starter'){apply(s=>E.setStarter(s,id));return}
+ if(action==='train'){apply(s=>E.train(s,id,'skill development'));return}
+ if(action==='mentor'){apply(s=>E.mentor(s,$('mentorFrom')?.value,$('mentorTo')?.value));return}
+ if(action==='sign'){apply(s=>E.signFreeAgent(s,id));return}
+ if(action==='release'){apply(s=>E.releasePlayer(s,id));return}
+ if(action==='make-promise'){apply(s=>E.makePromise(s,$('promiseType')?.value,$('promisePlayer')?.value));return}
+ if(action==='demand-promise'){apply(s=>E.respondDemand(s,id,'promise'));return}
+ if(action==='demand-refuse'){apply(s=>E.respondDemand(s,id,'refuse'));return}
+ if(action==='propose-trade'){
+  apply(s=>{const ids=Array.from(document.querySelectorAll('input[name="tradePlayer"]:checked')).slice(0,3).map(x=>x.value);
+   return E.negotiate(s,ids,$('tradeTeam')?.value,$('tradeTarget')?.value,Number($('tradePicks')?.value||0))});return
+ }
+ if(action==='confirm-trade'){apply(s=>E.confirmTrade(s,false));return}
+ if(action==='counter-trade'){apply(s=>E.confirmTrade(s,true));return}
+ if(action==='walk-trade'){apply(s=>{s.negotiation=null;return {message:'Trade talks ended.'}});return}
+ if(action==='draft-player'){apply(s=>E.draftPlayer(s,id));return}
+ if(action==='scout-player'){
+  apply(s=>{const p=s.draft.find(x=>x.id===id);if(!p)return {error:'Prospect unavailable'};
+   const report=E.selectedProspects(s,p.pos).find(x=>x.id===id);if(!report)return {error:'Scout report unavailable'};
+   s.scouting.reports.push(report);return {message:p.name+' potential range: '+report.low+'–'+report.high+'.'}});return
+ }
+ if(action==='hire-coach'){apply(s=>E.hireCoach(s,el.dataset.name));return}
+ if(action==='upgrade-scout'){apply(s=>{const t=E.getTeam(s);if(t.budget<7)return {error:'Need $7M'};t.budget-=7;t.scout=E.clamp(t.scout+7,0,99);return {message:'Scout accuracy upgraded to '+t.scout+'%.'}});return}
+ if(action==='upgrade-stadium'){apply(s=>E.stadiumUpgrade(s));return}
+ if(action==='relocate'){if(!confirm('Relocate and rename this franchise?'))return;apply(s=>E.relocate(s,$('newTeamName')?.value));return}
+ if(action==='expand'){apply(s=>E.expandLeague(s,$('expansionName')?.value));return}
+ if(action==='accept-job'){apply(s=>E.acceptJob(s,el.dataset.team));return}
+ if(action==='more-news'){ui.feedLimit+=10;render();return}
+}
+
 function onClick(event){
  const el=event.target.closest?.('[data-action],[data-tab],[data-nav]');if(!el)return;
  if(el.tagName==='A')event.preventDefault();
