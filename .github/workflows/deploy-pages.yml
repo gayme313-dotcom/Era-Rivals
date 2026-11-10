@@ -55,6 +55,7 @@ jobs:
           node --check friends-league.js
           node tests/franchise.test.cjs
           node tests/manager.test.cjs
+          node tests/home.test.cjs
           node tests/friends-client.test.cjs
       - name: Save generated player database
         run: |
