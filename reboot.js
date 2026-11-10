@@ -173,3 +173,108 @@ function renderRoster(s){
    '<div class="stack"><label class="field">VETERAN MENTOR<select id="mentorFrom">'+promisePeople+'</select></label><label class="field">YOUNG PROSPECT<select id="mentorTo">'+young+'</select></label>'+button('PAIR MENTOR & ROOKIE','mentor','secondary')+'</div></div>')+
  pane('ALL PLAYERS · PERSONALITIES','MY ROSTER.','<div class="stack">'+rows+'</div>');
 }
+
+function renderTrade(s){
+ const t=E.getTeam(s),neg=s.negotiation,
+ rivals=s.clubs.filter(x=>x!==s.team),target=ui.transferTeam&&s.league[ui.transferTeam]?ui.transferTeam:rivals[0];
+ const candidates=s.league[target].roster.slice().sort((a,b)=>b.overall-a.overall).slice(0,45);
+ const players=t.roster.slice().sort((a,b)=>b.overall-a.overall).slice(0,45);
+ const negotiation=neg?pane('TRADE NEGOTIATION · '+h(neg.status.toUpperCase()),'FRONT OFFICE RESPONSE.',
+  '<div class="story-card"><b>'+h(neg.message)+'</b><small>RESPONSE EXPIRES AFTER WEEK '+(neg.deadline+1)+'</small></div>'+
+  '<div class="btn-row">'+(neg.status==='accepted'?button('ACCEPT & CONFIRM TRADE','confirm-trade'):'')+
+  (neg.status==='counter'?button('ACCEPT COUNTEROFFER','counter-trade','gold'):'')+
+  button('WALK AWAY','walk-trade','secondary')+'</div>'):'';
+ const options=rivals.map(team=>'<option value="'+h(team)+'" '+(team===target?'selected':'')+'>'+h(team)+'</option>').join('');
+ const targetOptions=candidates.map(p=>'<option value="'+p.id+'">'+h(p.name)+' · '+h(p.pos)+' · '+p.overall+' OVR</option>').join('');
+ const myOptions=players.map(p=>'<label class="field checkbox-field"><input type="checkbox" name="tradePlayer" value="'+p.id+'"><span>'+h(p.name)+' · '+h(p.pos)+' · '+p.overall+' OVR</span></label>').join('');
+ const free=s.freeAgents.slice().sort((a,b)=>b.overall-a.overall).slice(0,16).map(p=>'<div class="player-row"><span class="player-ovr">'+p.overall+'</span><span><b>'+h(p.name)+'</b><small>'+h(p.pos)+' · '+h(p.country||'GLOBAL')+' · '+money(p.salary)+'</small></span><span class="pill">'+h(p.trait.toUpperCase())+'</span>'+button('SIGN','sign','small','data-id="'+p.id+'"')+'</div>').join('');
+ const promises=s.playerPromises.slice(-5).map(pr=>'<div class="feed-item"><div><b>'+h(pr.playerName)+' · '+h(pr.type.toUpperCase())+'</b><small>'+(pr.resolved?(pr.kept?'KEPT':'BROKEN'):'ACTIVE')+'</small></div></div>').join('');
+ return statBlock([['SALARY CAP',money(E.cap(s.sport))],['PAYROLL',money(E.payroll(t))],['AVAILABLE',money(E.cap(s.sport)-E.payroll(t))],['DRAFT PICKS',t.draftPicks]])+
+ pane('TRADE BLOCK','NEGOTIATE A REAL DEAL.',
+  '<div class="two-col"><div class="stack"><label class="field">TRADE PARTNER<select id="tradeTeam">'+options+'</select></label>'+
+  '<label class="field">TARGET PLAYER<select id="tradeTarget">'+targetOptions+'</select></label>'+
+  '<label class="field">DRAFT PICKS OFFERED<select id="tradePicks">'+[0,1,2,3].filter(n=>n<=t.draftPicks).map(n=>'<option value="'+n+'">'+n+' PICK'+(n===1?'':'S')+'</option>').join('')+'</select></label>'+
+  '<div class="btn-row">'+button('SEND TRADE OFFER →','propose-trade')+'</div></div>'+
+  '<div class="stack"><span class="eyebrow">YOUR TRADE PACKAGE · CHECK UP TO 3</span><div style="max-height:290px;overflow:auto">'+myOptions+'</div></div></div>')+
+ negotiation+
+ pane('FREE AGENCY FRENZY','AVAILABLE FREE AGENTS.','<div class="stack">'+free+'</div>')+
+ pane('PLAYER PROMISES','KEEP YOUR WORD.',
+  '<div class="two-col"><label class="field">PROMISE TO PLAYER<select id="promisePlayer">'+t.roster.slice(0,35).map(p=>'<option value="'+p.id+'">'+h(p.name)+'</option>').join('')+'</select></label><label class="field">YOUR PROMISE<select id="promiseType"><option value="starter">STARTING ROLE</option><option value="playoffs">PLAYOFF PUSH</option><option value="title">CHAMPIONSHIP</option></select></label></div>'+
+  '<div class="btn-row">'+button('MAKE PROMISE','make-promise')+'</div><div class="news-wire">'+promises+'</div>');
+}
+function renderDraft(s){
+ const t=E.getTeam(s),pos=ui.scout||'Any',positions=['Any',...E.SPORT[s.sport].positions];
+ const results=E.selectedProspects(s,pos),top=results.slice(0,24);
+ const draftRows=top.map(p=>'<div class="player-row"><span class="player-ovr">'+p.overall+'</span><span><b>'+h(p.name)+'</b><small>'+h(p.pos)+' · '+h(p.country||'GLOBAL')+' · AGE '+p.age+'</small><small>SCOUTED POTENTIAL '+p.low+'–'+p.high+' · EST '+p.estimate+'</small></span><span class="pill">'+(p.high>=95?'HIGH CEILING':'PROSPECT')+'</span>'+
+  button(s.phase==='offseason'?'DRAFT':'SCOUT',s.phase==='offseason'?'draft-player':'scout-player','small','data-id="'+p.id+'"')+'</div>').join('');
+ const logs=s.draftLog.slice(-8).reverse().map(p=>'<div class="news-item"><span>ROUND '+p.round+'</span><b>'+h(p.team)+' selects '+h(p.name)+'</b></div>').join('');
+ return statBlock([['DRAFT PICKS',t.draftPicks],['SCOUT ACCURACY',t.scout+'%'],['PROSPECTS',s.draft.length],['CLASS',s.year]])+
+ pane('FRONT OFFICE / DRAFT NIGHT','THE DRAFT WAR ROOM.',
+  '<div class="two-col"><label class="field">SCOUT POSITION<select id="scoutPosition">'+positions.map(x=>'<option value="'+h(x)+'" '+(x===pos?'selected':'')+'>'+h(x)+'</option>').join('')+'</select></label><div class="metric"><small>DRAFT STATUS</small><strong>'+(s.phase==='offseason'?'DRAFT OPEN':'SCOUTING')+'</strong></div></div>'+
+  '<p class="muted">Prospects have uncertain potential. Some will boom, others will bust. Scouting grades are estimates, not promises.</p>'+
+  '<div class="stack">'+draftRows+'</div>')+
+ pane('DRAFT HISTORY','AROUND THE LEAGUE.','<div class="news-wire">'+(logs||'<p class="muted">Every team makes its own picks once your draft begins.</p>')+'</div>');
+}
+function renderCoaches(s){
+ const t=E.getTeam(s);
+ const cards=E.COACHES.map(c=>'<div class="story-card"><div class="row between"><b>'+h(c.name)+'</b><span class="pill">'+c.skill+' OVR</span></div><p class="muted">'+h(c.style)+' · '+money(c.cost)+'</p>'+
+ button(t.coach.name===c.name?'CURRENT COACH':'HIRE COACH','hire-coach','small','data-name="'+h(c.name)+'" '+(t.coach.name===c.name?'disabled':'') )+'</div>').join('');
+ const all=t.roster.filter(p=>p.age<=24).sort((a,b)=>b.potential-a.potential).slice(0,6).map(p=>'<div class="feed-item"><div><b>'+h(p.name)+'</b><small>AGE '+p.age+' · '+p.overall+' OVR · '+p.potential+' VISIBLE POTENTIAL</small></div></div>').join('');
+ return pane('COACHING CAROUSEL','BUILD YOUR STAFF.',
+ '<div class="saving-card"><span><strong>CURRENT HEAD COACH</strong><small>'+h(t.coach.name)+' · '+h(t.coach.style)+' SYSTEM · '+t.coach.skill+' OVR</small></span><span class="pill gold">BUDGET '+money(t.budget)+'</span></div><div class="three-col" style="margin-top:13px">'+cards+'</div>')+
+ pane('SCOUTING DEPARTMENT','FIND THE NEXT SUPERSTAR.',
+  '<div class="two-col"><div><p class="muted">Scout accuracy improves with investment. Better scouts narrow potential ranges, especially for international players.</p>'+
+  '<div class="metric"><small>CURRENT SCOUTING ACCURACY</small><strong>'+t.scout+'%</strong></div>'+
+  button('UPGRADE SCOUTS · $7M','upgrade-scout','secondary')+'</div><div><span class="eyebrow">TOP YOUNG PLAYERS</span>'+all+'</div></div>');
+}
+function renderFinance(s){
+ const t=E.getTeam(s),home=s.team;
+ return statBlock([['TEAM BUDGET',money(t.budget)],['TICKET REVENUE',money(t.finance.revenue)],['TOTAL ATTENDANCE',stat(t.finance.attendance)],['FAN SUPPORT',t.fan+'%']])+
+ pane('OWNER PRESSURE & FANS','RUN THE ENTIRE CLUB.',
+  '<div class="two-col"><div><div class="metric"><small>OWNER TRUST</small><strong>'+t.owner+'%</strong></div><p class="muted">Your owner wants competitive results. Losing streaks, expensive deals and broken promises create pressure.</p>'+
+  '<div class="story-card"><b>OWNER OBJECTIVE · '+h(t.ownerGoal)+'</b><small>Fail to deliver and you could be offered a different job. Succeed and gain reputation.</small></div></div>'+
+  '<div><div class="metric"><small>STADIUM LEVEL</small><strong>LVL '+t.stadium+'</strong></div><p class="muted">A better venue attracts fans and increases matchday revenue. Upgrades cost $'+(12+t.stadium*9)+'M.</p>'+
+  button('UPGRADE STADIUM ↗','upgrade-stadium')+'</div></div>')+
+ pane('FRANCHISE IDENTITY','EXPANSION & RELOCATION.',
+ '<div class="two-col"><div><h3>RELOCATE YOUR TEAM</h3><p class="muted">Rename and relocate your franchise. Current players, trophies and finances stay with the organization.</p>'+
+ '<label class="field">NEW FRANCHISE NAME<input id="newTeamName" maxlength="30" placeholder="Example: San Juan Legends"></label>'+button('RELOCATE FRANCHISE','relocate','secondary')+'</div>'+
+ '<div><h3>LEAGUE EXPANSION</h3><p class="muted">Add two fictional clubs to your universe. Their rosters grow through prospects and AI decisions.</p>'+
+ '<label class="field">EXPANSION TEAM NAME<input id="expansionName" maxlength="30" placeholder="Example: Puerto Rico Royals"></label>'+
+ button('EXPAND THE LEAGUE','expand','secondary')+'</div></div>')+
+ pane('CAREER OPPORTUNITIES','GM JOB MARKET.',
+ '<div class="stack">'+(s.ownerOffers.length?s.ownerOffers.map(x=>'<div class="saving-card"><span><strong>'+h(x.team)+'</strong><small>'+h(x.goal)+' · '+money(x.salary)+'/YEAR</small></span>'+button('ACCEPT JOB','accept-job','small','data-team="'+h(x.team)+'"')+'</div>').join(''):'<p class="muted">Complete a season to build your GM reputation and earn job offers from other franchises.</p>')+'</div>');
+}
+function renderLeague(s){
+ const leaders=E.standings(s),news=s.news.slice(0,ui.feedLimit);
+ const standings='<div class="table-scroll"><table class="data-table"><thead><tr><th>#</th><th>TEAM</th><th>W</th><th>L</th><th>D</th><th>PF</th><th>PA</th><th>OVR</th></tr></thead><tbody>'+leaders.map((team,i)=>{
+ const t=s.league[team],r=t.record;return '<tr class="'+(team===s.team?'my-team':'')+'"><td>'+(i+1)+'</td><td><b>'+h(team)+'</b>'+(team===s.team?' ★':'')+'</td><td>'+r.w+'</td><td>'+r.l+'</td><td>'+r.d+'</td><td>'+r.for+'</td><td>'+r.against+'</td><td>'+E.teamPower(s,team)+'</td></tr>'}).join('')+'</tbody></table></div>';
+ const recent=news.map(n=>'<div class="feed-item"><div><span class="eyebrow">'+h(n.tag)+' · '+h(n.date)+'</span><b>'+h(n.headline)+'</b></div></div>').join('');
+ const titleRace=leaders.slice(0,5).map((name,i)=>'<div class="saving-card"><b>#'+(i+1)+' · '+h(name)+'</b><span class="pill">'+E.teamPower(s,name)+' OVR</span></div>').join('');
+ const mvp=E.topMVP(s).slice(0,5).map((x,i)=>'<div class="saving-card"><span><strong>#'+(i+1)+' · '+h(x.name)+'</strong><small>'+h(x.team)+' · '+h(x.pos)+'</small></span><span class="pill">'+num(x.score)+' PTS</span></div>').join('');
+ const rivals=Object.entries(s.rivalries).filter(([k,v])=>v.heat>=4).sort((a,b)=>b[1].heat-a[1].heat).slice(0,5).map(([k,r])=>'<div class="saving-card"><span><strong>'+h(k.split('|').join(' vs '))+'</strong><small>'+r.games+' MEETINGS</small></span><span class="pill warning">HEAT '+r.heat+'</span></div>').join('');
+ return pane('ERA SPORTS NETWORK','THE LEAGUE NEVER STOPS.','<div class="news-wire">'+recent+'</div>'+
+ (s.news.length>ui.feedLimit?button('MORE HEADLINES','more-news','secondary wide'):'') )+
+ '<div class="two-col" style="margin-top:13px">'+pane('TITLE RACE','CHAMPIONSHIP CONTENDERS.','<div class="stack">'+titleRace+'</div>')+
+ pane('SEASON AWARDS','MVP WATCH.','<div class="stack">'+(mvp||'<p class="muted">Player award races begin after the first game.</p>')+'</div>')+'</div>'+
+ pane('THE TABLE','CURRENT STANDINGS.',standings)+pane('RIVALRY WATCH','FEUDS & STORYLINES.','<div class="stack">'+(rivals||'<p class="muted">Rivalries build naturally from repeated meetings, close games and playoff defeats.</p>')+'</div>');
+}
+function renderHistory(s){
+ const years=s.history.map(x=>'<div class="saving-card"><span><strong>SEASON '+x.season+' · '+x.year+'</strong><small>'+h(x.champion)+' · '+h(E.SPORT[s.sport].name)+' CHAMPIONS · MVP '+h(x.mvp)+'</small></span><span class="pill gold">🏆</span></div>').join('');
+ const awards=s.history.flatMap(x=>(x.awards||[]).map(a=>({year:x.year,...a}))).slice(0,20).map(a=>'<div class="feed-item"><div><b>'+h(a.type)+' · '+h(a.name)+'</b><small>'+h(a.team)+' · '+a.year+'</small></div></div>').join('');
+ const museum=s.museum.map(x=>'<div class="story-card"><div class="story-time">'+h(x.type)+' · '+x.year+'</div><b>'+h(x.text)+'</b></div>').join('');
+ return pane('ALL TITLES ARE EARNED','THE HISTORY YOU WROTE.',
+ '<p class="muted">This new universe starts with zero champions, zero franchise records and no imported seasons. Every future year is recorded here.</p>'+
+ '<div class="stack">'+(years||'<div class="metric"><small>UNIVERSE HISTORY</small><strong>0 CHAMPIONS</strong><em>THE FIRST SEASON IS YOURS.</em></div>')+'</div>')+
+ '<div class="two-col" style="margin-top:14px">'+pane('AWARDS NIGHT','MVP · ROOKIE · DEFENSE.','<div class="news-wire">'+(awards||'<p class="muted">Awards are presented at the end of the season.</p>')+'</div>')+
+ pane('DYNASTY MUSEUM','TROPHY ROOM.','<div class="stack">'+(museum||'<p class="muted">Retired jerseys, championships and records will live here.</p>')+'</div>')+'</div>');
+}
+function renderLegacy(s){
+ const pos=ui.selectedPosition&&E.SPORT[s.sport].positions.includes(ui.selectedPosition)?ui.selectedPosition:E.SPORT[s.sport].positions[0],
+ ranks=E.legacyRankings(s,pos).slice(0,30);
+ const rows=ranks.map((p,i)=>'<div class="legacy-entry"><b>#'+(i+1)+'</b><span><strong>'+h(p.name)+(p.created?' ★':'')+'</strong><small>'+h(p.team)+' · '+h(p.position)+' · '+(p.real?'HISTORIC BASELINE':'YOUR UNIVERSE')+'</small></span><em>'+stat(p.points)+'</em></div>').join('');
+ const opt=E.SPORT[s.sport].positions.map(x=>'<option value="'+h(x)+'" '+(x===pos?'selected':'')+'>'+h(x)+'</option>').join('');
+ return pane('GOAT ROOM / BY EXACT POSITION','LEGENDS ARE MADE HERE.',
+  '<p class="muted">Your created players and real-world legends are ranked by the same position. Historical baselines are editorial game scores, not official career statistics.</p>'+
+  '<label class="field" style="max-width:280px">SELECT POSITION<select id="goatPosition">'+opt+'</select></label><div class="legacy-list" style="margin-top:14px">'+rows+'</div>')+
+ pane('CHANGE SPORTS HISTORY','YOUR LEGACY COUNTS.',statBlockLite([['TEAM TITLES',s.seasonsWon],['LEGACY POINTS',stat(s.legacyPoints)],['SEASONS',s.history.length]]));
+}
