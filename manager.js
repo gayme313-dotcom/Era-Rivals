@@ -120,7 +120,10 @@ const TACTICS={
  mlb:{off:['Balanced','Small Ball','Power Hitting','Contact Hitting','Aggressive Baserunning'],def:['Pitch to Contact','Strikeout Pitching','Infield Shift','Outfield Deep','Infield In'],tempo:['Slow','Normal','Fast'],risk:['Conservative','Balanced','Aggressive'],decisions:[['Go to the bullpen','Use fresh arms to protect the lead.',0,7,2],['Play small ball','Move runners and manufacture runs.',4,2,3],['Let the sluggers swing','Chase extra-base hits. High upside, higher strikeout risk.',7,0,5]]}
 };
 Object.keys(SPORT).forEach(sp=>{const clubs=window.ERTeamRosters?.teams?.[sp];if(clubs&&Object.keys(clubs).length>1)TEAMS[sp]=Object.keys(clubs).sort()});
-const STORAGE='era_rivals_front_office_v1';
+const STORAGE='era_rivals_universe_v2';
+// ERA RIVALS universe reset: retire the previous local career/history database once per browser.
+// Git source history and other websites' data are intentionally untouched.
+try{if(localStorage.getItem('era_rivals_universe_reset_v2')!=='done'){localStorage.removeItem('era_rivals_front_office_v1');localStorage.setItem('era_rivals_universe_reset_v2','done')}}catch(e){}
 const qs=new URLSearchParams(location.search);
 let sport=SPORT[qs.get('sport')]?qs.get('sport'):'nba';
 let page=qs.get('mode')==='franchise'?'roster':'dashboard',rosterFilter='ALL',hofPosition=null,toastTimer=null;
