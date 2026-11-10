@@ -1,6 +1,6 @@
 const fs=require('node:fs'),assert=require('node:assert/strict');
 const html=fs.readFileSync('legends.html','utf8');
-for(const sport of ['nba','nfl','soccer','mlb'])assert(html.includes('manager.html?sport='+sport),'homepage has a visual card for '+sport);
+for(const sport of ['nba','nfl','soccer','mlb'])assert(html.includes('data-sport-door=\"'+sport+'\"'),'homepage has a visual card for '+sport);
 assert(html.includes('rebuild-hero-art'),'homepage uses the four-sport visual hero');
 assert(html.includes('id="homeNews"'),'homepage news is connected to saved league events');
 assert(html.includes('id="continueCareer"'),'homepage has a continue-career action');
