@@ -44,6 +44,13 @@ body.modal-open{overflow:hidden}
 @media(max-width:430px){.legend-card{min-height:clamp(390px,53svh,440px)}.sport-info{padding:0 10px 11px}.legend-first,.legend-last{font-size:clamp(28px,8.3vw,43px)}.sport-kicker{font-size:7px;letter-spacing:.1em}.legend-era{font-size:7px;letter-spacing:.08em}.legend-open{font-size:8px}.opening h1{font-size:42px}.brand-copy small{letter-spacing:.12em}.overline{font-size:9px;letter-spacing:.13em}.overline b{display:none}.mode-desc strong{font-size:12px}.gateway-body{padding:20px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:0.01ms!important;transition-duration:0.01ms!important;scroll-behavior:auto!important}}
 
+
+/* ERA RIVALS universe relaunch */
+.rebuild-hero{min-height:390px;margin:22px clamp(9px,1vw,18px) 12px;border:1px solid #43545d;border-radius:16px;overflow:hidden;position:relative;display:flex;align-items:center;background:linear-gradient(90deg,#070b12 0%,#09111bdc 38%,#09111b42 78%),url('https://upload.wikimedia.org/wikipedia/commons/f/f0/Jordan_by_Lipofsky_16577_%28high_quality%29.jpg') 72% 36%/cover no-repeat}
+.rebuild-copy{position:relative;z-index:2;padding:clamp(28px,5vw,68px)}.rebuild-copy h1{font:900 clamp(58px,8vw,105px)/.84 var(--display);margin:14px 0;letter-spacing:.01em}.rebuild-copy h1 span{color:var(--lime)}.rebuild-copy p{color:#c1cbd0;font-size:13px}.rebuild-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}.rebuild-cta,.rebuild-ghost{padding:14px 18px;border-radius:6px;font-size:9px;font-weight:900;letter-spacing:.13em}.rebuild-cta{background:var(--lime);color:#101710}.rebuild-ghost{border:1px solid #71828a;color:#fff}.rebuild-hero-tag{position:absolute;right:5%;bottom:8%;display:flex;flex-direction:column;align-items:end;font:900 clamp(38px,6vw,78px)/.8 var(--display);color:#ffffff30;letter-spacing:.08em}.rebuild-hero-tag span{color:#c9fb6840}.rebuild-hero-tag small{font:800 8px var(--sans);letter-spacing:.2em;color:#ffffff80;margin-top:10px}
+.rebuild-central{margin:0 clamp(9px,1vw,18px) 18px;border:1px solid #2a3b45;border-radius:11px;background:linear-gradient(100deg,#121e27,#0d141c);padding:16px 20px}.rebuild-central-head{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:9px;letter-spacing:.15em;font-weight:900}.rebuild-central-head span{color:var(--teal)}.rebuild-central-head b{color:#8fa2ac}.rebuild-news{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:13px}.rebuild-news>div{border-left:2px solid var(--lime);padding-left:10px;display:flex;flex-direction:column;gap:5px}.rebuild-news small{font-size:8px;color:var(--teal);letter-spacing:.14em;font-weight:900}.rebuild-news b{font-size:10px;line-height:1.4}
+.opening{display:none}.legend-top-five{display:none!important}.legend-grid{height:clamp(350px,51vh,600px)}.landing-bar{min-height:56px}.landing-bar .muted-bar{display:none}
+@media(max-width:760px){.rebuild-hero{min-height:340px;background-position:63% center}.rebuild-copy h1{font-size:67px}.rebuild-hero-tag{right:4%;bottom:6%;font-size:42px}.rebuild-news{grid-template-columns:1fr;gap:9px}.rebuild-central-head b{display:none}.legend-grid{height:auto}.legend-card{min-height:390px}}
 </style>
 </head>
 <body>
@@ -57,8 +64,16 @@ body.modal-open{overflow:hidden}
   </header>
 
   <main>
+    <section class="rebuild-hero">
+      <div class="rebuild-copy"><span class="overline"><i></i> A NEW SPORTS UNIVERSE</span><h1>BUILD YOUR<br><span>DYNASTY.</span></h1><p>Four sports. One living universe.</p><div class="rebuild-actions"><a class="rebuild-cta" href="manager.html?sport=nfl">ENTER FRONT OFFICE ↗</a><a class="rebuild-ghost" href="#sports">CHOOSE SPORT</a></div></div>
+      <div class="rebuild-hero-tag"><b>ERA</b><span>RIVALS</span><small>EVERY ERA. ONE CHAMPION.</small></div>
+    </section>
+    <section class="rebuild-central" aria-label="League Central">
+      <div class="rebuild-central-head"><span>● LEAGUE CENTRAL</span><b>THE WORLD NEVER STOPS</b></div>
+      <div class="rebuild-news"><div><small>TRADE DESK</small><b>Blockbuster deals can change a season.</b></div><div><small>ROOKIE WATCH</small><b>Tomorrow's legends start somewhere.</b></div><div><small>RIVALRY WATCH</small><b>Every playoff battle adds history.</b></div></div>
+    </section>
     <section class="opening" aria-label="Era Rivals introduction">
-      <div class="intro-left"><span class="overline"><i></i> THE LEGENDS COLLECTION <b>01 — 04</b></span>
+      <div class="intro-left"><span class="overline"><i></i> CHOOSE YOUR DYNASTY <b>01 — 04</b></span>
        <h1>THE GREATEST. <span>EVERY SPORT.</span></h1><p>Meet the all-time greats across basketball, football, soccer and baseball. Then build your own legacy.</p></div>
       <div class="intro-right"><span class="tiny-cross">✦</span> COLLEGE &amp; PRO <span class="intro-divider">/</span> EVERY ERA <span class="intro-divider">/</span> ONE CHAMPION.</div>
     </section>
