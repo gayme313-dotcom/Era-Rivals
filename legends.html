@@ -65,7 +65,7 @@ body.modal-open{overflow:hidden}
 
   <main>
     <section class="rebuild-hero">
-      <div class="rebuild-copy"><span class="overline"><i></i> A NEW SPORTS UNIVERSE</span><h1>BUILD YOUR<br><span>DYNASTY.</span></h1><p>Four sports. One living universe.</p><div class="rebuild-actions"><a class="rebuild-cta" href="manager.html?sport=nfl">ENTER FRONT OFFICE ↗</a><a class="rebuild-ghost" href="#sports">CHOOSE SPORT</a></div></div>
+      <div class="rebuild-copy"><span class="overline"><i></i> A NEW SPORTS UNIVERSE</span><h1>BUILD YOUR<br><span>DYNASTY.</span></h1><p>Four sports. One living universe.</p><div class="rebuild-actions"><a class="rebuild-cta" id="continueCareer" href="#sports">CHOOSE YOUR SPORT ↗</a><a class="rebuild-ghost" href="#sports">CHOOSE SPORT</a></div></div>
       <div class="rebuild-hero-tag"><b>ERA</b><span>RIVALS</span><small>EVERY ERA. ONE CHAMPION.</small></div>
     </section>
     <section class="rebuild-central" aria-label="League Central">
@@ -149,6 +149,8 @@ const modes={
  mlb:{title:'BASEBALL',number:'04',emoji:'⚾',sub:'Write your name in baseball history. Every inning matters.'}
 };
 const $=id=>document.getElementById(id);
+const continueLink=$('continueCareer');
+try{const saved=JSON.parse(localStorage.getItem('era_rivals_universe_v2')||'null');const all=Object.entries(saved?.saves||{}).flatMap(([sp,list])=>(list||[]).map(x=>({sp,save:x})));const active=all[0];if(active){continueLink.href='manager.html?sport='+active.sp;continueLink.textContent='CONTINUE '+String(active.save.team||'DYNASTY').toUpperCase()+' ↗'}}catch(e){}
 const overlay=$('sportOverlay');
 let previousFocus=null;
 function chooseSport(sp){
