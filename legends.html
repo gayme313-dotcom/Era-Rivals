@@ -173,7 +173,7 @@ function renderHome(){
  else if(all.length)news.innerHTML='<div><small>YOUR UNIVERSE</small><b>THE FIRST SEASON IS UNDERWAY.</b></div><div><small>DYNASTY</small><b>'+all.length+' CAREER'+(all.length===1?'':'S')+' CREATED.</b></div><div><small>HISTORY</small><b>THE RECORD BOOK IS OPEN.</b></div>';
 }
 renderHome();
-try{const saved=JSON.parse(localStorage.getItem('era_rivals_universe_v3')||'null');const all=Object.entries(saved?.saves||{}).flatMap(([sp,list])=>(list||[]).map(x=>({sp,save:x})));const active=all[0];if(active){continueLink.href='manager.html?sport='+active.sp;continueLink.textContent='CONTINUE '+String(active.save.team||'DYNASTY').toUpperCase()+' ↗'}}catch(e){}
+
 const overlay=$('sportOverlay');
 let previousFocus=null;
 function chooseSport(sp){
