@@ -25,12 +25,15 @@ Open `manager.html` directly or choose a sport from the Legends homepage.
 - Player personalities: eight fictional archetypes with effects on clutch performance, morale, fatigue, loyalty, development, chemistry and fan support.
 - Adaptive rival front offices: AI managers react to standings, draft for positional needs, sign free agents and make value-checked trades with other clubs.
 - Matchday 2.0: live-style scoreboards, play-by-play timeline, opponent manager scouting, halftime/closing decisions, postgame narrative and player performance lines.
+- Living league: event-driven sports news, rivalry heat, player relationships, breakout and decline arcs, press conferences, medical return decisions and owner objectives.
+- Franchise operations: fan loyalty, attendance, ticket pricing, stadium upgrades, matchday revenue, coaching carousel, scout hiring, contract demands, relocation and eligible veteran comebacks.
+- Clean-universe launch: old local saves and histories from previous Era Rivals modes are retired once; new careers start with blank championships, awards and records. Git source history remains intact.
 
 The match engine uses team ratings, lineup choices, chemistry, morale, fatigue, tactics and matchday decisions. Results and ratings are original game simulations, not official league statistics.
 
 ## Other game modes
 
-- The Legends homepage presents an editorial all-time top five for each of the four sports.
+- The Legends homepage is a visual-first sports portal with four image-led sport cards, a continue-career shortcut and news pulled from actual saved universe events.
 - `draft.html` provides the player draft and attribute-spin experience.
 - `career-system.js` supports the separate player-career system with multiple saves, training, simulated seasons, contracts, trades, depth charts, retirement and Hall of Fame eligibility.
 - `classic.html` contains the separate school / college career prototype.
