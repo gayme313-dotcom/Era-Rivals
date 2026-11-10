@@ -278,3 +278,89 @@ function renderLegacy(s){
   '<label class="field" style="max-width:280px">SELECT POSITION<select id="goatPosition">'+opt+'</select></label><div class="legacy-list" style="margin-top:14px">'+rows+'</div>')+
  pane('CHANGE SPORTS HISTORY','YOUR LEGACY COUNTS.',statBlockLite([['TEAM TITLES',s.seasonsWon],['LEGACY POINTS',stat(s.legacyPoints)],['SEASONS',s.history.length]]));
 }
+
+function renderSettings(){
+ const s=active();
+ const rows=db.saves.map(x=>'<div class="saving-card"><span><strong>'+ICONS[x.sport]+' '+h(x.team)+'</strong><small>'+h(x.era.toUpperCase())+' · SEASON '+x.season+' · '+x.year+'</small></span><div class="btn-row">'+button('OPEN','resume','small','data-id="'+x.id+'"')+button('DELETE','delete-save','danger small','data-id="'+x.id+'"')+'</div></div>').join('');
+ const friends=s?pane('FRIENDS LEAGUE · LOCAL SANDBOX','SHARE YOUR WORLD.',
+  '<p class="muted">Switch which team you control in the same local league. This is a shared-device sandbox, not online synchronized multiplayer.</p>'+
+  '<div class="two-col"><label class="field">FRIEND NAME<input id="friendName" maxlength="30" placeholder="Nickname"></label>'+
+  '<label class="field">THEIR TEAM<select id="friendTeam">'+s.clubs.filter(t=>t!==s.team).map(x=>'<option>'+h(x)+'</option>').join('')+'</select></label></div>'+
+  '<div class="btn-row">'+button('ADD LOCAL MANAGER','add-friend','secondary')+'</div>'+
+  '<div class="stack" style="margin-top:11px">'+(s.friendManagers||[]).map(f=>'<div class="saving-card"><span><strong>'+h(f.name)+'</strong><small>'+h(f.team)+'</small></span>'+button('CONTROL TEAM','switch-control','small','data-team="'+h(f.team)+'"')+'</div>').join('')+'</div>'):'';
+ const backups=pane('YOUR DATA','BACKUP & RESTORE.',
+  '<p class="muted">Download your saves before resetting. Cloud synchronization is not enabled in this rebuilt version.</p>'+
+  '<div class="btn-row">'+button('EXPORT BACKUP','export','secondary')+button('IMPORT BACKUP','import','secondary')+'</div><input type="file" id="importFile" accept=".json,application/json" hidden>');
+ const reset=pane('RESET HISTORY','CLEAN SLATE.',
+  '<p class="muted">New universes have no past titles. These permanent actions delete only Era Rivals browser saves on this device, not GitHub history or cloud account records.</p>'+
+  '<div class="stack">'+button('DELETE ALL REBORN SAVES','reset-all','danger')+button('CLEAR OLDER ERA RIVALS BROWSER SAVES','reset-old','secondary')+'</div>');
+ return '<div class="modal-backdrop" id="modal-root"><div class="modal wide-modal" role="dialog" aria-modal="true" aria-label="Universe settings">'+
+ '<div class="modal-head"><div><span class="eyebrow"><i></i>ACCOUNTLESS · LOCAL SAVE SYSTEM</span><h2>YOUR UNIVERSES.</h2></div><button class="close" data-action="close">✕</button></div>'+
+ pane('CAREER SAVE FILES','ALL SAVES.','<div class="stack">'+(rows||'<p class="muted">No saved careers yet.</p>')+'</div>')+
+ (friends?'<div style="margin-top:12px">'+friends+'</div>':'')+
+ '<div class="two-col" style="margin-top:12px">'+backups+reset+'</div>'+
+ '<div class="btn-row" style="margin-top:14px">'+button('CLOSE SETTINGS','close','secondary')+'</div></div></div>';
+}
+function renderNewModal(){
+ const sp=ui.selectedSport,teams=E.TEAMS[sp];
+ const mini=['nba','nfl','soccer','mlb'].map(x=>'<label><input type="radio" name="newSport" value="'+x+'" '+(x===sp?'checked':'')+'><span>'+image(x)+'<b>'+NAMES[x]+'</b></span></label>').join('');
+ const fields='<div class="two-col"><label class="field">YOUR MANAGER NAME<input name="manager" maxlength="40" value="My GM" required></label>'+
+ '<label class="field">TEAM TO MANAGE<select name="team">'+teams.map(t=>'<option>'+h(t)+'</option>').join('')+'</select></label></div>'+
+ '<div class="two-col"><label class="field">PLAYER UNIVERSE<select name="era"><option value="current">CURRENT PLAYERS · MODERN ROSTERS</option><option value="alltime">ALL-TIME FANTASY DRAFT · LEGENDS</option></select></label>'+
+ '<label class="field">STARTING YEAR<select name="year"><option value="2026">2026 · MODERN START</option><option value="2010">2010 · ALTERNATE HISTORY</option><option value="2000">2000 · ALTERNATE HISTORY</option><option value="1996">1996 · ALTERNATE HISTORY</option><option value="1980">1980 · ALTERNATE HISTORY</option></select></label></div>'+
+ '<div class="two-col"><label class="field">DIFFICULTY<select name="difficulty"><option value="normal">STANDARD GM</option><option value="hard">HARD · SMART RIVALS</option></select></label>'+
+ '<div class="story-card"><div class="story-time">NEW UNIVERSE</div><b>ZERO EXISTING CHAMPIONSHIPS. ZERO IMPORTED SEASONS.</b><small>Historical years are alternate-history fantasy scenarios, not exact archived rosters. Game ratings are estimates.</small></div></div>';
+ return '<div class="modal-backdrop" id="modal-root"><div class="modal wide-modal" role="dialog" aria-modal="true" aria-labelledby="createTitle">'+
+ '<div class="modal-head"><div><span class="eyebrow"><i></i>NEW HISTORY · NEW FRANCHISE</span><h2 id="createTitle">BUILD YOUR WORLD.</h2><p class="muted">Every championship, MVP and league record starts from zero.</p></div><button class="close" data-action="close">✕</button></div>'+
+ '<div class="modal-choices">'+mini+'</div>'+
+ '<form id="createUniverse" class="stack">'+fields+'<div class="btn-row">'+button('CREATE FRESH UNIVERSE →','launch')+button('CANCEL','close','secondary')+'</div></form></div></div>';
+}
+function gameRoot(){
+ const s=active();
+ if(ui.page==='home')return renderHome();
+ if(!s)return renderHome();
+ if(ui.page==='universe')ui.tab='league';
+ if(ui.page==='legacy')ui.tab='legacy';
+ return renderHub();
+}
+function render(){
+ const navPage=ui.page==='home'?'home':ui.page==='legacy'?'legacy':ui.page==='universe'?'universe':'hub';
+ document.querySelectorAll?.('[data-nav]').forEach(el=>el.classList.toggle('nav-active',el.dataset.nav===navPage));
+ const app=$('app');if(app)app.innerHTML=gameRoot()+(ui.modal?(ui.modal==='new'?renderNewModal():renderSettings()):'');
+}
+function resultMessage(result){if(result)notify(typeof result==='string'?result:result.error||result.message||'Decision recorded.',!!result.error)}
+function apply(fn){
+ const s=active();if(!s)return notify('Create a universe first.',true);
+ let r;try{r=fn(s)}catch(e){console.error(e);notify('Unable to complete that decision: '+e.message,true);return}
+ if(r?.error){resultMessage(r);return}
+ dataSave();render();resultMessage(r);
+}
+function doAction(action,el,event){return false}
+function onClick(event){
+ const el=event.target.closest?.('[data-action],[data-tab],[data-nav]');if(!el)return;
+ if(el.tagName==='A')event.preventDefault();
+ if(el.dataset.tab){ui.tab=el.dataset.tab;ui.page='hub';render();return}
+ if(el.dataset.nav){
+  const nav=el.dataset.nav;
+  if(nav==='home')navigation('home');
+  else if(!active())openNew();
+  else{ui.page=nav==='universe'?'universe':nav==='legacy'?'legacy':'hub';ui.tab=nav==='universe'?'league':nav==='legacy'?'legacy':'overview';render()}
+  return;
+ }
+ if(el.dataset.action)doAction(el.dataset.action,el,event);
+}
+function onChange(e){
+ const el=e.target;
+ if(el.name==='newSport'){ui.selectedSport=el.value;render();return}
+ if(el.id==='tradeTeam'){ui.transferTeam=el.value;render();return}
+ if(el.id==='scoutPosition'){ui.scout=el.value;render();return}
+ if(el.id==='goatPosition'){ui.selectedPosition=el.value;render();return}
+ if(el.id==='importFile'){importBackup(el.files?.[0]);return}
+}
+function onSubmit(e){if(e.target?.id==='createUniverse'){e.preventDefault();document.querySelector('[data-action="launch"]')?.click()}}
+document.addEventListener('click',onClick);
+document.addEventListener('change',onChange);
+document.addEventListener('submit',onSubmit);
+root.ERRebootApp={getDb:()=>db,active,ui,render,newGame,openNew,apply,summary:()=>active()&&E.summary(active())};
+render();restoreIndexedDB();
+})(typeof window!=='undefined'?window:globalThis);
