@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#070b0e">
+  <meta name="description" content="ERA RIVALS REBORN. Four sports, living leagues, alternate history and decision-driven dynasties. No arcade controls.">
+  <title>ERA RIVALS | REBORN</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="reboot.css?v=1">
+</head>
+<body>
+  <div class="page-grain" aria-hidden="true"></div>
+  <header id="global-header" class="global-header">
+    <a href="./" class="brand" data-nav="home" aria-label="Era Rivals home">
+      <span class="brand-emblem">ER<span>✦</span></span>
+      <span class="brand-words"><strong>ERA<span>RIVALS</span></strong><small>REBORN · THE LIVING LEAGUE</small></span>
+    </a>
+    <nav id="top-nav" class="top-nav" aria-label="Main navigation">
+      <button type="button" data-nav="home" class="nav-active">HOME</button>
+      <button type="button" data-nav="hub">MY DYNASTY</button>
+      <button type="button" data-nav="universe">LEAGUE CENTRAL</button>
+      <button type="button" data-nav="legacy">GOAT ROOM</button>
+    </nav>
+    <div class="header-right"><span class="header-live"><i></i> SIMULATION ENGINE</span><button type="button" id="header-new" data-action="new" class="header-new">+ NEW UNIVERSE</button></div>
+  </header>
+  <div id="notice" role="status" aria-live="polite" class="notice" hidden></div>
+  <main id="app" tabindex="-1">
+    <div class="initial-loading"><span class="spinner-mark">ER</span><p>BUILDING YOUR SPORTS UNIVERSE...</p></div>
+  </main>
+  <footer class="site-footer"><span>ERA RIVALS · REBORN</span><span>AN INDEPENDENT, FICTIONAL SPORTS SIMULATION · NOT AFFILIATED WITH LEAGUES OR ATHLETES</span><button type="button" data-action="settings">UNIVERSE SETTINGS</button></footer>
+  <script src="team-rosters.js"></script>
+  <script src="draft-player-pools.js"></script>
+  <script src="basketball-era-data.js"></script>
+  <script src="reboot.js?v=1"></script>
+</body>
+</html>
