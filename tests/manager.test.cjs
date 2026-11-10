@@ -113,7 +113,7 @@ for(const [sp,team] of [['nba','Boston Celtics'],['nfl','New England Patriots'],
  const scout=s.fo.living.scoutMarket[0];context.window.ERFranchise.action(s,'world-hire-scout',{id:scout.id},e);
  assert.equal(s.fo.staff.length,1,'coaching carousel hires a coach for '+sp);
  assert.equal(s.fo.living.scouts.length,1,'scouting department hires a scout for '+sp);
- const page=living.render(s,e);assert(page.includes('LEAGUE CENTRAL')&&page.includes('WORLD NEWS')&&page.includes('RIVALRY WATCH'),'living league page renders for '+sp);
+ const page=living.render(s,e);assert(page.includes('LEAGUE CENTRAL')&&page.includes('WORLD NEWS')&&page.includes('RIVALRY WATCH'),'living league page renders for '+sp);t.setPage('universe');t.render();assert(elements.get('screen').innerHTML.includes('WORLD NEWS'),'manager navigation opens League Central for '+sp);
 }
 
 console.log('ALL CHECKS PASSED');
