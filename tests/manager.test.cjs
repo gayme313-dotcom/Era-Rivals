@@ -1,7 +1,7 @@
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 const elements=new Map(),storage=new Map();const doc={getElementById(id){if(!elements.has(id))elements.set(id,{innerHTML:'',textContent:'',className:'',value:'',hidden:false});return elements.get(id)},addEventListener(){},createElement(){return {click(){}}}};
-const context={document:doc,window:{},location:{search:'?sport=nfl'},localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},URLSearchParams,console,setTimeout:()=>0,clearTimeout(){},confirm:()=>true,Blob,URL,Math};vm.createContext(context);
-for(const file of ['draft-player-pools.js','team-rosters.js','basketball-era-data.js','franchise-engine.js','franchise-ui.js'])vm.runInContext(fs.readFileSync(file,'utf8'),context);
+storage.set('era_rivals_universe_v2','old career');storage.set('era_rivals_pro_v1','old career');const context={document:doc,window:{},location:{search:'?sport=nfl'},localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},URLSearchParams,console,setTimeout:()=>0,clearTimeout(){},confirm:()=>true,Blob,URL,Math};vm.createContext(context);
+for(const file of ['universe-reset.js','draft-player-pools.js','team-rosters.js','basketball-era-data.js','franchise-engine.js','living-league.js','franchise-ui.js'])vm.runInContext(fs.readFileSync(file,'utf8'),context);
 const source=fs.readFileSync('manager.js','utf8').replace(/render\(\);\s*\}\)\(\);\s*$/,`globalThis.test={createSave,getSave,beginMatch,finishMatch,simAuto,simFive,simRest,prepareTeam,nextOpponent,teamPower,teamOvr,renderDashboard,renderRoster,renderTactics,renderTransactions,renderScouting,renderStandings,renderLegacy,renderMatchday,renderSaveCenter,validateSave,toggleStarter,tradePlayers,advanceSeason,autoLineup,rankedTeams,state,SPORT,TEAMS,STARTERS,PLAN,resolveTie,sameFranchise,clubRating,teamPayroll,playerPools,franchiseEnv,render,recordPlayerGameStats,mvpScore,renderRecords,makePromise,evaluatePromises,proposeTrade,counterTrade,acceptTrade,makeDraftPicks,ensureSeason,completeSeason,playerTradeValue,setSport:v=>sport=v,setPage:v=>page=v,readState};\n})();`);
 vm.runInContext(source,context);const t=context.test;
 for(const sp of ['nba','nfl','mlb','soccer']){
@@ -87,6 +87,32 @@ for(const [sp,team] of [['nba','Boston Celtics'],['nfl','New England Patriots'],
  assert(matchSave.lastMatch.timeline.length>=7,sp+' match report keeps a play-by-play timeline');
  assert(Array.isArray(matchSave.lastMatch.performers),sp+' postgame player lines are captured');
  assert(t.renderMatchday(matchSave).includes('POSTGAME REPORT'),sp+' postgame report renders');
+}
+
+
+assert.equal(storage.has('era_rivals_universe_v2'),false,'legacy front-office saves are cleared');
+assert.equal(storage.has('era_rivals_pro_v1'),false,'legacy player-career saves are cleared');
+assert.equal(JSON.parse(storage.get('era_rivals_universe_v3')).saves.nba.length,0,'new universe starts with empty save slots');
+const living=context.window.ERLivingLeague;
+for(const [sp,team] of [['nba','Boston Celtics'],['nfl','New England Patriots'],['mlb','Boston Red Sox'],['soccer','Real Madrid']]){
+ t.setSport(sp);t.createSave({team,games:8,playoffs:0});const s=t.getSave(),e=t.franchiseEnv(s);
+ assert(living.ensure(s).objectives.length,'owner objectives initialise for '+sp);
+ const rival=Object.keys(s.standings).find(x=>x!==s.team);
+ s.lastMatch={opponent:rival,home:14,away:10,result:'WIN',mvp:s.roster[0].name};
+ context.window.ERFranchise.afterMatch(s,{post:false,results:[],activeIds:s.roster.filter(p=>p.starter).map(p=>p.id),availableIds:s.roster.map(p=>p.id)},e);
+ assert(s.fo.living.rivalries.length,'rivalry tracking runs for '+sp);
+ assert(s.fo.living.news.length,'match news is generated for '+sp);
+ assert(s.fo.living.franchise.attendance>0,'attendance is calculated for '+sp);
+ const press=living.pressConference(s,'test','MEDIA ROOM','How will you respond?');
+ context.window.ERFranchise.action(s,'world-press',{id:press.id,choice:'accountability'},e);
+ assert(press.resolved,'press response is saved for '+sp);
+ context.window.ERFranchise.action(s,'world-stadium',{},e);
+ context.window.ERFranchise.action(s,'world-ticket',{price:45},e);
+ const coach=s.fo.living.coachMarket[0];context.window.ERFranchise.action(s,'world-hire-coach',{id:coach.id},e);
+ const scout=s.fo.living.scoutMarket[0];context.window.ERFranchise.action(s,'world-hire-scout',{id:scout.id},e);
+ assert.equal(s.fo.staff.length,1,'coaching carousel hires a coach for '+sp);
+ assert.equal(s.fo.living.scouts.length,1,'scouting department hires a scout for '+sp);
+ const page=living.render(s,e);assert(page.includes('LEAGUE CENTRAL')&&page.includes('WORLD NEWS')&&page.includes('RIVALRY WATCH'),'living league page renders for '+sp);
 }
 
 console.log('ALL CHECKS PASSED');
