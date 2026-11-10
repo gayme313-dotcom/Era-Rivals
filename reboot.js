@@ -264,7 +264,7 @@ function renderHistory(s){
  const museum=s.museum.map(x=>'<div class="story-card"><div class="story-time">'+h(x.type)+' · '+x.year+'</div><b>'+h(x.text)+'</b></div>').join('');
  return pane('ALL TITLES ARE EARNED','THE HISTORY YOU WROTE.',
  '<p class="muted">This new universe starts with zero champions, zero franchise records and no imported seasons. Every future year is recorded here.</p>'+
- '<div class="stack">'+(years||'<div class="metric"><small>UNIVERSE HISTORY</small><strong>0 CHAMPIONS</strong><em>THE FIRST SEASON IS YOURS.</em></div>')+'</div>')+
+ '<div class="stack">'+(years||'<div class="metric"><small>UNIVERSE HISTORY</small><strong>0 CHAMPIONS</strong><em>THE FIRST SEASON IS YOURS.</em></div>')+'</div>'+
  '<div class="two-col" style="margin-top:14px">'+pane('AWARDS NIGHT','MVP · ROOKIE · DEFENSE.','<div class="news-wire">'+(awards||'<p class="muted">Awards are presented at the end of the season.</p>')+'</div>')+
  pane('DYNASTY MUSEUM','TROPHY ROOM.','<div class="stack">'+(museum||'<p class="muted">Retired jerseys, championships and records will live here.</p>')+'</div>')+'</div>');
 }
