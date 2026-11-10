@@ -196,6 +196,8 @@ function scoreHalf(sp,strength,against,plan='Balanced',home=false){
  if(sp==='mlb'){let v=0;for(let i=0;i<5;i++){const p=clamp(.38+differential*.027,.14,.7);if(Math.random()<p)v+=rng(1,Math.random()<.1?4:2)}return v}
  return Math.max(22,Math.round(rand(40,56)+differential*1.7));
 }
+function footballPoints(target){const options=[];for(let fg=0;fg<12;fg++)for(let td=0;td<9;td++){const score=3*fg+7*td;if(score<70)options.push(score)}return options.sort((a,b)=>Math.abs(a-target)-Math.abs(b-target)||a-b)[0]||0}
+function lateScore(sp,raw,portion){const target=Math.max(0,Math.round(raw*portion));return sp==='nfl'?footballPoints(target):target}
 function overtime(sp,h,a){if(sp==='soccer'||h!==a)return [h,a];const inc=sp==='nfl'?(Math.random()<.72?3:7):sp==='nba'?(Math.random()<.6?2:3):1;if(Math.random()<.5)h+=inc;else a+=inc;return [h,a]}
 function planEffect(plan,own,opp,s){let n=0;if(plan==='Attack')n+=1.5;if(plan==='Defense')n+=1.2;if(plan==='Fast')n+=.4;if(plan==='Star Power')n+=1;
  const active=own.roster.filter(p=>p.starter&&p.injury===0);
@@ -211,7 +213,7 @@ function injuryEvent(s,team){const t=s.league[team];if(!t)return null;const chan
  if(Math.random()>chance)return null;
  const active=t.roster.filter(p=>p.starter&&p.injury===0);if(!active.length)return null;
  const p=active[rng(0,active.length-1)],games=1+rng(1,Math.max(3,Math.round(SPORT[s.sport].games/15)));
- p.injury=games;p.morale=clamp(p.morale-4,20,100);
+ p.injury=games;p.morale=clamp(p.morale-4,20,100);if(games>3&&Math.random()<.18){p.overall=clamp(p.overall-1,45,99);p.hiddenCeiling=clamp(p.hiddenCeiling-1,p.overall,99);p.injuryHistory=(p.injuryHistory||0)+1;}
  const ev={type:'injury',player:p.name,team,games};
  publish(s,'INJURY REPORT',p.name+' is expected to miss '+games+' game(s). '+team+' faces a tough lineup choice.',team);
  return ev;
@@ -294,7 +296,7 @@ function halftime(s,style){
  const own=s.league[s.team],enemy=s.league[m.opponent];
  const half1=scoreHalf(s.sport,m.power.user+m.impact, m.power.them,userPlan,m.homeTeam===s.team);
  const half2=scoreHalf(s.sport,m.power.them,m.power.user+m.impact,m.oppPlan,m.homeTeam===m.opponent);
- m.score.user+=Math.max(0,Math.round(half1*.6));m.score.them+=Math.max(0,Math.round(half2*.6));
+ m.score.user+=lateScore(s.sport,half1,.6);m.score.them+=lateScore(s.sport,half2,.6);
  if(style==='Risky'&&Math.random()<.27){m.score.them+=s.sport==='nfl'?7:s.sport==='nba'?4:1;m.impact-=1.5}
  if(style==='Rotate')own.roster.forEach(p=>p.fatigue=clamp(p.fatigue-5,0,100));
  m.events.push({time:s.sport==='soccer'?"60'":s.sport==='mlb'?'6TH': '3RD PERIOD',text:'Your staff switches to '+style+'. '+(style==='Risky'?'A gamble with a possible cost.':'Players respond to the change.'),side:'us'});
@@ -310,7 +312,7 @@ function closing(s,call){
  const theirs=teamPower(s,m.opponent)+(call==='All In'?2:0);
  const segment=scoreHalf(s.sport,ours,theirs,call==='All In'?'Attack':'Balanced',m.homeTeam===s.team);
  const other=scoreHalf(s.sport,theirs,ours,'Balanced',m.homeTeam===m.opponent);
- m.score.user+=Math.round(segment*.4);m.score.them+=Math.round(other*.4);
+ m.score.user+=lateScore(s.sport,segment,.4);m.score.them+=lateScore(s.sport,other,.4);
  if(call==='All In'&&Math.random()<.2)m.score.them+=s.sport==='nfl'?3:s.sport==='nba'?2:1;
  if(s.phase==='playoffs'&&m.score.user===m.score.them){const resolved=overtime(s.sport==='soccer'?'mlb':s.sport,m.score.user,m.score.them);m.score.user=resolved[0];m.score.them=resolved[1]}
  else{const resolved=overtime(s.sport,m.score.user,m.score.them);m.score.user=resolved[0];m.score.them=resolved[1]}
@@ -372,6 +374,8 @@ function aiWeek(s){
   const t=clubs[hash('rise'+week+s.season)%clubs.length],rookie=s.league[t].roster.filter(p=>p.age<24).sort((a,b)=>b.potential-a.potential)[0];
   if(rookie){rookie.overall=clamp(rookie.overall+1,50,rookie.potential);publish(s,'BREAKOUT WATCH',rookie.name+' is turning heads for '+t+'. Scouts see a possible future star.',t)}
  }
+ if(week>3&&week%7===0){const t=getTeam(s),unhappy=t.roster.filter(p=>p.overall>80&&!p.starter&&!p.demand).sort((a,b)=>a.morale-b.morale)[0];if(unhappy){unhappy.demand='More starting opportunities';unhappy.morale=clamp(unhappy.morale-8,20,100);publish(s,'LOCKER ROOM',unhappy.name+' asks the front office for a bigger role.',s.team)}}
+ if(week>4&&week%8===0){const t=getTeam(s),hot=t.roster.find(p=>p.trait==='hothead'&&p.starter),leader=t.roster.find(p=>p.trait==='leader'&&p.starter);if(hot&&leader&&hot.id!==leader.id){relationship(hot,leader,-10);t.chemistry=clamp(t.chemistry-3,20,100);publish(s,'TEAM CHEMISTRY',hot.name+' and '+leader.name+' clash in the locker room. The coach needs to settle the dispute.',s.team)}}
  const leaders=standings(s),top=leaders[0];
  if(week>3&&week%6===0)publish(s,'CHAMPIONSHIP RACE',top+' leads the title race. '+s.team+' sits '+userRank(s)+getOrdinal(userRank(s))+' in the standings.',top);
 }
@@ -432,7 +436,7 @@ function endSeason(s,champion){
    p.overall=clamp(Math.min(p.hiddenCeiling,p.overall+up),45,99);
    p.potential=clamp(Math.max(p.overall,p.potential+(chance===0?2:chance===1?-3:0)),45,99);
    if(p.age>36&&Math.random()<.35){t.retired.push(p);if(name===s.team)s.museum.unshift({type:'RETIREMENT',year:s.year,text:p.name+' retired after '+p.games+' appearances.'});}
-   p.legacy+=Math.max(0,Math.round(p.overall-65));
+   const performance=Math.max(0,p.career.games),demand=p.overall>90?.055:p.overall>82?.03:.012;p.salary=Math.max(.5,Math.round(p.salary*(1+demand+(performance>100?.005:0))*10)/10);p.legacy+=Math.max(0,Math.round(p.overall-65));
   }
   t.roster=t.roster.filter(p=>!t.retired.includes(p));t.draftPicks=3;
   const champ=name===champion; t.owner=clamp(t.owner+(champ?8:name===s.team?Math.round((t.record.w/Math.max(1,SPORT[s.sport].games)-.5)*15):0),0,100);
@@ -467,7 +471,7 @@ function aiOffseason(s){
   const t=s.league[team],weak=Object.keys(STARTERS[s.sport]).map(pos=>({pos,power:t.roster.filter(p=>p.pos===pos).reduce((n,p)=>n+p.overall,0)/Math.max(1,t.roster.filter(p=>p.pos===pos).length)})).sort((a,b)=>a.power-b.power)[0];
   const prospect=s.freeAgents.filter(p=>p.pos===weak.pos).sort((a,b)=>b.overall-a.overall)[0];
   if(prospect&&t.budget>=prospect.salary){const player={...prospect,id:ID(),team,relationships:{},career:stats(s.sport),seasonStats:stats(s.sport),seasonHistory:[],awards:[]};t.roster.push(player);t.budget-=player.salary;publish(s,'FREE AGENCY',team+' signs '+player.name+' to strengthen '+weak.pos+'.',team)}
-  if(t.record.w<Math.ceil(SPORT[s.sport].games*.35)&&Math.random()<.4){const old=t.coach.name;t.coach={...COACHES[rng(0,COACHES.length-1)]};publish(s,'COACHING CAROUSEL',team+' dismisses '+old+' and appoints '+t.coach.name+'.',team)}
+  const prior=s.history[0]?.standings.find(x=>x.team===team)?.record;if((prior?.w??SPORT[s.sport].games) < Math.ceil(SPORT[s.sport].games*.35)&&Math.random()<.4){const old=t.coach.name;t.coach={...COACHES[rng(0,COACHES.length-1)]};publish(s,'COACHING CAROUSEL',team+' dismisses '+old+' and appoints '+t.coach.name+'.',team)}
  }
 }
 function signFreeAgent(s,id){
@@ -510,6 +514,17 @@ function makePromise(s,type,id){
  const p=id?findPlayer(s,id):null;if(type==='starter'&&!p)return {error:'Select a player'};
  const pr={id:ID(),playerId:p?.id||null,playerName:p?.name||s.team,type,resolved:false,season:s.season};s.playerPromises.push(pr);return {message:'Promise recorded. The locker room will remember.'};
 }
+
+function mediate(s){
+ const t=getTeam(s),pairs=[];
+ for(const p of t.roster)for(const [id,rel] of Object.entries(p.relationships)){if(rel < -2&&p.id<id){const q=t.roster.find(x=>x.id===id);if(q)pairs.push({p,q,rel})}}
+ if(!pairs.length)return {error:'No locker-room dispute needs mediation'};
+ if(t.budget<2)return {error:'Mediation needs $2M'};
+ t.budget-=2;for(const x of pairs.slice(0,3))relationship(x.p,x.q,15);
+ t.chemistry=clamp(t.chemistry+6,20,100);publish(s,'LOCKER ROOM',s.team+' holds a team meeting. Personal rivalries cool and chemistry improves.');
+ return {message:'Locker-room tension reduced. Chemistry +6.'};
+}
+
 function respondDemand(s,id,response){
  const p=findPlayer(s,id);if(!p||!p.demand)return {error:'No active demand'};
  const t=getTeam(s),d=p.demand;
@@ -601,6 +616,6 @@ root.ERRebootEngine={SPORT,TEAMS,PLAN,STARTERS,LEGENDS,CURRENT,COACHES,STAFF,per
  makeUniverse,summary,stats,makePlayer,pool,blueprint,schedule,teamPower,fixture,opponent,standings,userRank,activePlayers,findPlayer,
  startMatch,halftime,closing,press:decidePress,gameStat,scoreHalf,overtime,makeProspect,prepareProspects,selectedProspects,
  publish,story,payroll,cap,injuryEvent,advanceSeason,aiWeek,aiOffseason,endRegularSeason,endSeason,topMVP,legacyRankings,
- signFreeAgent,releasePlayer,setStarter,train,mentor,makePromise,respondDemand,negotiate,confirmTrade,draftPlayer,hireCoach,stadiumUpgrade,
+ signFreeAgent,releasePlayer,setStarter,train,mentor,mediate,makePromise,respondDemand,negotiate,confirmTrade,draftPlayer,hireCoach,stadiumUpgrade,
  expandLeague,relocate,acceptJob,selectStrategy,getTeam,makeJobOffers,COACHES,newsTypes,money,ID,clamp};
 })(typeof window!=='undefined'?window:globalThis);
