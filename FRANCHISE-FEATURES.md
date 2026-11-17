@@ -7,7 +7,7 @@ These are lightweight management simulations across basketball, football, baseba
 | Feature | Where to play / effect |
 | --- | --- |
 | Rebuild challenge | New career; weakest club, five seasons to win a title, tracked reward/failure. |
-| Boom-or-bust development | Offseason development can produce breakouts or regressions; young players and coaches affect growth. |
+| Dynamic player potential | Offseason potential ceiling changes based on age, same-position production, playing time, development assignments, coaching and mentorship. Player cards show the latest evaluation and development history. |
 | Free-agency battles | Negotiations; final offer competes with two affordable rival offers using salary, role, loyalty, winning and agent trust. |
 | Trade deadline day | Decision inbox; three competing offers arrive two games before the deadline and expire when it closes. |
 | Veteran mentorship | Players & staff; pair a youngster with a veteran to develop scoring, defense or leadership. |
@@ -61,7 +61,7 @@ node tests/franchise.test.cjs
 node tests/friends-client.test.cjs
 ```
 
-The franchise suite includes the prior four-sport full-season, roster, save and injury checks plus 14 system groups: scenarios, custom rules, expansion, scouting/drafts, promises/mentors/chemistry/coaches, recovery, packages/clauses/forks, three-team swaps, free agency, news/clutch choices, injured-player stats, careers/recaps, league evolution and playoff champions.
+The franchise suite includes the prior four-sport full-season, roster, save and injury checks plus the dynamic-potential checks (same-position performance, four-sport behavior, ceiling bounds and age progression) and 14 system groups: scenarios, custom rules, expansion, scouting/drafts, promises/mentors/chemistry/coaches, recovery, packages/clauses/forks, three-team swaps, free agency, news/clutch choices, injured-player stats, careers/recaps, league evolution and playoff champions.
 
 `database/test-friends-leagues.sql` runs inside a rollback transaction. It tests invitation membership, unauthorized access, commissioner permissions, counters/ownership, readiness, duplicate rounds, seven-round seasons, next seasons and private table grants. No test league is kept.
 
