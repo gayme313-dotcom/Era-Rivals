@@ -17,7 +17,7 @@ Open `manager.html` directly or choose a sport from the Legends homepage.
 - Season progression, records, standings, match reports and championship awards.
 - Front office: free-agent signings, player trades, contract extensions and releases.
 - Scouting and drafting prospects.
-- Team training and player development based on potential.
+- Dynamic player potential: offseason potential ceilings react to age, same-position season production, playing time, development assignments, youth coaching and mentorship; player cards show the latest evaluation and its history.
 - Player career legacy points, retirement and Hall of Fame rankings by exact position.
 - Sport-specific player box scores, season and career stat totals, a live MVP race, season MVP awards and an archived record book.
 - Player promises for starting roles, playoff qualification and championships, with morale and GM-approval consequences when promises are kept or broken.
