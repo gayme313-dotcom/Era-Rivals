@@ -116,6 +116,28 @@ function onSeasonEnd(s,title,e){const f=init(s,e);const field=allPlayers(s).sort
  f.owner.trust=clamp(f.owner.trust+(title?20:rate>=.5?10:-20),0,100);f.owner.years--;if(f.owner.trust<25){f.owner.status='fired';e.feed(s,'The owner has dismissed you. Accept a new job before next season.')}else if(f.owner.years<=0){if(f.owner.trust>=50){f.owner.years=3;e.feed(s,'You earned a three-season management extension.')}else{f.owner.status='fired';e.feed(s,'Your management contract was not renewed.')}}
  f.jobs=rank.filter(t=>t!==s.team).slice(-3).map(team=>({team,goal:'Build a playoff team',years:3}));f.opponentPlan=null;
 }
+function updatePlayerPotential(p,teamRoster,s,e,f,team){
+ ensurePlayer(p);
+ const oldPotential=clamp(Math.round(Number(p.potential)||p.overall),p.overall,99);
+ const seasonGames=Math.max(1,Number(f.rules?.games)||e.games||1);
+ const stats=p.stats?.season||{},gp=Math.max(0,Number(stats.gp)||0),devGames=Math.max(0,Number(p.development?.games)||0);
+ const exposure=clamp(Math.max(gp,devGames*.6)/seasonGames,0,1);
+ const peers=allPlayers(s).map(x=>x.p).filter(q=>q.id!==p.id&&q.pos===p.pos&&(Number(q.stats?.season?.gp)||0)>0);
+ let percentile=null;
+ if(gp>0){const rate=performance(p,s.sport)/gp;const rates=peers.map(q=>performance(q,s.sport)/Math.max(1,Number(q.stats.season.gp)||0)).concat(rate).sort((a,b)=>a-b);const less=rates.filter(x=>x<rate).length,equal=rates.filter(x=>x===rate).length;percentile=rates.length>1?(less+(equal-1)/2)/(rates.length-1):.5;}
+ const age=Number(p.age)||25;let delta=0,reason='Stayed on the same development track';
+ if(age>=30){if(oldPotential>p.overall){delta=-1;reason='Age-related ceiling regression';}}
+ else if(age<=23&&exposure>=.35&&percentile!==null){if(percentile>=.85){delta=2;reason='Elite same-position season and meaningful playing time';}else if(percentile>=.65){delta=1;reason='Strong same-position season';}else if(percentile<=.15&&exposure>=.5){delta=-1;reason='A difficult season despite regular playing time';}}
+ else if(age<=25&&exposure>=.5&&percentile!==null){if(percentile>=.9){delta=1;reason='High-level production at a later development age';}else if(percentile<=.1&&exposure>=.65){delta=-1;reason='Repeated opportunity without production';}}
+ if(age<=24&&devGames>=Math.ceil(seasonGames*.35)){delta=Math.max(delta,1);reason='Consistent development-team work';}
+ const directMentor=(f.mentors||[]).some(m=>m.young===p.id&&m.games>=3),veteranMentor=teamRoster.some(q=>q.id!==p.id&&q.personality==='mentor'&&q.age>=30);
+ if(delta>0&&(directMentor||veteranMentor)){delta++;reason+=' with mentorship';}
+ if(delta>0&&team===s.team&&(f.staff||[]).some(c=>c.id==='youth')){delta++;reason+=' with a development coach';}
+ delta=clamp(delta,-2,3);const nextPotential=clamp(oldPotential+delta,p.overall,99),actualChange=nextPotential-oldPotential;p.potential=nextPotential;
+ p.lastDevelopment={season:s.season,age,overallBefore:p.overall,potentialBefore:oldPotential,potentialAfter:nextPotential,potentialChange:actualChange,playingTime:Math.round(exposure*100),performancePercentile:percentile===null?null:Math.round(percentile*100),reason};
+ p.developmentHistory=Array.isArray(p.developmentHistory)?p.developmentHistory:[];p.developmentHistory.unshift(copy(p.lastDevelopment));p.developmentHistory=p.developmentHistory.slice(0,5);
+ return {change:actualChange,percentile,exposure,reason};
+}
 function nextSeason(s,e){const f=s.fo;if(f.owner.status==='fired')throw Error('Accept a job offer in Dynasty HQ before starting another season.');
  f.cash=Math.min(30,f.cash+12-f.staff.reduce((n,c)=>n+c.cost,0));f.scoutPoints=6;f.picks=f.futurePicks;f.futurePicks=2;f.draftNight=null;f.offers=[];f.counter=null;f.market=[];
  for(const team of Object.keys(f.teams)){const ps=roster(s,team);for(const p of ps){ensurePlayer(p);if(team!==s.team){p.age++;p.contractYears=Math.max(0,p.contractYears-1)}const seed=hash(p.id+':development:'+s.season),growth=p.age<26?(seed%10===0?-3:seed%10>=8?4:1):p.age>32?-1:0,mentorBonus=ps.some(q=>q.personality==='mentor'&&q.age>=28)?1:0;const extra=(team===s.team&&f.staff.some(c=>c.id==='youth')&&p.age<26?1:0)+(p.age<25?mentorBonus:0);p.overall=clamp(p.overall+growth+extra,55,p.potential);if(growth>=4||growth<0&&p.age<26)e.feed(s,p.name+(growth>=4?' broke out this offseason.':' struggled to develop this offseason.'));p.seasonStartOvr=p.overall;p.stats.season={gp:0};if(team===s.team){p.seasonStats={};syncLegacyStats(p)}p.injured=0;p.fatigue=0;
