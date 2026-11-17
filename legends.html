@@ -62,6 +62,110 @@ body.modal-open{overflow:hidden}
 #resetHistory{border:0;background:none;color:#83939c;font-size:8px;font-weight:900;letter-spacing:.12em;cursor:pointer}
 #resetHistory:hover{color:var(--lime)}
 @media(max-width:760px){.rebuild-hero-art{grid-template-columns:repeat(4,1fr)}.rebuild-news{grid-template-columns:1fr}}
+
+/* VIBRANT ERA RIVALS HOMEPAGE REFRESH */
+:root{
+ --bg:#07111d;--ink:#f5f8ff;--muted:#a7b8cb;--lime:#c9ff4d;--teal:#45e4d0;
+ --line:#29415d;
+}
+body{background:#07111d;color:#f5f8ff}
+.site-shell{
+ background:
+  radial-gradient(ellipse at 8% 8%,#0d8ecb26 0%,transparent 30%),
+  radial-gradient(ellipse at 88% 7%,#8b5cf626 0%,transparent 27%),
+  radial-gradient(ellipse at 48% 92%,#00d4a51a 0%,transparent 35%),
+  linear-gradient(135deg,#07111d 0%,#0a1425 48%,#101126 100%);
+}
+.site-shell:before{background-image:radial-gradient(#b9eaff .7px,transparent .8px);opacity:.045}
+.masthead{border-bottom-color:#4a6b8b70;background:linear-gradient(90deg,#071321f2,#101b31ee,#0a1926f2);box-shadow:0 8px 35px #0005}
+.brand-emblem{background:linear-gradient(135deg,#d7ff58 0%,#65f0d0 52%,#4bbcff 100%);box-shadow:0 0 28px #65e8c755,0 0 58px #4bbcff2b}
+.brand-copy strong span{background:linear-gradient(90deg,#caff55,#53e7d2,#67baff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.mast-center,.mast-actions a:hover,.solo{color:#b8f5ff}
+.pulse-dot{background:#51f0d4;box-shadow:0 0 13px #51f0d4b8}
+.opening h1 span,.rebuild-copy h1 span{background:linear-gradient(90deg,#caff4f 0%,#4ee8d0 50%,#5bbcff 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.overline{color:#6ff0dc}.overline i{background:linear-gradient(90deg,#caff4f,#4ee8d0,#5bbcff)}
+.rebuild-hero{border-color:#4a819b;box-shadow:0 22px 70px #0008,0 0 42px #20c9dc20}
+.rebuild-hero-art img{filter:saturate(1.28) contrast(1.12) brightness(.77)}
+.rebuild-hero-art img:nth-child(1){filter:saturate(1.38) contrast(1.12) brightness(.78)}
+.rebuild-hero-art img:nth-child(2){filter:saturate(1.34) contrast(1.1) brightness(.78)}
+.rebuild-hero-art img:nth-child(3){filter:saturate(1.48) contrast(1.12) brightness(.76)}
+.rebuild-hero-art img:nth-child(4){filter:saturate(.95) sepia(.12) contrast(1.13) brightness(.76)}
+.rebuild-hero:after{
+ background:
+  radial-gradient(ellipse at 78% 28%,#22d3ee35,transparent 38%),
+  linear-gradient(90deg,#06101cf7 0%,#081524dc 29%,#09172a70 64%,#08111d28 100%),
+  linear-gradient(0deg,#07111de8 0%,transparent 58%);
+}
+.rebuild-copy h1{text-shadow:0 8px 32px #0009}
+.rebuild-copy p{color:#d0deef}
+.rebuild-cta{background:linear-gradient(100deg,#d4ff55,#5ce9c8 62%,#65c4ff);box-shadow:0 7px 26px #52e8cb38;color:#07131b;transition:transform .2s,box-shadow .2s}
+.rebuild-cta:hover{transform:translateY(-3px);box-shadow:0 12px 32px #52e8cb62}
+.rebuild-ghost{border-color:#78b5d2;background:#0713219c;backdrop-filter:blur(8px)}
+.rebuild-ghost:hover{border-color:#6ff0dc;background:#153149}
+.rebuild-hero-tag{color:#ffffff4d;text-shadow:0 0 28px #52dff044}
+.rebuild-hero-tag span{background:linear-gradient(90deg,#caff4f,#4ee8d0,#67baff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.rebuild-central{border-color:#365c78;background:linear-gradient(105deg,#10263b,#102b36 48%,#1b1a36);box-shadow:0 12px 34px #0004}
+.rebuild-central-head span{color:#65f0d9}
+.rebuild-central-head b{color:#a7c8e3}
+.rebuild-news>div{border-left:2px solid #54e8d2;background:linear-gradient(90deg,#ffffff08,transparent);padding:8px 10px;border-radius:0 8px 8px 0}
+.rebuild-news>div:nth-child(2){border-left-color:#ff9d5c}
+.rebuild-news>div:nth-child(3){border-left-color:#a78bfa}
+.rebuild-news small{color:#6ff0dc}
+.rebuild-news>div:nth-child(2) small{color:#ffb36e}
+.rebuild-news>div:nth-child(3) small{color:#c2a8ff}
+.legend-grid{gap:clamp(8px,.85vw,14px)}
+.legend-card{border-color:#5b7189;background:#12243a;box-shadow:0 18px 48px #0006;transition:border-color .3s,transform .3s,filter .3s,box-shadow .3s}
+.legend-nba{--highlight:#ff805c;--glow:#ff674d66;background:radial-gradient(circle at 45% 35%,#a94b31,#17172b 70%)}
+.legend-nfl{--highlight:#67bdff;--glow:#4c9dff66;background:radial-gradient(circle at 46% 35%,#245f9b,#101d37 70%)}
+.legend-soccer{--highlight:#59edbd;--glow:#35e0b366;background:radial-gradient(circle at 46% 35%,#167f75,#101d35 71%)}
+.legend-mlb{--highlight:#ffd16c;--glow:#f5b94d66;background:radial-gradient(circle at 46% 35%,#82613b,#171b2b 70%)}
+.legend-photo{filter:saturate(1.25) contrast(1.12) brightness(.82)}
+.legend-nba .legend-photo{filter:saturate(1.34) contrast(1.15) brightness(.82)}
+.legend-nfl .legend-photo{filter:saturate(1.3) contrast(1.12) brightness(.82)}
+.legend-soccer .legend-photo{filter:saturate(1.42) contrast(1.12) brightness(.8)}
+.legend-mlb .legend-photo{filter:sepia(.12) saturate(1.12) contrast(1.15) brightness(.8)}
+.legend-card:hover .legend-photo,.legend-card:focus-visible .legend-photo{filter:saturate(1.55) contrast(1.12) brightness(.97)}
+.legend-mlb:hover .legend-photo{filter:sepia(.08) saturate(1.25) contrast(1.16) brightness(.94)}
+.legend-nba .image-veil{background:linear-gradient(180deg,#30120c52 0%,transparent 27%,#100e1699 69%,#100d15f5 100%),linear-gradient(90deg,#ff6a3d1c,transparent 80%)}
+.legend-nfl .image-veil{background:linear-gradient(180deg,#061b3852 0%,transparent 27%,#07152a99 69%,#091126f5 100%),linear-gradient(90deg,#348dff26,transparent 80%)}
+.legend-soccer .image-veil{background:linear-gradient(180deg,#042d2852 0%,transparent 27%,#06172999 69%,#090e18f5 100%),linear-gradient(90deg,#20e3b226,transparent 80%)}
+.legend-mlb .image-veil{background:linear-gradient(180deg,#30200b52 0%,transparent 27%,#15162599 69%,#10111cf5 100%),linear-gradient(90deg,#ffbe4a24,transparent 80%)}
+.legend-no{color:#f4f8ffdb;text-shadow:0 2px 12px #000}
+.sport-kicker{color:#f6fbff}
+.legend-era{color:#d2dce8}
+.legend-open{border-top-color:#ffffff65}
+.legend-open span{border-color:var(--highlight);color:var(--highlight);background:#07111d80}
+.legend-card:hover .legend-open span{background:var(--highlight);color:#07111d}
+.number-ghost{color:#ffffff20}
+.landing-bar{border-bottom-color:#3b5974;background:linear-gradient(90deg,#0c1c2c66,#10223755,#101a3066)}
+.accent-icon{background:linear-gradient(135deg,#d4ff55,#54e9cb 65%,#66bfff);box-shadow:0 0 22px #55e9d355}
+.landing-bar strong{color:#f5f8ff}
+.mini-feature{color:#b4c9de}
+.mini-feature i,.right-end{color:#6fe9d8}
+.site-footer{color:#9aafc3}
+.site-footer b{color:#caff55}
+.site-footer button{color:#79e7df}
+.photo-credits{background:#0c1c2c;border-top-color:#3b5974;color:#c4d5e8}
+.photo-credits a{color:#6fe9d8}
+.sport-gateway{border-color:#54718d;background:linear-gradient(135deg,#102238,#141b31);box-shadow:0 30px 120px #000e,0 0 85px #34d9dc2b}
+.mode-tile{border-color:#3b5974;background:linear-gradient(100deg,#1b3048,#182a3a)}
+.mode-tile:hover,.mode-tile:focus-visible{background:linear-gradient(100deg,#244a5d,#27344f)}
+.close-gateway{border-color:#75a0b9;background:#10263bd9}
+@media(max-width:760px){
+ .rebuild-hero{border-radius:13px}
+ .rebuild-hero-art img{filter:saturate(1.2) contrast(1.08) brightness(.65)}
+ .rebuild-hero:after{background:linear-gradient(90deg,#06101cf5 0%,#081524bd 58%,#09172a45 100%),linear-gradient(0deg,#07111de8,transparent 65%)}
+ .rebuild-copy{max-width:88%}
+ .rebuild-central{padding:14px}
+ .legend-card{border-color:#6c829a}
+}
+@media(prefers-reduced-motion:no-preference){
+ .legend-card{animation:cardRise .65s both}
+ .legend-card:nth-child(2){animation-delay:.07s}
+ .legend-card:nth-child(3){animation-delay:.14s}
+ .legend-card:nth-child(4){animation-delay:.21s}
+ @keyframes cardRise{from{opacity:.25;transform:translateY(13px)}to{opacity:1;transform:translateY(0)}}
+}
 </style>
 </head>
 <body>
