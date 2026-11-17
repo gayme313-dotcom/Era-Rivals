@@ -122,7 +122,7 @@ function updatePlayerPotential(p,teamRoster,s,e,f,team){
  const seasonGames=Math.max(1,Number(f.rules?.games)||e.games||1);
  const stats=p.stats?.season||{},gp=Math.max(0,Number(stats.gp)||0),devGames=Math.max(0,Number(p.development?.games)||0);
  const exposure=clamp(Math.max(gp,devGames*.6)/seasonGames,0,1);
- const peers=allPlayers(s).map(x=>x.p).filter(q=>q.id!==p.id&&q.pos===p.pos&&(Number(q.stats?.season?.gp)||0)>0);
+ const peers=[...teamRoster,...allPlayers(s).map(x=>x.p)].filter((q,i,a)=>q.id!==p.id&&q.pos===p.pos&&(Number(q.stats?.season?.gp)||0)>0&&a.findIndex(x=>x.id===q.id)===i);
  let percentile=null;
  if(gp>0){const rate=performance(p,s.sport)/gp;const rates=peers.map(q=>performance(q,s.sport)/Math.max(1,Number(q.stats.season.gp)||0)).concat(rate).sort((a,b)=>a-b);const less=rates.filter(x=>x<rate).length,equal=rates.filter(x=>x===rate).length;percentile=rates.length>1?(less+(equal-1)/2)/(rates.length-1):.5;}
  const age=Number(p.age)||25;let delta=0,reason='Stayed on the same development track';
