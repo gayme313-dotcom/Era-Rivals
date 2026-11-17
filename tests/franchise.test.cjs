@@ -23,7 +23,7 @@ test('Dynamic potential responds to same-position performance, development and a
   for(const p of all){p.stats.season={gp:0};p.age=22;p.contractYears=5;}
   first.overall=70;first.potential=82;first.stats.season={gp:e.games,points:sp==='nba'?2200:0,assists:sp==='nba'?500:sp==='soccer'?14:0,rebounds:sp==='nba'?500:0,passYards:sp==='nfl'?4500:0,passTD:sp==='nfl'?35:0,hits:sp==='mlb'?180:0,homeRuns:sp==='mlb'?35:0,rbi:sp==='mlb'?100:0,goals:sp==='soccer'?28:0};
   peer.overall=70;peer.potential=82;peer.stats.season={gp:e.games,points:0,assists:0,rebounds:0,passYards:0,passTD:0,hits:0,homeRuns:0,rbi:0,goals:0};
-  s.offseason=true;F.nextSeason(s,e);assert(first.potential>82,sp+' elite young player earns a higher potential ceiling');assert(peer.potential<82,sp+' regularly used low performer loses potential');
+  s.offseason=true;F.nextSeason(s,e);console.log('DEBUG POTENTIAL',sp,first.potential,first.lastDevelopment,peer.potential,peer.lastDevelopment);assert(first.potential>82,sp+' elite young player earns a higher potential ceiling');assert(peer.potential<82,sp+' regularly used low performer loses potential');
   assert.equal(first.age,23,sp+' user-controlled players age each offseason');assert.equal(first.contractYears,4,sp+' user-controlled contracts advance each offseason');assert(first.lastDevelopment.performancePercentile>=85,sp+' saves same-position performance evidence');assert.equal(first.developmentHistory.length,1);assert(first.overall<=first.potential&&first.potential<=99);
  }
  const {s,e}=fresh('nba'),p=s.roster[0];p.age=34;p.overall=80;p.potential=90;p.contractYears=4;p.stats.season={gp:e.games,points:100,assists:20,rebounds:20};s.offseason=true;F.nextSeason(s,e);assert(p.potential<90,'older players lose unused potential ceiling');
