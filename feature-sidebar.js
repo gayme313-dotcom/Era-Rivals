@@ -26,7 +26,7 @@ const groups=[
   ['museum','▣','DYNASTY MUSEUM','franchise','feature-dynasty-museum','EXPANDING','history'],
   ['alternate-history','⤴','ALTERNATE HISTORY','franchise','feature-alternate-history','EXPANDING','history'],
   ['friends','♧','FRIENDS LEAGUE','franchise','feature-friends-league','LIVE','friends'],
-  ['hof','♛','HALL OF FAME','legacy','feature-rating-quality','LIVE'],
+  ['hof','♛','HALL OF FAME','legacy','feature-hall-of-fame','LIVE'],
   ['rating-qa','◉','PLAYER RATINGS & DATA','roster','feature-rating-quality','NEEDS QA']
  ]},
  {title:'ON THE ROADMAP',items:[
@@ -71,7 +71,7 @@ function install(){
 function scrollToAnchor(id){
  if(!id)return;
  requestAnimationFrame(()=>requestAnimationFrame(()=>{
-  const target=document.getElementById(id);if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
+  const target=document.getElementById(id)||(['feature-rating-quality','feature-hall-of-fame'].includes(id)?document.querySelector('#screen .page-heading'):null);if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
  }));
 }
 document.addEventListener('click',event=>{
