@@ -123,7 +123,7 @@ Object.keys(SPORT).forEach(sp=>{const clubs=window.ERTeamRosters?.teams?.[sp];if
 const STORAGE='era_rivals_universe_v3';
 const qs=new URLSearchParams(location.search);
 let sport=SPORT[qs.get('sport')]?qs.get('sport'):'nba';
-let page=qs.get('mode')==='franchise'?'roster':'dashboard',rosterFilter='ALL',hofPosition=null,toastTimer=null;
+let page=qs.get('mode')==='franchise'?'roster':'dashboard',rosterFilter='ALL',hofPosition=null,toastTimer=null,activeFeature=null;
 function blankState(){return {saves:{nba:[],nfl:[],soccer:[],mlb:[]},active:{nba:null,nfl:null,soccer:null,mlb:null}}}
 function readState(){try{const v=JSON.parse(localStorage.getItem(STORAGE)||'null');if(v&&v.saves){const d=blankState();Object.keys(d.saves).forEach(s=>d.saves[s]=Array.isArray(v.saves[s])?v.saves[s]:[]);d.active={...d.active,...(v.active||{})};return d}}catch(e){}return blankState()}
 const state=readState();
@@ -523,7 +523,401 @@ function renderTop(){
 }
 function navHtml(){
  const tabs=[['dashboard','◈','DASHBOARD'],['universe','◉','LEAGUE CENTRAL'],['franchise','✦','DYNASTY HQ'],['roster','▦','ROSTER'],['tactics','⌁','TACTICS'],['matchday','◎','MATCHDAY'],['transactions','⇄','TRANSACTIONS'],['scouting','⌕','SCOUTING & DRAFT'],['standings','▤','STANDINGS'],['records','▤','STATS & RECORDS'],['legacy','♛','HALL OF FAME'],['saves','↥','SAVES & ONLINE']];
- return tabs.map(t=>'<button class="nav-item '+(page===t[0]?'active':'')+'" data-page="'+t[0]+'"><span>'+t[1]+'</span>'+t[2]+'</button>').join('');
+ const groups=[
+  {title:'PLAYER SYSTEMS',items:[
+   ['relationships','◉','PLAYER RELATIONSHIPS','universe','feature-relationships','LIVE'],
+   ['development','↗','PLAYER DEVELOPMENT','franchise','feature-development','LIVE','people'],
+   ['personalities','✦','PLAYER PERSONALITIES','franchise','feature-personalities','LIVE','people'],
+   ['mentorship','♧','MENTORSHIP & CHEMISTRY','franchise','feature-mentorship','LIVE','people'],
+   ['recovery','♡','INJURY & COMEBACKS','franchise','feature-development','LIVE','people']
+  ]},
+  {title:'FRONT OFFICE',items:[
+   ['trades','⇄','TRADE NEGOTIATIONS','franchise','feature-trades','LIVE','market'],
+   ['free-agency','
+function stat(label,value,sub){return '<div class="stat-card"><span>'+label+'</span><strong>'+value+'</strong><small>'+sub+'</small></div>'}
+function renderSetup(){
+ return '<section class="setup-hero"><div class="eyebrow">ERA RIVALS · FRONT OFFICE SIMULATOR</div><h1>YOU CALL<br><em>THE SHOTS.</em></h1><p>No controller skills. No running around the field. Build the roster, set the tactics, make the calls and watch your decisions shape the season.</p><div class="setup-card"><div class="setup-head"><span class="eyebrow">START A NEW DYNASTY</span><b>01 / FRANCHISE SETUP</b></div><div class="setup-grid"><label>GENERAL MANAGER<input id="setupManager" value="Xavier Matos" maxlength="28"></label><label>CHOOSE YOUR TEAM<select id="setupTeam">'+TEAMS[sport].map(t=>'<option>'+esc(t)+'</option>').join('')+'</select></label><label>PLAYER ERA<select id="setupEra"><option value="current">REAL CLUB ROSTERS · DATED SNAPSHOT</option><option value="alltime">ALL-TIME LEGENDS · GOLD</option></select></label><label>DIFFICULTY<select id="setupDifficulty"><option value="normal">FRONT OFFICE · NORMAL</option><option value="hard">CHAMPIONSHIP CHALLENGE</option></select></label></div><div class="era-explain"><span class="era-dot"></span><div><b>CURRENT</b><small>Start with your club’s actual roster snapshot.</small></div><span class="era-dot gold"></span><div><b>ALL-TIME</b><small>Draft legends from every generation.</small></div></div>'+window.ERFranchiseUI.setup(sport,SPORT[sport].games)+'<button class="btn primary large" data-action="create-save">START DYNASTY ↗</button><p class="fineprint">Five save slots per sport · Automatic local saves · Rosters: ESPN, November 5, 2026. Ratings, salaries and schedules are game estimates; this is a custom league.</p></div><div class="setup-slots"><h3>YOUR SAVES</h3>'+(state.saves[sport].length?state.saves[sport].map((x,i)=>'<div class="saved-line"><span>SAVE '+(i+1)+'</span><b>'+esc(x.team)+'</b><small>'+x.era.toUpperCase()+' · SEASON '+x.season+'</small><button data-load="'+x.id+'">LOAD</button></div>').join(''):'<div class="empty-state">No dynasty yet. Your front office is waiting.</div>')+'</div></section>';
+}
+function renderDashboard(s){
+ const ovr=teamOvr(s),pay=teamPayroll(s),pct=s.week?Math.round(s.record.w/s.week*100):0,next=nextOpponent(s);
+ return '<div class="fo-launch"><div><span class="eyebrow">DYNASTY SYSTEMS</span><b>Decisions have a long memory.</b><small>Promises · Negotiations · Scouting · League history</small></div><div class="button-row"><button class="btn primary" data-page="universe">LEAGUE CENTRAL →</button><button class="btn ghost" data-page="franchise">OPEN DYNASTY HQ →</button></div></div><section class="welcome-panel" style="--club-color:'+clubColor(s.team)+'"><div><div class="eyebrow">'+SPORT[sport].emoji+' '+SPORT[sport].name+' · SEASON '+s.season+' / '+s.year+'</div><h1>'+esc(s.team)+'<br><em>FRONT OFFICE.</em></h1><p>General Manager: '+esc(s.manager)+' · '+s.era.toUpperCase()+' PLAYER ERA</p></div><div class="club-crest">'+clubBadge(s.team)+'</div><div class="team-grade"><b>'+ovr+'</b><small>TEAM OVR</small></div></section>'+
+ '<div class="stats-grid">'+stat('RECORD',s.record.w+'-'+s.record.l+(s.record.d?'-'+s.record.d:''),s.week+' / '+gamesIn(s)+' games played')+stat('TEAM OVR',ovr,'Starting lineup strength')+stat('PAYROLL',money(pay),money(capFor())+' salary cap')+stat('GM LEGACY',s.gmPoints.toLocaleString(),'Career management points')+'</div>'+
+ (s.offseason?'<div class="offseason-banner"><b>OFFSEASON UNLOCKED</b><span>Review contracts, draft prospects and prepare for the next season.</span><button class="btn primary" data-action="advance-season">START SEASON '+(s.season+1)+' →</button></div>':'')+
+ renderDecisionRoom(s)+'<div class="dashboard-grid"><section class="panel next-match"><div class="panel-top"><div><span class="eyebrow">NEXT MATCHDAY</span><h2>'+(s.offseason?'OFFSEASON':s.playoffs?playoffLabel(s):'GAME '+(s.playoffs?playoffLabel(s):(s.week+1)+' / '+gamesIn(s)))+'</h2></div><span class="status-pill">'+(s.offseason?'BREAK':'UP NEXT')+'</span></div><div class="matchup"><div><small>YOUR TEAM</small><b>'+esc(s.team)+'</b><strong>'+ovr+'</strong></div><span class="vs">VS</span><div><small>OPPOSITION</small><b>'+esc(next)+'</b><strong>'+opponentPower(s)+'</strong></div></div><p class="muted">Your tactics, starters, chemistry and player fatigue affect the result. Make your decisions before the simulation.</p><div class="button-row"><button class="btn primary" data-page="matchday" '+(s.offseason?'disabled':'')+'>PREPARE MATCH ↗</button><button class="btn ghost" data-page="tactics">SET GAMEPLAN</button><button class="btn ghost" data-page="records">PLAYER STATS ↗</button></div></section><section class="panel club-health"><span class="eyebrow">FRANCHISE HEALTH</span><h2>THE BOARDROOM</h2>'+meter('TEAM CHEMISTRY',s.chemistry)+meter('TEAM MORALE',s.morale)+meter('FAN SUPPORT',s.fanSupport)+meter('GM APPROVAL',s.gmRep)+'<div class="health-foot">Training points: <b>'+s.trainingPoints+'</b> · Retired legends: <b>'+s.retired.length+'</b></div></section></div>'+
+ '<div class="dashboard-grid"><section class="panel"><div class="panel-top"><div><span class="eyebrow">RECENT NEWS</span><h2>LEAGUE FEED</h2></div><button class="text-btn" data-page="standings">VIEW TABLE ↗</button></div><div class="feed-list">'+s.feed.slice(0,7).map(x=>'<div class="feed-row"><span class="feed-dot"></span><p>'+esc(x)+'</p></div>').join('')+'</div></section><section class="panel quick-actions"><span class="eyebrow">YOUR NEXT DECISIONS</span><h2>RUN THE TEAM.</h2><button data-page="roster">01 · Set your starting lineup <b>→</b></button><button data-page="transactions">02 · Sign, trade or release players <b>→</b></button><button data-page="scouting">03 · Scout the next generation <b>→</b></button><button data-page="tactics">04 · Choose your tactics <b>→</b></button></section></div>';
+}
+function meter(label,v){return '<div class="meter"><div><span>'+label+'</span><b>'+Math.round(v)+'/100</b></div><i><em style="width:'+Math.max(0,Math.min(100,v))+'%"></em></i></div>'}
+function renderRoster(s){
+ const list=s.roster.filter(p=>rosterFilter==='ALL'||p.pos===rosterFilter);
+ return '<div id="feature-rating-quality" class="page-heading"><div><span class="eyebrow">SQUAD MANAGEMENT</span><h1>THE ROSTER.</h1><p>Club roster snapshot: 2026-11-05. Includes reserves. Ratings and salaries are game estimates. Choose starters and manage contracts.</p></div><button class="btn ghost" data-action="auto-lineup">BEST LINEUP</button><button class="btn primary" data-action="show-create-player">+ CREATE PROSPECT</button></div><div class="roster-summary">'+stat('PLAYERS',s.roster.length,'Squad size')+stat('STARTERS',starters(s).length,'Active lineup')+stat('PAYROLL',money(teamPayroll(s)),'Annual salary')+stat('CAP SPACE',money(capFor()-teamPayroll(s)),'Available budget')+'</div><div class="filter-row"><button class="filter '+(rosterFilter==='ALL'?'active':'')+'" data-filter="ALL">ALL PLAYERS</button>'+SPORT[sport].positions.map(p=>'<button class="filter '+(rosterFilter===p?'active':'')+'" data-filter="'+p+'">'+p+'</button>').join('')+'</div><div class="roster-list">'+list.map(p=>'<div class="player-row '+(p.starter?'is-starter':'')+'"><div class="player-pos">'+(p.photo?'<img class="player-photo" src="'+esc(p.photo)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+p.pos+'</div><div class="player-main"><b>'+esc(p.name)+'</b><small>'+p.age+' YRS · '+p.contractYears+' YR CONTRACT · '+esc(window.ERFranchise.personality(p).label)+' · '+(p.injured?'OUT · '+p.injured+' GAMES':'FIT')+'</small></div><div class="player-rating"><b>'+p.overall+'</b><small>OVR</small></div><div class="player-meta"><span>'+money(p.salary)+'</span><small>'+esc(p.source)+'</small></div><div class="player-bars"><span>MORALE '+p.morale+'%</span><i><em style="width:'+p.morale+'%"></em></i><span>FATIGUE '+p.fatigue+'%</span><i><em class="fatigue" style="width:'+p.fatigue+'%"></em></i></div><div class="player-actions"><button data-fo-player="'+p.id+'">MANAGE</button><button data-action="toggle-starter" data-id="'+p.id+'">'+(p.starter?'BENCH':'START')+'</button><button data-action="renew" data-id="'+p.id+'">EXTEND</button><button data-action="retire" data-id="'+p.id+'">RETIRE</button><button class="danger-text" data-action="release" data-id="'+p.id+'">RELEASE</button></div></div>').join('')+'</div><div id="createPlayerPanel" class="panel create-player" hidden><div class="panel-top"><h2>CREATE A PROSPECT</h2><button class="text-btn" data-action="hide-create-player">CLOSE ✕</button></div><div class="setup-grid"><label>PLAYER NAME<input id="customName" placeholder="Xavier Matos"></label><label>POSITION<select id="customPos">'+SPORT[sport].positions.map(p=>'<option>'+p+'</option>').join('')+'</select></label><label>STARTING OVR<input id="customOvr" type="number" min="55" max="95" value="72"></label></div><button class="btn primary" data-action="create-player">ADD PLAYER TO ROSTER</button></div>';
+}
+function renderTactics(s){
+ const t=s.tactics;
+ return '<div class="page-heading"><div><span class="eyebrow">COACHING STAFF / STRATEGY ROOM</span><h1>SET THE PLAN.</h1><p>Your tactics change how the simulated team performs. There are no movement controls.</p></div><span class="status-pill">GAMEPLAN SAVED</span></div><div class="tactics-grid"><section class="panel"><span class="eyebrow">OFFENSIVE IDENTITY</span><h2>HOW DO WE ATTACK?</h2><div class="choice-grid">'+TACTICS[sport].off.map(x=>'<button class="choice '+(t.off===x?'selected':'')+'" data-tactic="off" data-value="'+esc(x)+'"><b>'+esc(x)+'</b><small>'+offDesc(x)+'</small></button>').join('')+'</div></section><section class="panel"><span class="eyebrow">DEFENSIVE IDENTITY</span><h2>HOW DO WE STOP THEM?</h2><div class="choice-grid">'+TACTICS[sport].def.map(x=>'<button class="choice '+(t.def===x?'selected':'')+'" data-tactic="def" data-value="'+esc(x)+'"><b>'+esc(x)+'</b><small>'+defDesc(x)+'</small></button>').join('')+'</div></section><section class="panel"><span class="eyebrow">GAME MANAGEMENT</span><h2>CONTROL THE TEMPO.</h2><label class="field">PACE<select id="tempoSelect">'+TACTICS[sport].tempo.map(x=>'<option '+(t.tempo===x?'selected':'')+'>'+x+'</option>').join('')+'</select></label><label class="field">RISK LEVEL<select id="riskSelect">'+TACTICS[sport].risk.map(x=>'<option '+(t.risk===x?'selected':'')+'>'+x+'</option>').join('')+'</select></label><label class="field">ROTATION<select id="rotationSelect">'+['Short Rotation','Normal','Deep Rotation'].map(x=>'<option '+(t.rotation===x?'selected':'')+'>'+x+'</option>').join('')+'</select></label></section><section class="panel"><span class="eyebrow">PLAYER DEVELOPMENT</span><h2>TRAINING FOCUS.</h2><label class="field">POSITION TO DEVELOP<select id="trainingSelect">'+SPORT[sport].positions.map(x=>'<option '+(t.training===x?'selected':'')+'>'+x+'</option>').join('')+'</select></label><div class="training-box"><b>'+s.trainingPoints+' TRAINING POINTS</b><p>Spend one point to improve every young player at your selected position who still has potential. Training increases fatigue slightly.</p><button class="btn primary" data-action="train-team" '+(s.trainingPoints<1?'disabled':'')+'>RUN TRAINING CAMP</button></div></section></div>';
+}
+function offDesc(x){const d={'Balanced':'Mix the options and stay unpredictable.','Pick & Roll':'Create space with screens and ball movement.','3-Point Heavy':'Generate more shots from deep.','Inside Game':'Attack the paint and use size.','Motion Offense':'Constant movement and passing.','Air Raid':'Spread the field and throw often.','Ground & Pound':'Control the clock with the run game.','Play Action':'Use the run threat to open passing lanes.','West Coast':'Short, accurate passes and timing.','Possession':'Keep the ball and control the match.','Counter Attack':'Break quickly when the opponent loses shape.','Wing Play':'Stretch the defense out wide.','High Press':'Win the ball high up the pitch.','Direct Football':'Move forward quickly.','Small Ball':'Bunts, steals and smart baserunning.','Power Hitting':'Hunt for extra-base hits.','Contact Hitting':'Put the ball in play.','Aggressive Baserunning':'Take extra bases and pressure defenders.'};return d[x]||'Choose this approach to shape your team.'}
+function defDesc(x){const d={'Man-to-Man':'Stay attached to your matchup.','Zone Defense':'Protect areas and close passing lanes.','Switch Everything':'Switch assignments on screens.','Protect the Paint':'Make inside scoring difficult.','Full-Court Press':'Pressure the ball from end to end.','Cover 2':'Keep two safeties deep.','Man Blitz':'Send pressure and challenge the quarterback.','Zone Blitz':'Disguise pressure and coverage.','Stop the Run':'Commit bodies to the line.','Prevent Defense':'Protect against the big play.','Low Block':'Stay compact near your own goal.','Counter Press':'Win the ball back immediately.','Compact Shape':'Keep the lines close together.','Man Marking':'Follow dangerous opponents.','Pitch to Contact':'Let the defense make plays.','Strikeout Pitching':'Attack hitters with strikeout pitches.','Infield Shift':'Position defenders for likely contact.','Outfield Deep':'Protect against extra-base hits.','Infield In':'Play closer to home plate.'};return d[x]||'Choose this approach to shape your team.'}
+function renderMatchday(s){
+ if(s.pending){
+  const p=s.pending,stage=p.stage==='clutch'?'clutch':'halftime';
+  const cards=p.options.map((o,i)=>'<button class="decision-card" data-decision="'+i+'"><span>OPTION 0'+(i+1)+'</span><b>'+esc(o[0])+'</b><small>'+esc(o[1])+'</small><em>SELECT THIS DECISION →</em></button>').join('');
+  return '<div class="page-heading"><div><span class="eyebrow">MATCHDAY / LIVE MATCH CENTER</span><h1>'+(stage==='clutch'?'CLOSE IT OUT.':'HALFTIME. MAKE THE CALL.')+'</h1><p>'+(stage==='clutch'?'One last decision. The next moment can decide the result.':'Read the opening stretch, then make the adjustment that changes the finish.')+'</p></div><span class="status-pill live">● LIVE · DECISION REQUIRED</span></div>'+renderMatchScoreboard(s,p.opponent,p.home,p.away,stage,p.oppOvr)+'<div class="matchday-columns">'+renderMatchTimeline(p.timeline)+'<section class="panel halftime"><div class="eyebrow">'+(stage==='clutch'?'CLOSING MOMENT':'HALFTIME ADJUSTMENT')+' · '+esc(p.plan||'Balanced approach')+'</div><h2>'+(stage==='clutch'?'HOW DO YOU FINISH?':'WHAT CHANGES NOW?')+'</h2><p class="muted">'+(stage==='clutch'?'The score is set. Choose how your team handles the pressure.':'Your decision affects the closing stretch. Aggressive calls can create a breakthrough, but can also cost you.')+'</p><div class="decision-grid">'+cards+'</div></section></div>';
+ }
+ const opp=nextOpponent(s),oppGrade=opponentPower(s),intel=window.ERFranchise.teamReport(s,opp,franchiseEnv(s));
+ const plans=['Balanced approach','Attack from the start','Protect the lead','Play through your best player','Exploit the wings / weak side','Control possession'];
+ const planOptions=plans.map(x=>'<option '+(s.matchPlan===x?'selected':'')+'>'+x+'</option>').join('');
+ const last=renderLastMatch(s);
+ const report='<section class="panel opponent-report"><div class="panel-top"><div><span class="eyebrow">OPPOSITION INTELLIGENCE</span><h2>KNOW THE OTHER BENCH.</h2></div><span class="status-pill">'+intel.overall+' OVR</span></div><div class="opponent-intel-grid"><div><small>OPPOSING MANAGER</small><b>'+esc(intel.manager)+'</b></div><div><small>TEAM IDENTITY</small><b>'+esc(intel.identity)+'</b></div><div><small>PLAYER TO WATCH</small><b>'+esc(intel.star)+' · '+esc(intel.starPos)+'</b></div><div><small>AREA TO TARGET</small><b>'+esc(intel.weakPosition)+' · '+esc(intel.weakness)+'</b></div></div><p class="fineprint">AI approach: '+esc(intel.priority)+'. Rival managers adapt their roster plans and draft choices as the league changes.</p></section>';
+ const preview='<section class="panel match-preview"><div class="panel-top"><div><span class="eyebrow">MATCHDAY / '+(s.playoffs?playoffLabel(s):'GAME '+(s.week+1)+' OF '+gamesIn(s))+'</span><h2>THE NEXT OPPONENT.</h2></div><span class="status-pill">PRE-MATCH</span></div><div class="matchup large"><div><small>HOME · YOUR CLUB</small><b>'+esc(s.team)+'</b><strong>'+teamOvr(s)+'</strong><span>'+s.record.w+'–'+s.record.l+(s.record.d?'–'+s.record.d:'')+'</span></div><span class="vs">VS</span><div><small>AWAY · OPPOSITION</small><b>'+esc(opp)+'</b><strong>'+oppGrade+'</strong><span>'+((s.standings[opp]?.w)||0)+'–'+((s.standings[opp]?.l)||0)+'</span></div></div><div class="pre-match-grid"><label class="field">MATCH PLAN<select id="matchPlan">'+planOptions+'</select></label><div class="match-note"><b>YOUR GAMEPLAN</b><span>'+esc(s.tactics.off)+' · '+esc(s.tactics.def)+' · '+esc(s.tactics.tempo)+' tempo</span></div></div><div class="button-row"><button class="btn primary large" data-action="start-match" '+(s.offseason?'disabled':'')+'>START MATCH SIMULATION ↗</button><button class="btn ghost" data-page="roster">CHECK LINEUP</button><button class="btn ghost" data-page="tactics">CHANGE TACTICS</button></div></section>';
+ return last+(!s.preparation&&!s.offseason?renderDecisionRoom(s):'')+'<div class="page-heading"><div><span class="eyebrow">ERA RIVALS · '+SPORT[sport].emoji+' '+SPORT[sport].name+'</span><h1>'+(s.offseason?'SEASON COMPLETE.':'THE STAGE IS SET.')+'</h1><p>Every opponent has a plan. Your job is to make the better decisions.</p></div><span class="status-pill">'+(s.offseason?'OFFSEASON':s.playoffs?playoffLabel(s):(s.week+1)+' / '+gamesIn(s))+'</span></div>'+preview+report+'<section class="panel"><span class="eyebrow">HOW MATCHDAY WORKS</span><div class="rules-grid"><div><b>01 · PREPARE</b><p>Set the lineup, match plan and tactics.</p></div><div><b>02 · ADJUST</b><p>Read the live timeline and make your halftime call.</p></div><div><b>03 · CLOSE</b><p>Handle the final moment, then review the player stats and match report.</p></div></div></section>';
+}
+function renderTransactions(s){
+ const pos=SPORT[sport].positions[0];
+ const contracts=s.roster.filter(p=>p.contractYears<=1).slice(0,8).map(p=>'<div><b>'+esc(p.name)+'</b><small>'+p.pos+' · '+p.contractYears+' years left · '+money(p.salary)+'</small><button data-action="renew" data-id="'+p.id+'">EXTEND</button></div>').join('');
+ const tradeRows=(s.tradeHistory||[]).slice(0,8).map(x=>'<div class="market-row"><div><b>RECEIVED '+esc(x.received)+'</b><small>FROM '+esc(x.team)+' · SENT '+esc((x.sent||[]).join(', '))+' · SEASON '+x.season+'</small></div><span class="badge">'+(x.picks?.length||0)+' PICKS</span></div>').join('');
+ const assets=s.roster.slice().sort((a,b)=>playerTradeValue(b)-playerTradeValue(a)).map(p=>'<label class="trade-asset"><input type="checkbox" data-trade-out value="'+esc(p.id)+'"><span><b>'+esc(p.name)+'</b><small>'+esc(p.pos)+' · '+p.overall+' OVR · '+money(p.salary)+'</small></span></label>').join('');
+ const picks=(s.draftPicks||[]).map(p=>'<label class="trade-asset pick-asset"><input type="checkbox" data-trade-pick value="'+esc(p.id)+'"><span><b>'+esc(p.label)+'</b><small>TRADE VALUE '+p.value+'</small></span></label>').join('');
+ const targets=SPORT[sport].positions.flatMap(p=>playerPools(p,s.era).filter(x=>x.team!==s.team&&x.team!=='ERA RIVALS ACADEMY'&&!s.roster.some(y=>y.name===x.name)).slice(0,10).map(x=>'<option value="'+esc(p+'|'+x.name)+'">'+esc(p+' · '+x.name+' · '+x.team+' · '+x.base+' OVR')+'</option>')).join('');
+ return '<div class="page-heading"><div><span class="eyebrow">FRONT OFFICE / PLAYER MOVEMENT</span><h1>MAKE THE MOVE.</h1><p>Sign free agents, negotiate extensions and build multi-asset trade offers.</p></div></div><div class="transaction-grid"><section class="panel"><span class="eyebrow">FREE AGENT MARKET</span><h2>AVAILABLE PLAYERS.</h2><label class="field">POSITION<select id="faPosition">'+SPORT[sport].positions.map(p=>'<option>'+p+'</option>').join('')+'</select></label><div id="freeAgentList">'+renderFreeAgents(s,pos)+'</div></section><section class="panel"><span class="eyebrow">TRADE CENTER / AI FRONT OFFICES</span><h2>NEGOTIATE A DEAL.</h2><label class="field">TRADE TARGET<select id="tradeIncoming"><option value="">Choose a player from another team</option>'+targets+'</select></label><div class="trade-asset-list"><b>PLAYERS YOU ARE OFFERING <small>SELECT 1–3</small></b>'+assets+'</div><div class="trade-asset-list"><b>DRAFT PICKS YOU ARE OFFERING</b>'+(picks||'<p class="fineprint">No draft picks available. You may have traded them away.</p>')+'</div><button class="btn primary" data-action="trade">SEND TRADE OFFER ↗</button><p class="fineprint">The other GM values age, potential, rating and draft capital. Offers can be accepted, countered or rejected. You have two games to close a deal.</p></section></div>'+renderTradeNegotiation(s)+'<section class="panel"><span class="eyebrow">CONTRACT WATCH</span><h2>WHO NEEDS A NEW DEAL?</h2><div class="contract-list">'+(contracts||'<div class="empty-state">No urgent contract decisions.</div>')+'</div></section><section class="panel"><span class="eyebrow">FRONT OFFICE HISTORY</span><h2>TRADE LOG.</h2>'+(tradeRows||'<div class="empty-state">Your completed trades will appear here.</div>')+'</section>'+renderPromises(s);
+}
+
+function renderFreeAgents(s,pos){
+ return freeAgents(s,pos).filter(p=>!s.roster.some(x=>x.name===p.name)).slice(0,8).map(p=>'<div class="market-row"><div><b>'+esc(p.name)+'</b><small>'+pos+' · '+esc(p.team)+' · '+p.base+' OVR</small></div><button data-sign="'+esc(p.name)+'" data-pos="'+pos+'">SIGN</button></div>').join('')||'<div class="empty-state">No players available at this position.</div>';
+}
+function renderScouting(s){
+ const pos=SPORT[sport].positions[0],prospects=playerPools(pos,s.era).filter(p=>!s.roster.some(x=>x.name===p.name)).slice(0,12);
+ return '<div class="page-heading"><div><span class="eyebrow">SCOUTING DEPARTMENT / DRAFT ROOM</span><h1>FIND THE NEXT STAR.</h1><p>Two draft picks per season. These fictional prospects start at age 19 with room to develop.</p></div><span class="status-pill">'+s.era.toUpperCase()+' · '+(2-s.seasonDrafts)+' PICKS LEFT</span></div><section class="panel"><label class="field">SCOUT POSITION<select id="scoutPosition">'+SPORT[sport].positions.map(p=>'<option>'+p+'</option>').join('')+'</select></label><div id="prospectList">'+renderProspects(s,pos)+'</div></section><section class="panel"><span class="eyebrow">DRAFT CLASS</span><h2>YOUR RECENT PICKS.</h2>'+(s.draftClass.length?s.draftClass.slice(-8).reverse().map(x=>'<div class="feed-row"><span class="feed-dot"></span><p>'+esc(x)+'</p></div>').join(''):'<div class="empty-state">No prospects drafted yet.</div>')+'</section>';
+}
+function renderProspects(s,pos){return draftPool(s,pos).filter(p=>!s.roster.some(x=>x.name===p.name)).slice(0,12).map((p,i)=>'<div class="market-row"><div><b>'+esc(p.name)+'</b><small>'+pos+' · '+esc(p.team)+' · '+p.base+' OVR · '+esc(p.source)+'</small></div><button data-draft="'+esc(p.name)+'" data-pos="'+pos+'" '+(s.seasonDrafts>=2?'disabled':'')+'>DRAFT</button></div>').join('')}
+function renderStandings(s){
+ const rows=rankedTeams(s).map(team=>({team,...s.standings[team]}));
+ return renderSeasonPath(s)+'<div class="page-heading"><div><span class="eyebrow">LEAGUE OFFICE / SEASON '+s.season+'</span><h1>THE STANDINGS.</h1><p>Every result moves the table. Your decisions shape the race.</p></div></div><section class="panel"><div class="table-head"><span>#</span><span>TEAM</span><span>W</span><span>L</span><span>D</span><span>OVR</span></div>'+rows.map((r,i)=>'<div class="standing-row '+(r.team===s.team?'user-team':'')+'"><b class="rank">'+(i+1)+'</b><span>'+esc(r.team)+(r.team===s.team?' <small>YOUR TEAM</small>':'')+'</span><b>'+r.w+'</b><b>'+r.l+'</b><b>'+r.d+'</b><b>'+r.ovr+'</b></div>').join('')+'</section><div class="button-row"><button class="btn primary" data-action="sim-five" '+(s.offseason?'disabled':'')+'>SIMULATE 5 GAMES</button><button class="btn ghost" data-action="sim-rest" '+(s.offseason?'disabled':'')+'>SIMULATE REST OF SEASON</button></div>';
+}
+function hallEntries(s,pos){
+ const list=(LEGENDS[sport][pos]||[]).map(x=>({name:x[0],team:x[1],score:x[2]*18+450,real:true}));
+ s.roster.filter(p=>p.pos===pos).forEach(p=>list.push({name:p.name,team:s.team,score:p.careerPoints+(p.overall*7),ovr:p.overall,career:true}));
+ s.retired.filter(p=>p.pos===pos).forEach(p=>list.push({name:p.name,team:s.team,score:p.careerPoints+(p.overall*7),ovr:p.overall,retired:true}));
+ return list.sort((a,b)=>b.score-a.score);
+}
+function renderRecords(s){
+ const players=[...s.roster,...s.retired];players.forEach(ensurePlayerStats);
+ const categories={nba:[['POINTS','points'],['REBOUNDS','rebounds'],['ASSISTS','assists'],['STEALS','steals'],['BLOCKS','blocks']],nfl:[['PASS YARDS','passYards'],['PASS TDS','passTD'],['RUSH YARDS','rushYards'],['RUSH TDS','rushTD'],['RECEIVING YARDS','recYards'],['TACKLES','tackles'],['SACKS','sacks'],['INTERCEPTIONS','interceptions']],soccer:[['GOALS','goals'],['ASSISTS','assists'],['SHOTS','shots'],['TACKLES','tackles'],['KEEPER SAVES','keeperSaves'],['CLEAN SHEETS','cleanSheets']],mlb:[['HITS','hits'],['HOME RUNS','homeRuns'],['RBIS','rbi'],['RUNS','runs'],['PITCHER STRIKEOUTS','pitcherStrikeouts'],['PITCHER WINS','pitcherWins'],['SAVES','pitcherSaves']]}[sport];
+ const race=players.filter(p=>(p.seasonStats?.appearances||0)>0).sort((a,b)=>mvpScore(b)-mvpScore(a)).slice(0,5);
+ const raceRows=race.map((p,i)=>'<div class="record-row"><b>#'+(i+1)+'</b><span><strong>'+esc(p.name)+'</strong><small>'+esc(p.pos)+' · '+p.seasonStats.appearances+' appearances</small></span><strong>'+Math.round(mvpScore(p))+' MVP PTS</strong></div>').join('');
+ const leaders=categories.map(([label,key])=>{const rows=players.filter(p=>(p.seasonStats?.[key]||0)>0).sort((a,b)=>b.seasonStats[key]-a.seasonStats[key]).slice(0,4);return '<section class="panel record-card"><span class="eyebrow">'+label+'</span><div class="record-leaders">'+(rows.map((p,i)=>'<div class="record-row"><b>#'+(i+1)+'</b><span><strong>'+esc(p.name)+'</strong><small>'+esc(p.pos)+'</small></span><strong>'+Number(p.seasonStats[key]).toLocaleString()+'</strong></div>').join('')||'<p class="fineprint">Stats will appear after games are played.</p>')+'</div></section>'}).join('');
+ const careerLeaders=categories.map(([label,key])=>{const rows=players.filter(p=>(p.careerStats?.[key]||0)>0).sort((a,b)=>b.careerStats[key]-a.careerStats[key]).slice(0,3);return '<section class="panel record-card"><span class="eyebrow">CAREER '+label+'</span><div class="record-leaders">'+(rows.map((p,i)=>'<div class="record-row"><b>#'+(i+1)+'</b><span><strong>'+esc(p.name)+'</strong><small>'+esc(p.pos)+' · '+p.games+' games</small></span><strong>'+Number(p.careerStats[key]).toLocaleString()+'</strong></div>').join('')||'<p class="fineprint">Career totals will build as players appear in games.</p>')+'</div></section>'}).join('');
+ const career=players.slice().sort((a,b)=>b.careerPoints-a.careerPoints).slice(0,5).map((p,i)=>'<div class="record-row"><b>#'+(i+1)+'</b><span><strong>'+esc(p.name)+'</strong><small>'+esc(p.pos)+' · '+p.games+' career games · '+p.awards.length+' awards</small></span><strong>'+p.careerPoints.toLocaleString()+' PTS</strong></div>').join('');
+ const seasons=(s.seasonHistory||[]).slice(0,8).map(x=>'<div class="market-row"><div><b>SEASON '+x.season+' · '+x.record+'</b><small>'+(x.mvp?'MVP: '+esc(x.mvp):'No MVP recorded')+' · '+(x.title?'CHAMPIONS':'SEASON COMPLETE')+'</small></div><span class="badge">'+(x.title?'TITLE':'FINAL')+'</span></div>').join('');
+ return '<div class="page-heading"><div><span class="eyebrow">'+SPORT[sport].emoji+' '+SPORT[sport].name+' / RECORD BOOK</span><h1>THE NUMBERS NEVER LIE.</h1><p>Live season leaders, MVP race and career records. Player statistics are generated from your simulated match appearances.</p></div></div><section class="panel"><div class="panel-top"><div><span class="eyebrow">MOST VALUABLE PLAYER</span><h2>SEASON MVP RACE.</h2></div><span class="status-pill">SEASON '+s.season+'</span></div><div class="record-leaders">'+(raceRows||'<div class="empty-state">Play a match to start the MVP race.</div>')+'</div></section><div class="record-grid">'+leaders+'</div><section class="panel"><span class="eyebrow">ALL-TIME CAREER STAT LEADERS</span><h2>CAREER RECORDS BY STAT.</h2><div class="record-grid">'+careerLeaders+'</div></section><section class="panel"><span class="eyebrow">FRANCHISE RECORD BOOK</span><h2>CAREER LEGENDS.</h2><div class="record-leaders">'+(career||'<div class="empty-state">Your first career record is waiting.</div>')+'</div></section><section class="panel"><span class="eyebrow">SEASON ARCHIVE</span><h2>PAST CAMPAIGNS.</h2>'+(seasons||'<p class="fineprint">Your season history will appear here.</p>')+'</section>';
+}
+
+function renderLegacy(s){
+ const pos=hofPosition&&SPORT[sport].positions.includes(hofPosition)?hofPosition:SPORT[sport].positions[0];
+ hofPosition=pos;
+ const list=hallEntries(s,pos);
+ const options=SPORT[sport].positions.map(p=>'<option '+(p===pos?'selected':'')+'>'+p+'</option>').join('');
+ const rows=list.map((p,i)=>{
+  const rank=i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1);
+  const badge=p.career?'<em>YOUR PLAYER</em>':'';
+  const status=p.retired?'RETIRED':p.real?'ALL-TIME LEGEND':'ACTIVE';
+  return '<div class="hof-row '+(p.career?'your-player':'')+'"><b class="hof-rank">'+rank+'</b><div class="hof-avatar">'+esc(p.name.split(' ').map(x=>x[0]).slice(0,2).join(''))+'</div><div><b>'+esc(p.name)+' '+badge+'</b><small>'+esc(p.team)+' · '+status+'</small></div><strong>'+p.score.toLocaleString()+'<small>LEGACY PTS</small></strong></div>';
+ }).join('');
+ const retired=s.retired.length?s.retired.map(p=>'<div class="market-row"><div><b>'+esc(p.name)+'</b><small>'+p.pos+' · '+p.careerPoints+' player legacy points</small></div><span class="badge">RETIRED</span></div>').join(''):'<div class="empty-state">Your first legend has not retired yet.</div>';
+ return '<div class="page-heading"><div><span class="eyebrow">LEGACY ROOM / POSITION VS POSITION</span><h1>THE HALL OF FAME.</h1><p>Your players rank against legends at the same position. Legacy points and legend benchmarks are game estimates, not official rankings.</p></div></div><section class="panel"><label class="field">POSITION LEADERBOARD<select id="hofPosition">'+options+'</select></label><div class="hof-list">'+rows+'</div></section><section class="panel"><span class="eyebrow">YOUR FRANCHISE LEGACY</span><h2>'+s.legacyPoints.toLocaleString()+' TEAM LEGACY POINTS</h2><p class="muted">GM points: '+s.gmPoints.toLocaleString()+' · Championships: '+s.seasonHistory.filter(x=>x.title).length+' · Retired players: '+s.retired.length+'</p>'+retired+'</section>';
+}
+
+function render(){
+ renderTop();
+ const s=getSave();if(s){window.ERFranchise.init(s,franchiseEnv(s));ensureSeason(s)}
+ $('sidebar').innerHTML=s?'<div class="side-label">FRONT OFFICE</div>'+navHtml()+'<div class="sidebar-bottom"><b>'+esc(s.manager)+'</b><small>GENERAL MANAGER · '+s.gmPoints+' PTS</small><button data-action="new-save">+ NEW SAVE SLOT</button><button data-action="delete-save">DELETE CURRENT SAVE</button></div>':'<div class="side-label">WELCOME</div><div class="side-welcome">Start a dynasty to unlock your front office.</div>';
+ $('screen').innerHTML=(page==='setup'||!s)?renderSetup():({dashboard:()=>renderDashboard(s),roster:()=>renderRoster(s),tactics:()=>renderTactics(s),matchday:()=>renderMatchday(s),transactions:()=>window.ERFranchiseUI.render(s,franchiseEnv(s),{...franchiseView,tab:'market'}),scouting:()=>window.ERFranchiseUI.render(s,franchiseEnv(s),{...franchiseView,tab:'scouting'}),standings:()=>renderStandings(s),'legacy-trades':()=>renderTransactions(s),records:()=>renderRecords(s),legacy:()=>renderLegacy(s),saves:()=>renderSaveCenter(s),franchise:()=>window.ERFranchiseUI.render(s,franchiseEnv(s),franchiseView),universe:()=>window.ERLivingLeague.render(s,franchiseEnv(s))}[page]||(()=>renderDashboard(s)))();
+}
+function newSave(){page='setup';render()}
+function deleteSave(){const s=getSave();if(!s)return;if(!confirm('Delete this dynasty save? This cannot be undone.'))return;state.saves[sport]=state.saves[sport].filter(x=>x.id!==s.id);state.active[sport]=state.saves[sport][0]?.id||null;page='dashboard';persist();render();notify('Save deleted.')}
+function setPage(p){page=p;render()}
+function clickHandler(e){
+ let world=e.target.closest('[data-world]');if(world){const s=getSave();try{const args=JSON.parse(world.dataset.worldArgs||'{}');const result=window.ERFranchise.action(s,world.dataset.world,args,franchiseEnv(s));persist();render();notify(result.message||'League decision saved.')}catch(err){notify(err.message,'bad')}return}
+ let fx=e.target.closest('[data-fo-tab]');if(fx){activeFeature=null;page='franchise';franchiseView.tab=fx.dataset.foTab;render();return}
+ fx=e.target.closest('[data-fo-player]');if(fx){activeFeature=null;page='franchise';franchiseView.tab='people';franchiseView.player=fx.dataset.foPlayer;render();return}
+ fx=e.target.closest('[data-friends-action]');if(fx){window.ERFriendsUI.run(fx.dataset.friendsAction,{...readFranchiseFields(fx),...JSON.parse(fx.dataset.friendsArgs||'{}')},franchiseEnv(getSave()));return}
+ fx=e.target.closest('[data-fo]');if(fx){const s=getSave();try{const args={...readFranchiseFields(fx),...JSON.parse(fx.dataset.foArgs||'{}')};const result=window.ERFranchise.action(s,fx.dataset.fo,args,franchiseEnv(s));if(result.fork)addImportedSave(validateSave(result.fork));persist();render();notify(result.message||'Decision saved.')}catch(err){notify(err.message,'bad')}return}
+
+ const locked=getSave();if(locked?.pending&&e.target.closest('[data-sign],[data-draft],[data-tactic],[data-action=trade],[data-action=renew],[data-action=release],[data-action=retire],[data-action=train-team],[data-action=create-player],[data-action=make-promise],[data-action=accept-trade],[data-action=accept-counter],[data-action=counter-trade]')){notify('Finish the match before changing your squad.');return}
+ let el=e.target.closest('[data-prep]');if(el){const s=getSave();if(s&&!s.pending&&!s.offseason&&!s.preparation){prepareTeam(s,el.dataset.prep);persist();render()}return}
+ el=e.target.closest('[data-cloud-load]');if(el){cloudLoad(el.dataset.cloudLoad);return}
+ el=e.target.closest('[data-sport]');if(el){sport=el.dataset.sport;page='dashboard';activeFeature=null;rosterFilter='ALL';hofPosition=null;render();return}
+ el=e.target.closest('[data-feature-link]');if(el){activeFeature=el.dataset.featureKey;page=el.dataset.featurePage||'universe';if(el.dataset.featureTab)franchiseView.tab=el.dataset.featureTab;render();const anchor=el.dataset.featureAnchor;if(anchor)requestAnimationFrame(()=>document.getElementById(anchor)?.scrollIntoView({behavior:'smooth',block:'start'}));return}
+ el=e.target.closest('[data-page]');if(el){activeFeature=null;page=el.dataset.page;render();return}
+ el=e.target.closest('[data-filter]');if(el){rosterFilter=el.dataset.filter;render();return}
+ el=e.target.closest('[data-load]');if(el){state.active[sport]=el.dataset.load;page='dashboard';persist();render();return}
+ el=e.target.closest('[data-action]');if(el){const a=el.dataset.action,id=el.dataset.id;
+  if(a==='create-save'){try{createSave({...readFranchiseFields(document.querySelector('.fo-setup'),true),manager:$('setupManager')?.value,team:$('setupTeam')?.value,era:$('setupEra')?.value,difficulty:$('setupDifficulty')?.value})}catch(err){notify(err.message)}}
+  else if(a==='auto-lineup'){const s=getSave();if(s&&!s.pending){autoLineup(s);persist();render();notify('Best available lineup selected.')}}
+  else if(a==='export-save')exportSave();
+  else if(a==='import-save')$('importFile').click();
+  else if(a==='cloud-login')cloudAuth('login');
+  else if(a==='cloud-signup')cloudAuth('signup');
+  else if(a==='cloud-logout')cloudLogout();
+  else if(a==='cloud-save')cloudSave();
+  else if(a==='cloud-list')cloudList();
+  else if(a==='publish-score')publishScore();
+  else if(a==='load-scores')loadScores();
+  else if(a==='new-save')newSave();
+  else if(a==='delete-save')deleteSave();
+  else if(a==='start-match')beginMatch();
+  else if(a==='advance-season')advanceSeason();
+  else if(a==='sim-five')simFive();
+  else if(a==='sim-rest')simRest();
+  else if(a==='train-team')trainTeam();
+  else if(a==='toggle-starter')toggleStarter(id);
+  else if(a==='retire')retirePlayer(id);
+  else if(a==='release')releasePlayer(id);
+  else if(a==='renew')renewPlayer(id);
+  else if(a==='trade')tradePlayers();
+  else if(a==='make-promise'){const s=getSave(),result=makePromise(s,$('promiseType')?.value,$('promisePlayer')?.value);if(result?.error)notify(result.error,'bad');else{feed(s,'Made a '+result.type+' promise to '+result.playerName+'.');persist();render();notify('Promise recorded. Keep your word.')}}
+  else if(a==='accept-trade')acceptTrade(getSave(),false);
+  else if(a==='accept-counter')acceptTrade(getSave(),true);
+  else if(a==='counter-trade')counterTrade(getSave());
+  else if(a==='reject-trade')rejectTrade(getSave());
+  else if(a==='show-create-player'){$('createPlayerPanel').hidden=false}
+  else if(a==='hide-create-player'){$('createPlayerPanel').hidden=true}
+  else if(a==='create-player')createProspect();
+  return;
+ }
+ el=e.target.closest('[data-decision]');if(el){const s=getSave();if(s&&s.pending){const i=Number(el.dataset.decision),choice=s.pending.options[i];if(choice)finishMatch(s,s.pending,choice)}return}
+ el=e.target.closest('[data-tactic]');if(el){const s=getSave();if(s){s.tactics[el.dataset.tactic]=el.dataset.value;persist();render()}return}
+ el=e.target.closest('[data-sign]');if(el){signFromPool(el.dataset.sign,el.dataset.pos,'free agent');return}
+ el=e.target.closest('[data-draft]');if(el){signFromPool(el.dataset.draft,el.dataset.pos,'draft');return}
+}
+// Front Office v2: shared league fixtures, real club snapshots, weekly decisions.
+function clamp(n,min,max){return Math.max(min,Math.min(max,n))}
+function draftPool(s,pos){return Array.from({length:12},(_,i)=>({name:['Mateo','Jordan','Kai','Lucas','Andre','Noah','Diego','Leo','Eli','Marco','Dante','Alex'][i]+' '+['Cruz','Bennett','Reed','Santos','Brooks','Hayes','Rivera','Costa','Walker','Silva','Cole','Vega'][(i+s.season)%12]+' '+pos+' '+s.season,pos,team:'Draft class '+s.year,base:66+((i*7+s.season)%14),source:'Fictional prospect'}))}
+function freeAgents(s,pos){return [...(s.released||[]).filter(p=>p.pos===pos),...draftPool(s,pos).map(p=>({...p,name:p.name+' FA',team:'Free Agent',source:'Fictional free agent'}))]}
+function clubData(team){return window.ERTeamRosters?.teams?.[sport]?.[team]}
+const FRANCHISE_ALIASES={
+ nba:{
+  'Los Angeles Lakers':['Minneapolis Lakers'],'Sacramento Kings':['Cincinnati Royals','Kansas City Kings','Rochester Royals'],
+  'Oklahoma City Thunder':['Seattle SuperSonics'],'Brooklyn Nets':['New Jersey Nets','New York Nets'],
+  'Memphis Grizzlies':['Vancouver Grizzlies'],'Charlotte Hornets':['Charlotte Bobcats'],
+  'New Orleans Pelicans':['New Orleans Hornets'],'Washington Wizards':['Washington Bullets'],
+  'Atlanta Hawks':['St Louis Hawks','St. Louis Hawks','Milwaukee Hawks','Tri-Cities Blackhawks'],
+  'Golden State Warriors':['Philadelphia Warriors','San Francisco Warriors'],'Detroit Pistons':['Fort Wayne Pistons'],
+  'Philadelphia 76ers':['Syracuse Nationals'],'Utah Jazz':['New Orleans Jazz'],'LA Clippers':['Los Angeles Clippers','San Diego Clippers','Buffalo Braves']
+ },
+ nfl:{
+  'Las Vegas Raiders':['Oakland Raiders','Los Angeles Raiders'],'Los Angeles Chargers':['San Diego Chargers'],
+  'Los Angeles Rams':['St Louis Rams','St. Louis Rams','Cleveland Rams'],'Tennessee Titans':['Houston Oilers'],
+  'Indianapolis Colts':['Baltimore Colts'],'Washington Commanders':['Washington Redskins','Washington Football Team']
+ },
+ mlb:{
+  'Los Angeles Dodgers':['Brooklyn Dodgers'],'San Francisco Giants':['New York Giants'],
+  'Washington Nationals':['Montreal Expos'],'Miami Marlins':['Florida Marlins'],
+  'Tampa Bay Rays':['Tampa Bay Devil Rays'],'Cleveland Guardians':['Cleveland Indians'],
+  'Oakland Athletics':['Philadelphia Athletics','Kansas City Athletics'],
+  'Atlanta Braves':['Boston Braves','Milwaukee Braves'],'Baltimore Orioles':['St Louis Browns','St. Louis Browns'],
+  'Minnesota Twins':['Washington Senators'],'New York Yankees':['New York Highlanders'],
+  'Los Angeles Angels':['California Angels','Anaheim Angels'],'Chicago White Sox':['Chicago White Stockings'],
+  'Cincinnati Reds':['Cincinnati Redlegs']
+ },
+ soccer:{}
+};
+function normalizedClubName(value){return String(value||'').toLowerCase().replace(/[^a-z0-9]/g,'')}
+function sameFranchise(playerTeam,selectedTeam){
+ const aliases=FRANCHISE_ALIASES[sport]?.[selectedTeam]||[];
+ const accepted=[selectedTeam,...aliases].map(normalizedClubName);
+ return accepted.includes(normalizedClubName(playerTeam));
+}
+function allTimeClubRating(team){
+ const used=new Set(),ratings=[];
+ Object.entries(STARTERS[sport]).forEach(([pos,count])=>{
+  const pool=playerPools(pos,'alltime');
+  const local=pool.filter(p=>sameFranchise(p.team,team)&&!used.has(p.name.toLowerCase()));
+  const selected=local.slice(0,count);
+  selected.forEach(p=>{used.add(p.name.toLowerCase());ratings.push(Number(p.base)||74)});
+  if(selected.length<count)pool.filter(p=>!used.has(p.name.toLowerCase())).slice(0,count-selected.length).forEach(p=>{used.add(p.name.toLowerCase());ratings.push(Number(p.base)||74)});
+ });
+ return ratings.length?Math.round(ratings.reduce((a,b)=>a+b,0)/ratings.length):76;
+}
+function clubColor(team){if(getSave()?.team===team&&getSave()?.fo?.expansion)return getSave().fo.expansion.color;return /^#[a-f0-9]{6}$/i.test(clubData(team)?.color||'')?clubData(team).color:'#254d47'}
+function clubBadge(team){const c=clubData(team);return c?.logo?'<img src="'+esc(c.logo)+'" alt="'+esc(team)+' crest" loading="lazy">':'<b>ER</b>'}
+function makeClubRoster(team,era){
+ if(era==='alltime'){
+  const used=new Set();
+  const roster=PLAN[sport].map((pos,i)=>{
+   const pool=playerPools(pos,era),home=pool.filter(p=>sameFranchise(p.team,team)&&!used.has(p.name.toLowerCase()));
+   const candidate=home[0]||pool.find(p=>!used.has(p.name.toLowerCase()));
+   if(!candidate)return null;
+   used.add(candidate.name.toLowerCase());
+   const player=makePlayer(candidate,pos,false,i),franchiseMatch=sameFranchise(candidate.team,team);
+   player.team=team;player.originalTeam=candidate.team;player.depthRank=PLAN[sport].slice(0,i).filter(x=>x===pos).length;
+   player.age=27;player.potential=player.overall;player.contractYears=2;
+   player.careerPoints=Math.round(player.overall*18);
+   player.source=franchiseMatch?'All-Time Legend':'All-Time Legend Free Agent';
+   return player;
+  }).filter(Boolean);
+  const budget=roster.reduce((n,p)=>n+p.salary,0),scale=Math.min(1,capFor()*.87/Math.max(1,budget));
+  roster.forEach(p=>p.salary=Math.max(.4,Math.round(p.salary*scale*10)/10));
+  return roster;
+ }
+ const club=clubData(team);if(!club)return makeRoster(era);
+ const players=club.players.map((p,i)=>({...makePlayer(p,p.pos,false,i),overall:p.base,potential:Math.min(99,p.base+(p.age<25?8:p.age<29?3:0)),age:p.age||25,photo:p.photo,jersey:p.jersey,listedPosition:p.listedPosition,team,originalTeam:team,depthRank:p.depthRank??9,source:'ESPN snapshot · '+(window.ERTeamRosters?.fetchedAt||'').slice(0,10)}));
+ const budget=players.reduce((n,p)=>n+p.salary,0),scale=Math.min(1,capFor()*.87/Math.max(1,budget));players.forEach(p=>p.salary=Math.max(.4,Math.round(p.salary*scale*10)/10));return players;
+}
+function initialLineup(s){s.roster.forEach(p=>p.starter=false);Object.entries(STARTERS[sport]).forEach(([pos,n])=>s.roster.filter(p=>p.pos===pos&&!p.injured&&!p.development).sort((a,b)=>(a.depthRank??9)-(b.depthRank??9)||b.overall-a.overall).slice(0,n).forEach(p=>p.starter=true))}
+function autoLineup(s){s.roster.forEach(p=>p.starter=false);fillVacancies(s)}
+function fillVacancies(s){Object.entries(STARTERS[sport]).forEach(([pos,count])=>{const active=s.roster.filter(p=>p.pos===pos&&p.starter&&!p.injured&&!p.development).length;s.roster.filter(p=>p.pos===pos&&!p.starter&&!p.injured&&!p.development).sort((a,b)=>(b.overall-b.fatigue*.15)-(a.overall-a.fatigue*.15)).slice(0,Math.max(0,count-active)).forEach(p=>p.starter=true)})}
+function clubRating(team,era){if(era==='alltime')return allTimeClubRating(team);const ps=clubData(team)?.players;if(!ps?.length)return 76;const top=[];Object.entries(STARTERS[sport]).forEach(([pos,n])=>top.push(...ps.filter(p=>p.pos===pos).sort((a,b)=>b.base-a.base).slice(0,n)));return top.length?Math.round(top.reduce((n,p)=>n+p.base,0)/top.length):76}
+function ensureSeason(s){
+ s.matchHistory=s.matchHistory||[];s.seasonDrafts=s.seasonDrafts||0;s.promises=Array.isArray(s.promises)?s.promises:[];s.tradeHistory=Array.isArray(s.tradeHistory)?s.tradeHistory:[];if(!Array.isArray(s.draftPicks))s.draftPicks=makeDraftPicks(s.season);s.roster.forEach(ensurePlayerStats);s.retired.forEach(ensurePlayerStats);
+ if(!s.schedule){
+  let rotation=Object.keys(s.standings);if(!rotation.includes(s.team))rotation.push(s.team);if(rotation.length%2)rotation.push(null);
+  const cycle=[];for(let round=0;round<rotation.length-1;round++){const fixtures=[];for(let i=0;i<rotation.length/2;i++){const a=rotation[i],b=rotation[rotation.length-1-i];if(a&&b)fixtures.push(round%2?[b,a]:[a,b])}cycle.push(fixtures);rotation=[rotation[0],rotation[rotation.length-1],...rotation.slice(1,-1)]}
+  s.schedule=Array.from({length:gamesIn(s)},(_,i)=>cycle[i%cycle.length].map(pair=>Math.floor(i/cycle.length)%2?pair.slice().reverse():pair.slice()));
+ }
+ // Existing careers retain their roster and record; only missing v2 fields are added.
+ if(!s.engineVersion){s.engineVersion=2;Object.entries(s.standings).forEach(([t,r])=>{if(t===s.team)return;const games=r.w+r.l+r.d,rate=games?r.w/games:.5;r.w=Math.round(rate*s.week);r.d=0;r.l=s.week-r.w});}
+}
+function nextOpponent(s){if(s.offseason)return 'Season complete';if(s.playoffs){const pair=s.playoffs.pairs.find(p=>p.includes(s.team));return pair?.find(t=>t!==s.team)||'Final'}const pair=s.schedule?.[s.week]?.find(p=>p.includes(s.team));return pair?.find(t=>t!==s.team)||Object.keys(s.standings).find(t=>t!==s.team)}
+function leagueResult(s,a,b,x,y){s.lastRoundResults=s.lastRoundResults||[];s.lastRoundResults.push({a,b,x,y});const ra=s.standings[a],rb=s.standings[b];if(x>y){ra.w++;rb.l++}else if(x<y){ra.l++;rb.w++}else{ra.d++;rb.d++}}
+function resolveTie(x,y){
+ if(sport==='soccer'||x!==y)return [x,y];
+ const bonus=sport==='nfl'?(Math.random()<.72?3:7):sport==='nba'?(Math.random()<.65?2:3):1;
+ if(Math.random()<.5)x+=bonus;else y+=bonus;
+ return [x,y];
+}
+function simulatePair(s,a,b){
+ const diff=window.ERFranchise.teamStrength(s,a,franchiseEnv(s))-window.ERFranchise.teamStrength(s,b,franchiseEnv(s));
+ return resolveTie(segmentScore(sport,diff)*2,segmentScore(sport,-diff)*2);
+}
+function updateLeagueRound(s,opponent,home,away){s.lastRoundResults=[];
+ for(const [a,b] of s.schedule[s.week]||[]){if(a===s.team)leagueResult(s,a,b,home,away);else if(b===s.team)leagueResult(s,a,b,away,home);else{const [x,y]=simulatePair(s,a,b);leagueResult(s,a,b,x,y)}}s.standings[s.team].ovr=teamOvr(s);
+}
+function rankedTeams(s){return Object.keys(s.standings).sort((a,b)=>{const x=s.standings[a],y=s.standings[b];return (sport==='soccer'?(y.w*3+y.d)-(x.w*3+x.d):y.w-x.w)||x.l-y.l||y.ovr-x.ovr||a.localeCompare(b)})}
+function playoffLabel(s){return s.playoffs?.pairs?.length===1?'CHAMPIONSHIP':s.playoffs?.pairs?.length===2?'SEMIFINAL':'QUARTERFINAL'}
+function endRegularSeason(s){
+ const table=rankedTeams(s),count=s.fo?.rules?.playoffTeams??(sport==='soccer'?0:8);if(!count){s.leagueChampion=table[0];completeSeason(s,table[0]===s.team);return}
+ const top=table.slice(0,count);if(!top.includes(s.team)){feed(s,'Finished #'+(table.indexOf(s.team)+1)+'. Top '+count+' advance; your season ends here.');s.leagueChampion=simulateTitle(s,top);completeSeason(s,false);return}
+ s.playoffs={round:0,pairs:count===4?[[top[0],top[3]],[top[1],top[2]]]:[[top[0],top[7]],[top[3],top[4]],[top[1],top[6]],[top[2],top[5]]]};feed(s,'PLAYOFF BERTH! Seed #'+(top.indexOf(s.team)+1)+'. Win the knockout rounds for the ERA Cup.');
+}
+function simulateTitle(s,teams){let remaining=teams.slice();while(remaining.length>1){const next=[];for(let i=0;i<remaining.length;i+=2){const [a,b]=[remaining[i],remaining[i+1]],[x,y]=simulatePair(s,a,b);next.push(x>=y?a:b)}remaining=next}return remaining[0]}
+function advancePlayoffs(s,win){
+ const bracket=s.playoffs,winners=bracket.pairs.map(([a,b])=>{if(a===s.team||b===s.team)return win?s.team:(a===s.team?b:a);const [x,y]=simulatePair(s,a,b);return x>=y?a:b});
+ if(!win){feed(s,'Eliminated in the '+playoffLabel(s).toLowerCase()+'.');s.leagueChampion=simulateTitle(s,winners);completeSeason(s,false);return}
+ if(winners.length===1){s.leagueChampion=s.team;completeSeason(s,true);return}bracket.round++;bracket.pairs=[];for(let i=0;i<winners.length;i+=2)bracket.pairs.push([winners[i],winners[i+1]]);feed(s,'Advanced to the '+playoffLabel(s).toLowerCase()+'.');
+}
+function prepareTeam(s,key){
+ if(s.preparation||s.pending||s.offseason)return;
+ const options={recover:{label:'Recovery day',bonus:0},chemistry:{label:'Team meeting',bonus:1},intense:{label:'Intense practice',bonus:3}};const selected=options[key];if(!selected)return;s.preparation=selected;
+ if(key==='recover')s.roster.forEach(p=>p.fatigue=Math.max(0,p.fatigue-18));
+ if(key==='chemistry'){s.morale=clamp(s.morale+2,30,100);s.chemistry=clamp(s.chemistry+3,35,99);s.roster.forEach(p=>p.morale=clamp(p.morale+2,30,100))}
+ if(key==='intense')s.roster.filter(p=>!p.injured).forEach(p=>p.fatigue=clamp(p.fatigue+10,0,100));
+ feed(s,selected.label+' chosen before '+nextOpponent(s)+'.');
+}
+function renderDecisionRoom(s){
+ if(s.offseason)return renderSeasonPath(s);
+ const avg=Math.round(starters(s).reduce((a,p)=>a+p.fatigue,0)/Math.max(1,starters(s).length));
+ const cards=[['recover','Recovery day','−18 fatigue','Rest the squad. No extra match boost.'],['chemistry','Team meeting','+3 chemistry · +2 morale','Build trust. +1 strength for this game.'],['intense','Intense practice','+3 match strength · +10 fatigue','Sharper execution, but tired players risk injury.']];
+ return '<section class="panel decision-room"><div class="panel-top"><div><span class="eyebrow">'+(s.playoffs?playoffLabel(s):'GAME '+(s.week+1))+' / DECISION ROOM</span><h2>EVERY CALL HAS A COST.</h2></div><span class="status-pill">SQUAD FATIGUE '+avg+'%</span></div><p class="muted">'+(s.preparation?'Preparation locked: '+esc(s.preparation.label)+'. Next, set your lineup and head to matchday.':'Choose one preparation before your next game. Your choice lasts for one match.')+'</p><div class="decision-grid">'+cards.map(([key,label,effect,desc])=>'<button class="decision-card '+(s.preparation?.label===label?'chosen':'')+'" data-prep="'+key+'" '+(s.preparation||s.pending?'disabled':'')+'><span>'+effect+'</span><b>'+label+'</b><small>'+desc+'</small></button>').join('')+'</div><div class="season-progress"><span>BOARD TARGET · '+s.record.w+' / '+Math.ceil(gamesIn(s)*.5)+' WINS</span><progress max="'+Math.ceil(gamesIn(s)*.5)+'" value="'+s.record.w+'"></progress><span>+150 GM points</span></div>'+(s.preparation?'<button class="btn primary" data-page="matchday">'+(s.pending?'RESUME MATCH':'GO TO MATCHDAY')+' →</button>':'')+'</section>';
+}
+function renderSeasonPath(s){const rank=rankedTeams(s).indexOf(s.team)+1;return '<section class="panel season-path"><span class="eyebrow">THE ROAD TO A DYNASTY</span><h2>'+(s.offseason?'SEASON '+s.season+' COMPLETE':s.playoffs?'ERA CUP · '+playoffLabel(s):'LEAGUE POSITION #'+rank)+'</h2><p class="muted">'+((s.fo?.rules.playoffTeams??8)?'Top '+s.fo.rules.playoffTeams+' qualify for the ERA Cup. Single-game knockouts.':'First place wins this '+Object.keys(s.standings).length+'-club league.')+' Ties in the table: fewer losses, then team rating.</p>'+(s.playoffs?s.playoffs.pairs.map(([a,b])=>'<div class="bracket-pair '+([a,b].includes(s.team)?'your-player':'')+'"><b>'+esc(a)+'</b><span>VS</span><b>'+esc(b)+'</b></div>').join(''):'')+(s.offseason&&s.seasonHistory[0]?'<div class="season-awards">'+esc(s.seasonHistory[0].awards.join(' · ')||'Reload. Rebuild. Run it back.')+'</div>':'')+'</section>'}
+// Save backup validation also applies to data downloaded from the cloud.
+function validateSave(v){
+ if(!v||typeof v!=='object'||!SPORT[v.sport]||!['current','alltime'].includes(v.era)||typeof v.team!=='string'||typeof v.manager!=='string'||!Array.isArray(v.roster)||v.roster.length>120)throw Error('This is not a valid Era Rivals save.');
+ for(const key of ['season','year','week','chemistry','morale','fanSupport','gmRep','gmPoints','trainingPoints','legacyPoints'])if(!Number.isFinite(v[key])||v[key]<0)throw Error('Invalid save values.');
+ if(v.week>(v.fo?.rules?.games||SPORT[v.sport].games)||!v.tactics||typeof v.tactics.off!=='string'||!v.record||!v.standings||!v.standings[v.team])throw Error('Invalid season data.');
+ for(const key of ['w','l','d'])if(!Number.isInteger(v.record[key])||v.record[key]<0)throw Error('Invalid record.');
+ if(v.record.w+v.record.l+v.record.d!==v.week)throw Error('Record does not match games played.');
+ for(const key of ['retired','seasonHistory','feed','draftClass'])if(!Array.isArray(v[key]))throw Error('Incomplete save.');
+ v.promises=Array.isArray(v.promises)?v.promises:[];v.tradeHistory=Array.isArray(v.tradeHistory)?v.tradeHistory:[];v.draftPicks=Array.isArray(v.draftPicks)?v.draftPicks:makeDraftPicks(v.season);
+ for(const p of [...v.roster,...v.retired]){
+  ensurePlayerStats(p);
+  if(typeof p.name!=='string'||!SPORT[v.sport].positions.includes(p.pos)||typeof p.id!=='string'||!/^[a-z0-9-]+$/i.test(p.id))throw Error('Invalid player.');
+  for(const key of ['overall','potential','age','salary','contractYears','fatigue','morale','careerPoints','games','injured'])if(!Number.isFinite(p[key])||p[key]<0)throw Error('Invalid player values.');
+  if(p.overall>100||p.fatigue>100||p.morale>100||!Array.isArray(p.awards))throw Error('Invalid player rating.');
+  if(p.photo&&!/^https:\/\/a\.espncdn\.com\//.test(p.photo))delete p.photo;
+ }
+ if(typeof v.id!=='string'||!/^[a-z0-9-]+$/i.test(v.id))throw Error('Invalid save identity.');
+ // Schedules are rebuilt from the selected universe, never trusted as executable input.
+ v.schedule=null;
+ if(v.pending){const q=v.pending;if(q.stage==='clutch'&&(!Array.isArray(q.previewScore)||q.previewScore.length!==2||!q.previewScore.every(Number.isFinite)))throw Error('Invalid closing-moment score.');if(typeof q.opponent!=='string'||!v.standings[q.opponent]||![q.home,q.away,q.oppOvr].every(Number.isFinite)||!Array.isArray(q.options)||q.options.length!==3)throw Error('Invalid match data.');for(const o of q.options)if(!Array.isArray(o)||typeof o[0]!=='string'||typeof o[1]!=='string'||!o.slice(2,5).every(Number.isFinite))throw Error('Invalid decision.');}
+ if(v.playoffs){const q=v.playoffs;if(!Number.isInteger(q.round)||q.round<0||q.round>2||!Array.isArray(q.pairs)||q.pairs.length!==(v.fo?.rules?.playoffTeams===4?[2,1]:[4,2,1])[q.round]||q.pairs.some(pair=>!Array.isArray(pair)||pair.length!==2||pair.some(t=>!v.standings[t])))throw Error('Invalid playoff bracket.');}
+ if(v.fo){if(v.fo.version!==3||!Array.isArray(v.fo.promises)||!v.fo.teams||!Number.isFinite(v.fo.rules?.games)||v.fo.rules.games<8||v.fo.rules.games>162||!Number.isFinite(v.fo.rules.cap)||v.fo.rules.cap<1)throw Error('Invalid franchise data.');}return v;
+}
+function exportSave(){const s=getSave();if(!s)return;const blob=new Blob([JSON.stringify({format:'era-rivals-save',version:2,save:s},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='era-rivals-'+sport+'-season-'+s.season+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);notify('Save backup downloaded.');}
+function addImportedSave(v){const target=state.saves[v.sport];if(target.length>=5)throw Error('All five slots for this sport are full. Delete one first.');v.id='save-'+Date.now()+'-'+Math.random().toString(36).slice(2,6);target.push(v);sport=v.sport;state.active[sport]=v.id;ensureSeason(v);if(!v.offseason&&!v.playoffs&&v.week>=gamesIn(v))endRegularSeason(v);page='dashboard';persist();render()}
+async function importSave(file){try{if(!file)return;if(file.size>1500000)throw Error('Save file is too large.');const raw=JSON.parse(await file.text());addImportedSave(validateSave(raw.save||raw));notify('Backup loaded in a new slot.')}catch(e){notify(e.message,'bad')}}
+let cloudClient=null,cloudUser=null,cloudBusy=false,cloudMessage='',cloudRows=[],scoreRows=[];
+function cloud(){if(!cloudClient&&window.supabase)cloudClient=window.supabase.createClient('https://blfivhuhlcawgmrchzeu.supabase.co','sb_publishable_vkADCw0MqIJTZr1XXCLDoA_b_0wnPdw');if(!cloudClient)throw Error('Online services did not load. Local saves still work.');return cloudClient}
+function cloudStatus(message){cloudMessage=message;if(page==='saves')render();}
+async function cloudRun(work){if(cloudBusy)return;cloudBusy=true;try{await work()}catch(e){cloudStatus(e.message||'Connection failed. Try again.')}finally{cloudBusy=false;if(page==='saves')render()}}
+async function cloudAuth(mode){const email=$('cloudEmail')?.value.trim(),password=$('cloudPassword')?.value;if(!email||!password){cloudStatus('Enter your email and password.');return}if(mode==='signup'&&password.length<8){cloudStatus('Use a password with at least 8 characters.');return}await cloudRun(async()=>{const result=mode==='signup'?await cloud().auth.signUp({email,password}):await cloud().auth.signInWithPassword({email,password});if(result.error)throw result.error;cloudUser=result.data.session?.user||null;cloudStatus(cloudUser?'Signed in. Upload this dynasty or browse your cloud saves.':'Check your email to confirm your account. Then return to this game and sign in.');})}
+async function cloudLogout(){await cloudRun(async()=>{const {error}=await cloud().auth.signOut();if(error)throw error;cloudUser=null;cloudRows=[];cloudStatus('Signed out. Local saves are still on this device.');})}
+async function requireUser(){const {data,error}=await cloud().auth.getUser();if(error||!data.user)throw Error('Sign in to use cloud saves.');cloudUser=data.user;return data.user}
+async function cloudSave(){const s=getSave();if(!s)return;await cloudRun(async()=>{const u=await requireUser();const {error}=await cloud().from('dynasty_saves').upsert({user_id:u.id,slot_id:s.id,sport:s.sport,team:s.team,payload:JSON.parse(JSON.stringify(s)),updated_at:new Date().toISOString()},{onConflict:'user_id,slot_id'});if(error)throw error;cloudStatus('Cloud save updated. You can load it on another device.');})}
+async function cloudList(){await cloudRun(async()=>{await requireUser();const {data,error}=await cloud().from('dynasty_saves').select('slot_id,sport,team,updated_at').order('updated_at',{ascending:false}).limit(30);if(error)throw error;cloudRows=data;cloudStatus(data.length?'Choose a cloud save to load into a new local slot.':'No cloud saves yet. Upload your current dynasty.');})}
+async function cloudLoad(id){await cloudRun(async()=>{await requireUser();const {data,error}=await cloud().from('dynasty_saves').select('payload').eq('slot_id',id).single();if(error)throw error;addImportedSave(validateSave(data.payload));notify('Cloud dynasty loaded in a new local slot.');})}
+async function publishScore(){const s=getSave(),nickname=$('scoreNickname')?.value.trim();if(!nickname||nickname.length>24){cloudStatus('Choose a public nickname (1–24 characters).');return}await cloudRun(async()=>{const u=await requireUser();const values={nickname,team:s.team,score:Math.round(s.gmPoints),titles:s.seasonHistory.filter(x=>x.title).length,updated_at:new Date().toISOString()};const updated=await cloud().from('dynasty_scores').update(values).eq('sport',sport).eq('era',s.era).select('score');if(updated.error)throw updated.error;if(!updated.data.length){const {error}=await cloud().from('dynasty_scores').insert({...values,user_id:u.id,sport,era:s.era});if(error)throw error}cloudStatus('Published to the casual leaderboard. Your save and email stay private.');})}
+async function loadScores(){const s=getSave();await cloudRun(async()=>{const {data,error}=await cloud().from('dynasty_scores').select('nickname,team,score,titles').eq('sport',sport).eq('era',s.era).order('score',{ascending:false}).limit(30);if(error)throw error;scoreRows=data;cloudStatus(data.length?'Leaderboard refreshed.':'No scores yet for this sport and era.');})}
+function renderSaveCenter(s){return '<div class="page-heading"><div><span class="eyebrow">YOUR DYNASTY / ANY DEVICE</span><h1>KEEP YOUR LEGACY.</h1><p>Local saves are automatic. Upload a cloud snapshot whenever you want to carry it to another device.</p></div></div><div class="dashboard-grid"><section class="panel"><span class="eyebrow">LOCAL BACKUPS</span><h2>YOUR SAVE. YOUR FILE.</h2><p class="muted">Download a backup or import one into a new slot. Existing local dynasties are kept.</p><div class="button-row"><button class="btn primary" data-action="export-save">DOWNLOAD BACKUP</button><button class="btn ghost" data-action="import-save">IMPORT BACKUP</button><input id="importFile" type="file" accept=".json,application/json" hidden></div></section><section class="panel"><span class="eyebrow">PRIVATE CLOUD SAVES</span><h2>'+(cloudUser?'SIGNED IN.':'TAKE IT WITH YOU.')+'</h2>'+(cloudUser?'<p class="muted">Cloud snapshots are private to your account.</p><div class="button-row"><button class="btn primary" data-action="cloud-save">UPLOAD THIS DYNASTY</button><button class="btn ghost" data-action="cloud-list">MY CLOUD SAVES</button><button class="text-btn" data-action="cloud-logout">SIGN OUT</button></div>':'<label class="field">EMAIL<input id="cloudEmail" type="email" autocomplete="email" placeholder="Your email"></label><label class="field">PASSWORD<input id="cloudPassword" type="password" autocomplete="current-password" placeholder="At least 8 characters"></label><div class="button-row"><button class="btn primary" data-action="cloud-login">SIGN IN</button><button class="btn ghost" data-action="cloud-signup">CREATE ACCOUNT</button></div><p class="fineprint">Creating an account sends a confirmation email. Confirm it, then return here to sign in.</p>')+'</section></div><p class="cloud-status" role="status">'+esc(cloudMessage||'Cloud uploads and leaderboard publishing happen only when you choose them.')+'</p>'+cloudRows.map(r=>'<div class="panel market-row"><div><b>'+esc(r.team)+'</b><small>'+esc(r.sport.toUpperCase())+' · '+esc(new Date(r.updated_at).toLocaleString())+'</small></div><button class="btn" data-cloud-load="'+esc(r.slot_id)+'">LOAD COPY</button></div>').join('')+'<section class="panel leaderboard"><span class="eyebrow">'+SPORT[sport].name+' · '+s.era.toUpperCase()+' ERA</span><h2>COMMUNITY LEADERBOARD.</h2><p class="muted">Casual, self-reported GM scores. These are not verified competitive records. Only your chosen nickname, team, titles and score are public.</p><label class="field">PUBLIC NICKNAME<input id="scoreNickname" maxlength="24" placeholder="Choose a nickname"></label><div class="button-row"><button class="btn primary" data-action="publish-score">PUBLISH MY SCORE</button><button class="btn ghost" data-action="load-scores">VIEW LEADERBOARD</button></div>'+scoreRows.map((r,i)=>'<div class="market-row"><b>#'+(i+1)+' '+esc(r.nickname)+'</b><span>'+esc(r.team)+' · '+r.titles+' titles</span><strong>'+Number(r.score).toLocaleString()+' PTS</strong></div>').join('')+'</section>'}
+
+let franchiseView={tab:'overview'};
+function franchiseEnv(s){return {save:s,sport,positions:SPORT[sport].positions,starters:STARTERS[sport],games:SPORT[sport].games,maxGames:SPORT[sport].games,cap:SPORT[sport].cap,make:makePlayer,makeRoster:makeClubRoster,payroll:teamPayroll,lineup:autoLineup,feed,ranked:rankedTeams,nextOpponent,marketSalary:p=>Math.max(.5,salaryFor(p.overall)*.55),render:()=>render(),notify,cloud,requireUser,teams:TEAMS[sport],clubData};}
+function readFranchiseFields(el,direct=false){const scope=direct?el:el.closest('[data-fo-form]');const data={};if(!scope)return data;scope.querySelectorAll('[data-fo-field]').forEach(input=>{data[input.dataset.foField]=input.multiple?Array.from(input.selectedOptions).map(o=>o.value):input.value});return data;}
+function clutchOptions(){return ({
+ nba:[['Go for three','A bigger shot; a miss can open a counterattack.',5,0,4,.8],['Attack the rim','Create a closer shot without forcing the three.',2,2,2,.5],['Defend the last possession','Stay disciplined and reduce counterattack risk.',0,4,1,.3]],
+ nfl:[['Go for it on fourth down','Commit to the drive. Failure can hand over points.',5,0,5,.85],['Take the field goal','Choose points over the bigger gamble.',2,2,2,.5],['Pin them deep','Trust your defense and protect field position.',0,4,1,.3]],
+ soccer:[['Send everyone forward','Risk a counterattack for one last chance.',5,0,6,.85],['Keep your shape','Create a chance without abandoning the middle.',2,2,2,.5],['Protect the result','Slow the match and keep defenders behind the ball.',0,4,1,.3]],
+ mlb:[['Pitch to the slugger','Challenge their best hitter. High-risk finish.',5,0,3,.8],['Intentional walk','Face the next hitter with a runner on base.',2,2,2,.5],['Use your closer','Trust your bullpen in the final inning.',0,4,1,.3]]})[sport];}
+
+// Auth recovery is optional; an unavailable network never blocks the local game.
+Promise.resolve().then(async()=>{try{const {data}=await cloud().auth.getSession();cloudUser=data.session?.user||null;cloud().auth.onAuthStateChange((_event,session)=>{cloudUser=session?.user||null;});}catch(e){/* Local play remains available. */}});
+
+document.addEventListener('click',clickHandler);
+document.addEventListener('change',e=>{
+ const s=getSave();
+ if(e.target.dataset.foSelect){franchiseView[e.target.dataset.foSelect]=e.target.value;if(page==='transactions')franchiseView.tab='market';if(page==='scouting')franchiseView.tab='scouting';page='franchise';render();return}
+ if(e.target.dataset.friendsSelect){window.ERFriendsUI.select(e.target.dataset.friendsSelect,e.target.value,franchiseEnv(s));return}
+ if(e.target.id==='importFile'){importSave(e.target.files[0]);return}
+ if(e.target.id==='slotSelect'){state.active[sport]=e.target.value;page='dashboard';persist();render()}
+ if(!s)return;if(s.pending&&['tempoSelect','riskSelect','rotationSelect','trainingSelect','matchPlan'].includes(e.target.id)){render();notify('Your match is already in progress.');return}
+ if(e.target.id==='tempoSelect')s.tactics.tempo=e.target.value;
+ if(e.target.id==='riskSelect')s.tactics.risk=e.target.value;
+ if(e.target.id==='rotationSelect')s.tactics.rotation=e.target.value;
+ if(e.target.id==='trainingSelect')s.tactics.training=e.target.value;
+ if(e.target.id==='matchPlan')s.matchPlan=e.target.value;
+ if(e.target.id==='faPosition'){$('freeAgentList').innerHTML=renderFreeAgents(s,e.target.value)}
+ if(e.target.id==='scoutPosition'){$('prospectList').innerHTML=renderProspects(s,e.target.value)}
+ if(e.target.id==='hofPosition'){hofPosition=e.target.value;render()}
+ if(e.target.id==='tradeOutgoing'){
+  const p=s.roster.find(x=>x.id===e.target.value);
+  if(p)$('tradeIncoming').innerHTML=playerPools(p.pos,s.era).filter(x=>!s.roster.some(y=>y.name===x.name)).slice(0,30).map(x=>'<option>'+esc(x.name)+'</option>').join('');
+ }
+ persist();
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){const p=$('createPlayerPanel');if(p)p.hidden=true}});
+render();
+})();,'FREE AGENCY','franchise','feature-free-agency','LIVE','market'],
+   ['draft-war-room','⌕','DRAFT WAR ROOM','franchise','feature-draft-war-room','EXPANDING','scouting'],
+   ['coaches','♟','COACHES','universe','feature-coaches','LIVE'],
+   ['scouts','⌖','SCOUTS','universe','feature-scouts','LIVE'],
+   ['finances','◈','FRANCHISE FINANCES','universe','feature-franchise-finances','LIVE'],
+   ['stadium','⌂','STADIUM & RELOCATION','universe','feature-relocation','LIVE'],
+   ['objectives','◎','OWNER OBJECTIVES','universe','feature-owner-objectives','LIVE']
+  ]},
+  {title:'LEAGUE & LEGACY',items:[
+   ['news','▤','SPORTS NEWS','universe','feature-world-news','LIVE'],
+   ['rivalries','⚔','RIVALRIES','universe','feature-rivalries','LIVE'],
+   ['press','◉','PRESS CONFERENCES','universe','feature-press-conferences','LIVE'],
+   ['championships','♛','CHAMPIONSHIP HISTORY','universe','feature-championship-history','LIVE'],
+   ['museum','▣','DYNASTY MUSEUM','franchise','feature-dynasty-museum','EXPANDING','history'],
+   ['alternate-history','⤴','ALTERNATE HISTORY','franchise','feature-alternate-history','EXPANDING','history'],
+   ['friends','♧','FRIENDS LEAGUE','franchise','feature-friends-league','LIVE','friends'],
+   ['rating-qa','◉','PLAYER RATINGS & DATA','roster','feature-rating-quality','NEEDS QA']
+  ]}
+ ];
+ const links=group=>group.items.map(item=>'<button class="side-feature-link '+(activeFeature===item[0]?'active':'')+'" data-feature-link data-feature-key="'+item[0]+'" data-feature-page="'+item[3]+'" data-feature-anchor="'+item[4]+'" '+(item[6]?'data-feature-tab="'+item[6]+'"':'')+'><span class="feature-icon">'+item[1]+'</span><span class="feature-label">'+item[2]+'</span><small class="feature-status '+(item[5]==='LIVE'?'live':item[5]==='NEEDS QA'?'qa':'building')+'">'+item[5]+'</small></button>').join('');
+ const featureNav=groups.map(group=>'<details class="side-feature-group" open><summary>'+group.title+'</summary><div class="side-feature-links">'+links(group)+'</div></details>').join('');
+ return tabs.map(t=>'<button class="nav-item '+(page===t[0]?'active':'')+'" data-page="'+t[0]+'"><span>'+t[1]+'</span>'+t[2]+'</button>').join('')+'<div class="side-label feature-directory-label">FEATURE DIRECTORY</div>'+featureNav;
 }
 function stat(label,value,sub){return '<div class="stat-card"><span>'+label+'</span><strong>'+value+'</strong><small>'+sub+'</small></div>'}
 function renderSetup(){
