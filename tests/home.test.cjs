@@ -9,3 +9,16 @@ assert(html.includes('universe-reset.js'),'homepage runs the one-time clean-univ
 const inline=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(x=>x[1]).filter(x=>x.trim());
 inline.forEach(code=>new Function(code));
 console.log('PASS visual-first home screen, live news, continue career and reset controls');
+
+const managerHtml=fs.readFileSync('manager.html','utf8');
+const featureNav=fs.readFileSync('feature-sidebar.js','utf8');
+const managerCss=fs.readFileSync('manager.css','utf8');
+const franchiseUi=fs.readFileSync('franchise-ui.js','utf8');
+const livingLeague=fs.readFileSync('living-league.js','utf8');
+assert(managerHtml.includes('feature-sidebar.js'),'Front Office loads the feature directory');
+for(const label of ['PLAYER RELATIONSHIPS','PLAYER DEVELOPMENT','PLAYER PERSONALITIES','MENTORSHIP & CHEMISTRY','INJURY & COMEBACKS','TRADE NEGOTIATIONS','FREE AGENCY','DRAFT WAR ROOM','SPORTS NEWS','RIVALRIES','PRESS CONFERENCES','FRANCHISE FINANCES','OWNER OBJECTIVES','FRIENDS LEAGUE','HALL OF FAME'])assert(featureNav.includes(label),'sidebar lists '+label);
+for(const id of ['feature-relationships','feature-rivalries','feature-press-conferences','feature-world-news','feature-owner-objectives','feature-franchise-finances','feature-coaches','feature-scouts','feature-relocation','feature-championship-history'])assert(livingLeague.includes('id="'+id+'"'),'League Central exposes '+id);
+for(const id of ['feature-development','feature-personalities','feature-mentorship','feature-trades','feature-free-agency','feature-draft-war-room','feature-alternate-history','feature-dynasty-museum'])assert(franchiseUi.includes("'"+id+"'"),'Dynasty HQ exposes '+id);
+assert(managerCss.includes('.side-feature-link')&&managerCss.includes('.feature-directory{grid-column:1/-1}'),'feature directory has responsive sidebar styling');
+new Function(featureNav);
+console.log('PASS feature directory routes, destination anchors, planned labels and responsive sidebar');
